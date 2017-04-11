@@ -1,5 +1,7 @@
 # dir
 /data
+/pca
+/element
 # Rstudio files
 *.Rproj
 # History files
@@ -28,3 +30,5 @@ vignettes/*.pdf
 *.knit.md
 .Rproj.user
 
+# other
+vgms.png
