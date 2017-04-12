@@ -27,7 +27,7 @@ doKrig <- function(dat, dat.grid, tag, suffix = "", modsel) {
   mod <- variogram(krigFormal,dat)
   fit <- fit.variogram(mod, model = modsel)
   p2 <- plot(mod,fit, main = tag)
-  krig <- krige(krigFormal, dat, dat.grid, model = modsel)
+  krig <- krige(krigFormal, dat, dat.grid, model = modsel, alpha = c(-50 + 90 * 0:1, 90 * 0:1) )
   p3 <- spplot(krig["var1.pred"], main = paste(tag,suffix,sep = ""), xlab = "Longi", ylab = "Lati")
   png(paste(dirPreset("riskAssment/krig"),"/",tag,suffix,"_modelfix.png",sep = ""))
   grid.arrange(p1,p3,p2, ncol = 2, widths = c(15,15), heights = c(5,5))

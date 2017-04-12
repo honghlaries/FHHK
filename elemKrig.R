@@ -22,23 +22,16 @@ conveySp <- function(x) {
 
 doKrig <- function(dat, dat.grid, tag, suffix = "", modsel) {
   pkgLoad("sp");pkgLoad("gstat");pkgLoad("gridExtra")
-  #png(paste(dirPreset("element/krig"),"/",tag,"_ori.png",sep = ""))
   p1 <- spplot(dat, tag, do.log = F, main = tag, xlab = "Longi", ylab = "Lati") 
-  #dev.off()
   krigFormal <- as.formula(paste("log(",tag,")~1"))
-  mod <- variogram(krigFormal,dat)
+  mod <- variogram(krigFormal,dat, alpha = c(-50 + 90 * 0:1, 90 * 0:1))
   fit <- fit.variogram(mod, model = modsel)
-  #png(paste(dirPreset("element/krig"),"/",tag,"_hemivar.png",sep = ""))
   p2 <- plot(mod,fit, main = tag)
-  #dev.off()
   krig <- krige(krigFormal, dat, dat.grid, model = modsel)
-  #png(paste(dirPreset("element/krig"),"/",tag,"_krig.png",sep = ""))
   p3 <- spplot(krig["var1.pred"], main = tag, xlab = "Longi", ylab = "Lati")
-  #dev.off()
   png(paste(dirPreset("element/krig"),"/",tag,"_modelfix.png",sep = ""))
   grid.arrange(p1,p3,p2, ncol = 2, widths = c(15,15), heights = c(5,5))
   dev.off()
-  "12345"
 }
 
 dat <- datareadln() %>% 
