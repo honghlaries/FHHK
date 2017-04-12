@@ -47,7 +47,7 @@ pcaLoadingCal <- function(dat, grouped = T, log = T) { ## cal and log the pca lo
     }
   }
   if(log) {
-    write.csv(paste(dirPreset("pca"),"/pcaLoading.csv",sep = ""))
+    write.csv(rst.tot, paste(dirPreset("pca"),"/pcaLoading.csv",sep = ""))
   }
   rst.tot
 }
