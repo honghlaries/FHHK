@@ -1,7 +1,7 @@
 ## clean ----
 rm(list = ls())
 source("uniTls_pkgInstall.R");source("uniTls_presetPaths.R")
-pkgInitialization(c("dplyr","tidyr","sp"))
+pkgInitialization(c("dplyr","tidyr","sp", "gstat"))
 
 ## Functions ----
 datareadln <- function() { ## data readln
@@ -20,20 +20,18 @@ conveySp <- function(x) {
   as.numeric(tmp[1]) + as.numeric(substr(tmp[2],1,nchar(tmp[2])-1))/60
   }
 
-doKrig <- function(dat, dat.grid, tag, suffix = "", modsel) {
+doKrig <- function(dat, dat.grid, krigFormula, tag, suffix = "", modsel, isData = F) {
   pkgLoad("sp");pkgLoad("gstat");pkgLoad("gridExtra")
   p1 <- spplot(dat, tag, do.log = F, main = tag, xlab = "Longi", ylab = "Lati") 
-  krigFormal <- as.formula(paste("log(",tag,")~1"))
-  mod <- variogram(krigFormal,dat,cloud = T)
-  sel <- plot(mod, digitize = T)
-  plot(sel, dat)
+  mod <- variogram(krigFormula,dat, cutoff = 1.5)
   fit <- fit.variogram(mod, model = modsel)
   p2 <- plot(mod,fit, main = tag)
-  krig <- krige(krigFormal, dat, dat.grid, model = modsel)
+  krig <- krige(krigFormula, dat, dat.grid, model = modsel)
   p3 <- spplot(krig["var1.pred"], main = tag, xlab = "Longi", ylab = "Lati")
-  png(paste(dirPreset("element/krig"),"/",tag,"_modelfix.png",sep = ""))
+  png(paste(dirPreset("element/krig"),"/",tag,suffix,".png",sep = ""))
   grid.arrange(p1,p3,p2, ncol = 2, widths = c(15,15), heights = c(5,5))
   dev.off()
+  if(isData) krig else p3
 }
 
 dat <- datareadln() %>% 
@@ -63,21 +61,37 @@ for (i in 1:125) {
 dat.grid <- dat.grid[-1,]
 coordinates(dat.grid) <- ~longitude+latitudes
 
-doKrig(dat, dat.grid, tag = "Al", modsel = vgm(0.2,"Sph",0.7))
-doKrig(dat, dat.grid, tag = "Fe", modsel = vgm(0.04,"Lin",0,0.003))
-doKrig(dat, dat.grid, tag = "Mn", modsel = vgm(0.03,"Sph",0.7))
-doKrig(dat, dat.grid, tag = "Pb", modsel = vgm(0.025,"Lin",0,0.015))
-doKrig(dat, dat.grid, tag = "Cr", modsel = vgm(0.03,"Lin",0))
-doKrig(dat, dat.grid, tag = "Ni", modsel = vgm(0.05,"Lin",0))
-doKrig(dat, dat.grid, tag = "Cu", modsel = vgm(0.2,"Lin",0))
-doKrig(dat, dat.grid, tag = "Zn", modsel = vgm(0.4,"Lin",0))
-doKrig(dat, dat.grid, tag = "As", modsel = vgm(0.4,"Lin",0))
-doKrig(dat, dat.grid, tag = "Cd", modsel = vgm(0.3,"Lin",0))
-doKrig(dat, dat.grid, tag = "C", modsel = vgm(0.15,"Lin",0))
-doKrig(dat, dat.grid, tag = "orgC", modsel = vgm(0.2,"Sph",0.7))
-doKrig(dat, dat.grid, tag = "N", modsel = vgm(0.2,"Sph",0.7))
-doKrig(dat, dat.grid, tag = "S", modsel = vgm(0.2,"Sph",0.7))
-doKrig(dat, dat.grid, tag = "AVS", modsel = vgm(0.2,"Sph",0.7))
+dat.grid.silt <- doKrig(dat, dat.grid, log(silt) ~ 1, tag = "silt", suffix = "_ord_", modsel = vgm(800,"Sph",1.0), isData = T)
+dat.grid.silt <- as.data.frame(dat.grid.silt) %>% select(longitude, latitudes, silt = var1.pred)
+coordinates(dat.grid.silt) <- ~longitude+latitudes
+
+doKrig(dat, dat.grid.silt, log(Al) ~ silt, tag = "Al", suffix = "_rm_silt_",modsel = vgm(0.15,"Sph",0.5))
+doKrig(dat, dat.grid.silt, log(Fe) ~ silt, tag = "Fe", suffix = "_rm_silt_",modsel = vgm(0.01,"Mat",0.5,0.01,kappa = 1))
+doKrig(dat, dat.grid.silt, log(Mn) ~ silt, tag = "Mn", suffix = "_rm_silt_", modsel = vgm(0.035,"Sph",0.3))
+doKrig(dat, dat.grid.silt, log(Pb) ~ silt, tag = "Pb", suffix = "_rm_silt_",modsel = vgm(0.35,"Sph",0.5))
+doKrig(dat, dat.grid.silt, log(Cr) ~ silt, tag = "Cr", suffix = "_rm_silt_",modsel = vgm(0.06,"Mat",0.7,kappa = 1))
+doKrig(dat, dat.grid.silt, log(Ni) ~ silt, tag = "Ni", suffix = "_rm_silt_",modsel = vgm(0.06,"Sph",1))
+doKrig(dat, dat.grid.silt, log(Cu) ~ silt, tag = "Cu", suffix = "_rm_silt_",modsel = vgm(0.25,"Sph",0.75))
+doKrig(dat, dat.grid.silt, log(Zm) ~ silt, tag = "Zn", suffix = "_rm_silt_",modsel = vgm(0.1,"Sph",0.5))
+doKrig(dat, dat.grid.silt, log(As) ~ silt, tag = "As", suffix = "_rm_silt_",modsel = vgm(0.3,"Sph",0.75))
+doKrig(dat, dat.grid.silt, log(Cd) ~ silt, tag = "Cd", suffix = "_rm_silt_",modsel = vgm(0.2,"Sph",0.7))
+doKrig(dat, dat.grid.silt, log(C) ~ silt, tag = "C", suffix = "_rm_silt_",modsel = vgm(0.15,"Sph",0.7))
+doKrig(dat, dat.grid.silt, log(orgC) ~ silt, tag = "orgC", suffix = "_rm_silt_",modsel = vgm(0.06,"Mat",0.7,kappa = 1))
+doKrig(dat, dat.grid.silt, log(N) ~ silt, tag = "N", suffix = "_rm_silt_",modsel = vgm(0.25,"Sph",1))
+doKrig(dat, dat.grid.silt, log(S) ~ silt, tag = "S", suffix = "_rm_silt_",modsel = vgm(0.4,"Sph",1))
+doKrig(dat, dat.grid.silt, log(AVS) ~ silt, tag = "AVS", suffix = "_rm_silt_",modsel = vgm(0.3,"Sph",0.7))
+doKrig(dat, dat.grid.silt, log(silt) ~ silt, tag = "silt", suffix = "_rm_silt_",modsel = vgm(200,"Sph",1.0))
+#mod <- variogram(log(Cd) ~ depth, dat,  cutoff = 1.5)
+#fit <- fit.variogram(mod, model = vgm(0.2,"Sph",0.7))
+#plot(mod,fit)
 
 
-doKrig(dat, dat.grid, tag = "AvsRatio", modsel = vgm(0.04,"Wav",0.7,0.02))
+
+g <- gstat(NULL, "logAl", log(Al) ~ 1, dat)
+g <- gstat(g, "logAVS", log(AVS) ~ 1, dat)
+
+mod <- variogram(g , cutoff = 1.5)
+fit <- fit.lmc(mod, g, vgm(0.2, "Sph", 0.7))
+plot(mod,fit)
+maps <- predict(fit, dat.grid)
+spplot.vcov(maps)
