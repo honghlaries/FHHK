@@ -1,9 +1,9 @@
-## clean ----
+## Initialization
 rm(list = ls())
-source("uniTls_pkgInstall.R");source("uniTls_presetPaths.R")
-pkgInitialization(c("dplyr","tidyr","sp", "gstat"))
+source("uniTls_pkgInstall.R");source("uniTls_presetPaths.R");source("anaTls_spatialView.R");
+pkgInitialization(c("dplyr","tidyr","sp","gstat"))
 
-## Functions ----
+## Functions 
 datareadln <- function() { ## data readln
   pkgLoad("dplyr");pkgLoad("tidyr")
   read.csv("data/result_element.csv") %>%
@@ -15,25 +15,7 @@ datareadln <- function() { ## data readln
     dplyr::select(siteID:depth,isComplete,Al,Fe,Mn,Pb,Cr,Ni,Cu,Zn,As,Cd,C,N,S,orgC,AVS,clay,silt,sand)
 }
 
-conveySp <- function(x) {
-  tmp <- strsplit(as.character(x),"°")[[1]]
-  as.numeric(tmp[1]) + as.numeric(substr(tmp[2],1,nchar(tmp[2])-1))/60
-  }
-
-doKrig <- function(dat, dat.grid, krigFormula, tag, suffix = "", modsel, isData = F) {
-  pkgLoad("sp");pkgLoad("gstat");pkgLoad("gridExtra")
-  p1 <- spplot(dat, tag, do.log = F, main = tag, xlab = "Longi", ylab = "Lati") 
-  mod <- variogram(krigFormula,dat, cutoff = 1.5)
-  fit <- fit.variogram(mod, model = modsel)
-  p2 <- plot(mod,fit, main = tag)
-  krig <- krige(krigFormula, dat, dat.grid, model = modsel)
-  p3 <- spplot(krig["var1.pred"], main = tag, xlab = "Longi", ylab = "Lati")
-  png(paste(dirPreset("element/krig"),"/",tag,suffix,".png",sep = ""))
-  grid.arrange(p1,p3,p2, ncol = 2, widths = c(15,15), heights = c(5,5))
-  dev.off()
-  if(isData) krig else p3
-}
-
+## Example
 dat <- datareadln() %>% 
   gather(trait, value, Al:sand) %>%
   select(siteID, trait, value) %>%
@@ -42,15 +24,15 @@ dat <- datareadln() %>%
   spread(trait, value) %>%
   dplyr::inner_join(read.csv("data/meta_sites.csv"), by = c("siteID" = "siteID")) %>%
   dplyr::select(siteID:depth,Al,Fe,Mn,Pb,Cr,Ni,Cu,Zn,As,Cd,C,N,S,orgC,AVS,clay,silt,sand) %>%
-  dplyr::mutate(latitudes = conveySp(latitudes),
-                longitude = conveySp(longitude),
+  dplyr::mutate(lat = conveySp(lat),
+                lon = conveySp(lon),
                 AvsRatio = AVS / orgC)
 dat <- as.data.frame(dat)
-coordinates(dat) <- ~longitude+latitudes
+coordinates(dat) <- ~lon+lat
 
 longiRange <-  seq(from = 119.9, to = 121.8, length.out = 125)
 latiRange <-  seq(from = 33.7, to = 34.9, length.out = 125)
-dat.grid <- data.frame(latitudes = c(1), longitude = c(1))
+dat.grid <- data.frame(lat = c(1), lon = c(1))
 for (i in 1:125) {
   for (j in 1:125) {
     if((longiRange[j] - 119.9) * (latiRange[i] - 33.7) - (longiRange[j] - 120.6) * (latiRange[i] - 34.5) > 0) {
@@ -59,39 +41,97 @@ for (i in 1:125) {
   }
 }
 dat.grid <- dat.grid[-1,]
-coordinates(dat.grid) <- ~longitude+latitudes
+coordinates(dat.grid) <- ~lon+lat
 
-dat.grid.silt <- doKrig(dat, dat.grid, log(silt) ~ 1, tag = "silt", suffix = "_ord_", modsel = vgm(800,"Sph",1.0), isData = T)
-dat.grid.silt <- as.data.frame(dat.grid.silt) %>% select(longitude, latitudes, silt = var1.pred)
-coordinates(dat.grid.silt) <- ~longitude+latitudes
+dat.grid.silt <- doKrig(dat, dat.grid, log(silt) ~ 1, tag = "silt", modsel = vgm(800,"Sph",1.0), outTpe = "data")
+dat.grid.silt <- as.data.frame(dat.grid.silt) %>% select(lon, lat, silt = var1.pred)
+coordinates(dat.grid.silt) <- ~lon+lat
 
-doKrig(dat, dat.grid.silt, log(Al) ~ silt, tag = "Al", suffix = "_rm_silt_",modsel = vgm(0.15,"Sph",0.5))
-doKrig(dat, dat.grid.silt, log(Fe) ~ silt, tag = "Fe", suffix = "_rm_silt_",modsel = vgm(0.01,"Mat",0.5,0.01,kappa = 1))
-doKrig(dat, dat.grid.silt, log(Mn) ~ silt, tag = "Mn", suffix = "_rm_silt_", modsel = vgm(0.035,"Sph",0.3))
-doKrig(dat, dat.grid.silt, log(Pb) ~ silt, tag = "Pb", suffix = "_rm_silt_",modsel = vgm(0.35,"Sph",0.5))
-doKrig(dat, dat.grid.silt, log(Cr) ~ silt, tag = "Cr", suffix = "_rm_silt_",modsel = vgm(0.06,"Mat",0.7,kappa = 1))
-doKrig(dat, dat.grid.silt, log(Ni) ~ silt, tag = "Ni", suffix = "_rm_silt_",modsel = vgm(0.06,"Sph",1))
-doKrig(dat, dat.grid.silt, log(Cu) ~ silt, tag = "Cu", suffix = "_rm_silt_",modsel = vgm(0.25,"Sph",0.75))
-doKrig(dat, dat.grid.silt, log(Zm) ~ silt, tag = "Zn", suffix = "_rm_silt_",modsel = vgm(0.1,"Sph",0.5))
-doKrig(dat, dat.grid.silt, log(As) ~ silt, tag = "As", suffix = "_rm_silt_",modsel = vgm(0.3,"Sph",0.75))
-doKrig(dat, dat.grid.silt, log(Cd) ~ silt, tag = "Cd", suffix = "_rm_silt_",modsel = vgm(0.2,"Sph",0.7))
-doKrig(dat, dat.grid.silt, log(C) ~ silt, tag = "C", suffix = "_rm_silt_",modsel = vgm(0.15,"Sph",0.7))
-doKrig(dat, dat.grid.silt, log(orgC) ~ silt, tag = "orgC", suffix = "_rm_silt_",modsel = vgm(0.06,"Mat",0.7,kappa = 1))
-doKrig(dat, dat.grid.silt, log(N) ~ silt, tag = "N", suffix = "_rm_silt_",modsel = vgm(0.25,"Sph",1))
-doKrig(dat, dat.grid.silt, log(S) ~ silt, tag = "S", suffix = "_rm_silt_",modsel = vgm(0.4,"Sph",1))
-doKrig(dat, dat.grid.silt, log(AVS) ~ silt, tag = "AVS", suffix = "_rm_silt_",modsel = vgm(0.3,"Sph",0.7))
-doKrig(dat, dat.grid.silt, log(silt) ~ silt, tag = "silt", suffix = "_rm_silt_",modsel = vgm(200,"Sph",1.0))
-#mod <- variogram(log(Cd) ~ depth, dat,  cutoff = 1.5)
-#fit <- fit.variogram(mod, model = vgm(0.2,"Sph",0.7))
-#plot(mod,fit)
+grid.value.tot <- NULL
+grid.value <- as.data.frame(doKrig(dat, dat.grid, log(Al) ~ 1, tag = "Al", 
+                                   outTpe = "data",modsel = vgm(0.15,"Sph",0.5))) %>% 
+  select(lon, lat, value = var1.pred)
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "Al")))
+
+grid.value <- as.data.frame(doKrig(dat, dat.grid, log(Fe) ~ 1, tag = "Fe", 
+                                   outTpe = "data",modsel = vgm(0.01,"Mat",0.5,0.01,kappa = 1))) %>% 
+  select(lon, lat, value = var1.pred)
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "Fe")))
+
+grid.value <- as.data.frame(doKrig(dat, dat.grid, log(Mn) ~ 1, tag = "Mn", 
+                                   outTpe = "data",modsel = vgm(0.035,"Sph",0.3))) %>% 
+  select(lon, lat, value = var1.pred)
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "Mn")))
+
+grid.value <- as.data.frame(doKrig(dat, dat.grid, log(Pb) ~ 1, tag = "Pb", 
+                                   outTpe = "data",modsel = vgm(0.35,"Sph",0.5))) %>% 
+  select(lon, lat, value = var1.pred)
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "Pb")))
+
+grid.value <- as.data.frame(doKrig(dat, dat.grid, log(Cr) ~ 1, tag = "Cr", 
+                                   outTpe = "data",modsel = vgm(0.06,"Mat",0.7,kappa = 1))) %>% 
+  select(lon, lat, value = var1.pred)
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "Cr")))
+
+grid.value <- as.data.frame(doKrig(dat, dat.grid, log(Ni) ~ 1, tag = "Ni", 
+                                   outTpe = "data",modsel = vgm(0.06,"Sph",1))) %>% 
+  select(lon, lat, value = var1.pred)
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "Ni")))
+
+grid.value <- as.data.frame(doKrig(dat, dat.grid, log(Cu) ~ 1, tag = "Cu", 
+                                   outTpe = "data",modsel = vgm(0.25,"Sph",0.75))) %>% 
+  select(lon, lat, value = var1.pred)
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "Cu")))
+
+grid.value <- as.data.frame(doKrig(dat, dat.grid, log(Zn) ~ 1, tag = "Zn", 
+                                   outTpe = "data",modsel = vgm(0.1,"Sph",0.5))) %>% 
+  select(lon, lat, value = var1.pred)
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "Zn")))
+
+grid.value <- as.data.frame(doKrig(dat, dat.grid, log(As) ~ 1, tag = "As", 
+                                   outTpe = "data",modsel = vgm(0.3,"Sph",0.75))) %>% 
+  select(lon, lat, value = var1.pred)
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "As")))
+
+grid.value <- as.data.frame(doKrig(dat, dat.grid, log(Cd) ~ 1, tag = "Cd", 
+                                   outTpe = "data",modsel = vgm(0.2,"Sph",0.7))) %>% 
+  select(lon, lat, value = var1.pred)
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "Cd")))
+
+grid.value <- as.data.frame(doKrig(dat, dat.grid, log(C) ~ 1, tag = "C", 
+                                   outTpe = "data",modsel = vgm(0.15,"Sph",0.7))) %>% 
+  select(lon, lat, value = var1.pred)
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "C")))
+
+grid.value <- as.data.frame(doKrig(dat, dat.grid, log(orgC) ~ 1, tag = "orgC", 
+                                   outTpe = "data",modsel = vgm(0.06,"Mat",0.7,kappa = 1))) %>% 
+  select(lon, lat, value = var1.pred)
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "orgC")))
+
+grid.value <- as.data.frame(doKrig(dat, dat.grid, log(N) ~ 1, tag = "N", 
+                                   outTpe = "data",modsel = vgm(0.25,"Sph",1))) %>% 
+  select(lon, lat, value = var1.pred)
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "N")))
+
+grid.value <- as.data.frame(doKrig(dat, dat.grid, log(S) ~ 1, tag = "S", 
+                                   outTpe = "data",modsel = vgm(0.4,"Sph",1))) %>% 
+  select(lon, lat, value = var1.pred)
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "S")))
+
+grid.value <- as.data.frame(doKrig(dat, dat.grid, log(AVS) ~ 1, tag = "AVS", 
+                                   outTpe = "data",modsel = vgm(0.3,"Sph",0.7))) %>% 
+  select(lon, lat, value = var1.pred)
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "AVS")))
+
+grid.value <- as.data.frame(doKrig(dat, dat.grid, log(silt) ~ 1, tag = "silt", 
+                                   outTpe = "data",modsel = vgm(200,"Sph",1.0))) %>% 
+  select(lon, lat, value = var1.pred)
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "silt")))
+
+spView.grid(dat = grid.value.tot,file = "tmp.png",col.gardient,
+            lonC = 120.8, latC = 34.2, lonRange = c(119.9,121.8),latRange = c(33.7,34.9), zoom = 9,
+            maptype = "hybrid", mapsource = "google")
 
 
-
-g <- gstat(NULL, "logAl", log(Al) ~ 1, dat)
-g <- gstat(g, "logAVS", log(AVS) ~ 1, dat)
-
-mod <- variogram(g , cutoff = 1.5)
-fit <- fit.lmc(mod, g, vgm(0.2, "Sph", 0.7))
-plot(mod,fit)
-maps <- predict(fit, dat.grid)
-spplot.vcov(maps)
+doKrig(dat, dat.grid, tag = "Al", cutoff = 1.5, krigFormula = log(Al) ~ 1,
+       outTpe = "draft")
