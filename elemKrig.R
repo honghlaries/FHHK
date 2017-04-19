@@ -24,9 +24,7 @@ dat <- datareadln() %>%
   spread(trait, value) %>%
   dplyr::inner_join(read.csv("data/meta_sites.csv"), by = c("siteID" = "siteID")) %>%
   dplyr::select(siteID:depth,Al,Fe,Mn,Pb,Cr,Ni,Cu,Zn,As,Cd,C,N,S,orgC,AVS,clay,silt,sand) %>%
-  dplyr::mutate(lat = conveySp(lat),
-                lon = conveySp(lon),
-                AvsRatio = AVS / orgC)
+  dplyr::mutate(AvsRatio = AVS / orgC)
 dat <- as.data.frame(dat)
 coordinates(dat) <- ~lon+lat
 
