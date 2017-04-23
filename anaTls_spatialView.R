@@ -17,11 +17,14 @@ spView.grid <- function(dat,dir,file,col.gardient,
 spView <- function(dat,dir,file,col.gardient,
                    lonC,latC,lonRange,latRange,zoom,
                    maptype,mapsource) {
-  pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("ggplot2");pkgLoad("ggmap");
-  plot <- ggmap(get_map(location = c(lat = latC,lon = lonC), zoom = zoom, 
-                        maptype = maptype, source = mapsource)) + 
+  pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("ggplot2");pkgLoad("ggmap");pkgLoad("maptools")
+  bkmap <- readShapePoly("data/bou2_4p.shp")
+  
+  plot <- ggplot() + 
     geom_tile(aes(x = lon, y = lat, fill = value), data = dat) +
-    scale_fill_gradient(low = "blue", high = "orange") +
+    geom_polygon(aes(x = long, y = lat, group = id), 
+                 colour = "black", fill = "orange", data = fortify(bkmap)) +
+    scale_fill_gradient(low = "blue", high = "red") +
     coord_quickmap(xlim = lonRange, ylim = latRange) 
   ggsave(filename = file, plot = plot)
   plot
@@ -34,15 +37,12 @@ conveySp <- function(x) {
 
 doKrig <- function(dat, dat.grid, tag, cutoff, 
                    krigFormula = as.formula(paste(tag,"~1",sep="")), 
-                   modcache = NULL, outTpe = "draft") {
+                   modsel, outTpe = "draft") {
   pkgLoad("sp");pkgLoad("gstat");pkgLoad("gridExtra");pkgLoad("geoR")
-  if(is.null(modcache)) modsel <- NULL else modsel <- read.csv(modcache)
   
   p1 <- spplot(dat, tag, do.log = F, main = tag, xlab = "Longi", ylab = "Lati") 
   mod <- variogram(krigFormula,  dat, cutoff = cutoff)
-  #fit <- fit.variogram(mod, model = modsel)
-  fit <- likfit(variog(as.geodata(dat[tag], max.dist = cutoff)))
-  fit <- as.vgm.variomodel(fit[[1]])
+  fit <- fit.variogram(mod, model = modsel)
   p2 <- plot(mod,fit, main = tag)
   krig <- krige(krigFormula, dat, dat.grid, model = modsel)
   col <- brewer.pal(9,"OrRd")
