@@ -9,8 +9,8 @@ conveySp <- function(x) {
   out
 }
 
-spView.grid <- function(dat,leg.name, grad.value, grad.tag, binwidth,
-                        lonRange, latRange, pncol) {
+spView.grid <- function(dat,leg.name, grad.value, grad.tag, grad.col = rainbow(15), 
+                        binwidth, lonRange, latRange, pncol) {
   pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("ggplot2");pkgLoad("maptools");
   pkgLoad("rgdal");pkgLoad("directlabels")
   #CRS("+proj=tmerc +lat_0=0 +lon_0=108 +k=1 +x_0=36500000 +y_0=0 +ellps=krass +towgs84=15")
@@ -27,7 +27,7 @@ spView.grid <- function(dat,leg.name, grad.value, grad.tag, binwidth,
     geom_contour(aes(x = lon, y = lat, z = value), col = "black", binwidth = binwidth, data = dat) +
     geom_polygon(aes(x = long, y = lat, group = group), 
                  colour = "black", fill = "orange", data = fortify(bkmap)) +
-    scale_fill_gradientn(leg.name, breaks = grad.value, labels = grad.tag,colours = rainbow(15)) +
+    scale_fill_gradientn(leg.name, breaks = grad.value, labels = grad.tag, colours = grad.col) +
     
     coord_quickmap(xlim = lonRange, ylim = latRange) +
     facet_wrap(~trait,ncol = pncol) + 
