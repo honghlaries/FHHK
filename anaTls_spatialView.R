@@ -26,7 +26,7 @@ spView.grid <- function(dat,leg.name, grad.value, grad.tag, grad.col = rainbow(1
     geom_tile(aes(x = lon, y = lat, fill = value), data = dat) +
     geom_contour(aes(x = lon, y = lat, z = value), col = "black", binwidth = binwidth, data = dat) +
     geom_polygon(aes(x = long, y = lat, group = group), 
-                 colour = "black", fill = "orange", data = fortify(bkmap)) +
+                 colour = "black", fill = "grey80", data = fortify(bkmap)) +
     scale_fill_gradientn(leg.name, breaks = grad.value, labels = grad.tag, colours = grad.col) +
     
     coord_quickmap(xlim = lonRange, ylim = latRange) +
@@ -54,7 +54,7 @@ spView <- function(dat,dir,file,col.gardient,
     geom_tile(aes(x = lon, y = lat, fill = value), data = dat) +
     geom_contour(aes(x = lon, y = lat, z = value, colour = ..level..), binwidth = 0.2, data = dat) +
     geom_polygon(aes(x = long, y = lat, group = group), 
-                 colour = "black", fill = "orange", data = fortify(bkmap)) +
+                 colour = "black", fill = "grey80", data = fortify(bkmap)) +
     scale_fill_continuous(low = "blue", high = "red") +
     scale_colour_gradient(low = "black", high = "black") +
     coord_quickmap(xlim = lonRange, ylim = latRange) +

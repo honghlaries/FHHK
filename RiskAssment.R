@@ -98,18 +98,17 @@ spView.grid(dat = grid.value.tot %>%
               filter(trait == "Al"|trait == "Fe"|trait == "Mn"|trait == "Cu"|
                        trait == "Zn"|trait == "Pb"|trait == "Cr"|
                        trait == "Ni"|trait == "As"|trait == "Cd"),
-            leg.name = "Geo-accumulation Index",grad.value = c(-2,-1,0,1), 
+            leg.name = "Igeo",grad.value = c(-2,-1,0,1), 
             grad.tag = c(-2,-1,0,1), binwidth = 0.25, lonRange = c(119.2,121.8),
             latRange = c(33.7,35), pncol = 3) -> plot.igeo.sp.all
 
 spView.grid(dat = grid.value.tot %>% 
-              filter(trait == "Cu"|trait == "Zn"|trait == "Pb"|trait == "Cr"|
-                       trait == "Ni"|trait == "As"|trait == "Cd"),
-            leg.name = "Geo-accumulation Index",grad.value = c(-2,-1,0,1), 
+              filter(trait == "Cu"|trait == "Zn"|trait == "As"|trait == "Cd"),
+            leg.name = "Igeo",grad.value = c(-2,-1,0,1), 
             grad.tag = c(-2,-1,0,1), binwidth = 0.25, lonRange = c(119.2,121.8),
-            latRange = c(33.7,35), pncol = 3) -> plot.igeo.sp.sel
+            latRange = c(33.7,35), pncol = 2) -> plot.igeo.sp.sel
 
-grid.arrange(plot.igeo.box, plot.igeo.sp.sel, ncol = 2, widths = c(5,5), heights = 5) -> plot.igeo.gather
+grid.arrange(plot.igeo.box, plot.igeo.sp.sel, ncol = 2, widths = c(5,10), heights = 5) -> plot.igeo.gather
 
 # for enrichment factor
 dat <- datareadln() %>% 
@@ -157,7 +156,7 @@ doKrig(dat, dat.grid, tag = "Pb", cutoff = 1.5, modsel = vgm(0.1,"Sph",0.75), di
 grid.value <- as.data.frame(tmp) %>%  select(lon, lat, value = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "Pb")))
 
-doKrig(dat, dat.grid, tag = "Cr", cutoff = 1.5, modsel = vgm(0.05,"Lin",2,0.01)) -> tmp;tmp
+doKrig(dat, dat.grid, tag = "Cr", cutoff = 1.5, modsel = vgm(0.05,"Lin",2,0.01), dir = "riskAssment/krig/ef") -> tmp;tmp
 grid.value <- as.data.frame(tmp) %>%  select(lon, lat, value = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "Cr")))
 
@@ -188,18 +187,17 @@ spView.grid(dat = grid.value.tot %>%
               filter(trait == "Al"|trait == "Mn"|trait == "Cr"|
                        trait == "Cu"|trait == "Zn"|trait == "Pb"|
                        trait == "Ni"|trait == "As"|trait == "Cd"),
-            leg.name = "Enrichment Factor",grad.value = c(0,0.67,1,1.5,2,2.5), 
+            leg.name = "EF",grad.value = c(0,0.67,1,1.5,2,2.5), 
             grad.tag = c(0,0.67,1,1.5,2,2.5), binwidth = 0.25, lonRange = c(119.2,121.8),
             latRange = c(33.7,35), pncol = 3)  -> plot.ef.sp.all
 
 spView.grid(dat = grid.value.tot %>% 
-              filter(trait == "Cu"|trait == "Zn"|trait == "Pb"|trait == "Cr"|
-                       trait == "Ni"|trait == "As"|trait == "Cd"),
-            leg.name = "Enrichment Factor",grad.value = c(0,0.67,1,1.5,2,3,4), 
-            grad.tag = c(0,0.67,1,1.5,2,3,4), binwidth = 0.25, lonRange = c(119.2,121.8),
-            latRange = c(33.7,35), pncol = 3)  -> plot.ef.sp.sel
+              filter(trait == "Cu"|trait == "Zn"|trait == "As"|trait == "Cd"),
+            leg.name = "EF",grad.value = c(0,0.67,1,1.5,2,2.5), 
+            grad.tag = c(0,0.67,1,1.5,2,2.5), binwidth = 0.25, lonRange = c(119.2,121.8),
+            latRange = c(33.7,35), pncol = 2)  -> plot.ef.sp.sel
 
-grid.arrange(plot.ef.box, plot.ef.sp.sel, ncol = 2, widths = c(5,5), heights = 5) -> plot.ef.gather
+grid.arrange(plot.ef.box, plot.ef.sp.sel, ncol = 2, widths = c(5,10), heights = 5) -> plot.ef.gather
 
 # saving plot 
 ggsave(plot = plot.igeo.box, filename = "riskAssment/box_igeo.png", dpi = 600)
@@ -211,5 +209,5 @@ ggsave(plot = plot.ef.sp.all, filename = "riskAssment/map_Ef_all.png", dpi = 600
 ggsave(plot = plot.ef.sp.sel, filename = "riskAssment/map_Ef_sel.png", dpi = 600)
 
 grid.arrange(plot.igeo.box, plot.igeo.sp.sel,plot.ef.box, plot.ef.sp.sel, 
-             ncol = 2, widths = c(5,5), heights = c(5,5)) -> plot.risk.gather
-ggsave(plot = plot.risk.gather, filename = "riskAssment/map_risk.png", dpi = 600)
+             ncol = 2, widths = c(5,10), heights = c(5,5)) -> plot.risk.gather
+ggsave(plot = plot.risk.gather, filename = "riskAssment/gather_risk.png", dpi = 600)
