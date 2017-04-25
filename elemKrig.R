@@ -2,7 +2,7 @@
 rm(list = ls())
 source("uniTls_pkgInstall.R");source("uniTls_presetPaths.R");source("anaTls_spatialView.R");
 pkgInitialization(c("dplyr","tidyr","sp","gstat"))
-
+source("grid.R")
 ## Functions 
 datareadln <- function() { ## data readln
   pkgLoad("dplyr");pkgLoad("tidyr")
@@ -27,19 +27,6 @@ dat <- datareadln() %>%
   dplyr::mutate(AvsRatio = AVS / orgC)
 dat <- as.data.frame(dat)
 coordinates(dat) <- ~lon+lat
-
-longiRange <-  seq(from = 119.9, to = 121.8, length.out = 125)
-latiRange <-  seq(from = 33.7, to = 34.9, length.out = 125)
-dat.grid <- data.frame(lat = c(1), lon = c(1))
-for (i in 1:125) {
-  for (j in 1:125) {
-    #if((longiRange[j] - 119.9) * (latiRange[i] - 33.7) - (longiRange[j] - 120.6) * (latiRange[i] - 34.5) > 0) {
-      dat.grid <- rbind(dat.grid, c(latiRange[i],longiRange[j]))
-    #}
-  }
-}
-dat.grid <- dat.grid[-1,]
-coordinates(dat.grid) <- ~lon+lat
 
 grid.value.tot <- NULL
 grid.value <- as.data.frame(doKrig(dat, dat.grid, krigFormula = log(Al)~1, tag = "Al", cutoff = 1.5, 
