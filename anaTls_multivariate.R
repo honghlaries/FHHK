@@ -158,3 +158,11 @@ rdaLoadingPlot <- function(dat) {
           panel.grid = element_blank())
     
 }
+
+hcluster <- function(dat, rname, flop = F) {
+  dat <- dat[complete.cases(dat),]
+  if (flop) dat <- t(as.matrix(dat)) else dat <- as.matrix(dat)
+  row.names(dat) <- as.vector(rname) 
+  d <- dist(dat) 
+  hclust(d, method = "ward.D")
+}
