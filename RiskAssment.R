@@ -1,9 +1,9 @@
-## clean ----
+## clean 
 rm(list = ls())
 source("uniTls_pkgInstall.R");source("uniTls_presetPaths.R");source("anaTls_spatialView.R");
 pkgInitialization(c("dplyr","tidyr","sp","gstat"))
 
-## Functions ----
+## Functions 
 datareadln <- function() { ## data readln
   pkgLoad("dplyr");pkgLoad("tidyr")
   read.csv("data/result_element.csv") %>%
@@ -15,6 +15,8 @@ datareadln <- function() { ## data readln
     dplyr::select(siteID:depth,isComplete,Al,Fe,Mn,Pb,Cr,Ni,Cu,Zn,As,Cd,C,N,S,orgC,AVS,clay,silt,sand)
 }
 
+
+## Example
 longiRange <-  seq(from = 119.9, to = 121.8, length.out = 125)
 latiRange <-  seq(from = 33.7, to = 34.9, length.out = 125)
 dat.grid <- data.frame(lat = c(1), lon = c(1))

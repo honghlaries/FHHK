@@ -3,6 +3,7 @@
 /pca
 /element
 /riskAssment
+/rda
 # Rstudio files
 *.Rproj
 # History files

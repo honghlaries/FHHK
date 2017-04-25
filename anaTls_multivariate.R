@@ -1,18 +1,10 @@
-## clean ----
-rm(list = ls())
-source("uniTls_pkgInstall.R");source("uniTls_presetPaths.R");source("anaTls_spatialView.R");
-pkgInitialization(c("dplyr","tidyr","sp","gstat"))
+source("uniTls_pkgInstall.R");source("uniTls_presetPaths.R");
 
-## Functions ----
-datareadln <- function() { ## data readln
-  pkgLoad("dplyr");pkgLoad("tidyr")
-  read.csv("data/result_element.csv") %>%
-    dplyr::inner_join(read.csv("data/result_grainSize.csv"), by = c("sampleID" = "sampleID")) %>%
-    dplyr::right_join(read.csv("data/meta_splList.csv"), by = c("sampleID" = "sampleID")) %>%
-    dplyr::inner_join(read.csv("data/meta_sites.csv"), by = c("siteID" = "siteID")) %>%
-    dplyr::mutate(orgC = C.ac, AVS = S - S.ac, 
-                  isComplete = complete.cases(Al,Fe,Mn,Pb,Cr,Ni,Cu,Zn,As,Cd,C,N,S,orgC,AVS,clay,silt,sand)) %>%
-    dplyr::select(siteID:depth,isComplete,Al,Fe,Mn,Pb,Cr,Ni,Cu,Zn,As,Cd,C,N,S,orgC,AVS,clay,silt,sand)
+circleFun <- function(center = c(0,0), r = 1, npoints = 100){
+  tt <- seq(0,2*pi,length.out = npoints)
+  xx <- center[1] + r * cos(tt)
+  yy <- center[2] + r * sin(tt)
+  data.frame(x = xx, y = yy)
 }
 
 pcaLoadingCal <- function(dat, grouped = T, log = T) { ## cal and log the pca loading
@@ -22,13 +14,13 @@ pcaLoadingCal <- function(dat, grouped = T, log = T) { ## cal and log the pca lo
     select(Al:sand,depth)
   png(paste(dirPreset("pca"),"/screenPlot_","all",".png",sep = ""))
   fa.parallel(dat1,fa="pc", n.iter=10, show.legend=T,
-              main = paste("Screen plot with parallel analysis\n, group =","all"))
+              main = paste("Screen plot with parallel analysis"))
   dev.off()
-  pca <- principal(dat1, nfactors=2, scores = F, rotate="varimax")
+  pca <- principal(dat1, nfactors=3, scores = F, rotate="varimax")
   tag <- dimnames(pca$loadings)[[1]]
-  loadings <- matrix(as.numeric(pca$loadings), ncol = 2, 
-                     dimnames = list(tag, c("PC1","PC2"))) 
-  rst.tot <- data.frame(loadings,tag, group = "all")
+  loadings <- matrix(as.numeric(pca$loadings), ncol = 3, 
+                     dimnames = list(tag, c("PC1","PC2","PC3"))) 
+  rst <- data.frame(loadings,tag, group = "all")
   if (grouped) {
     grouptag <- levels(dat$group)
     for(i in 1:length(grouptag)) {
@@ -44,23 +36,17 @@ pcaLoadingCal <- function(dat, grouped = T, log = T) { ## cal and log the pca lo
       tag <- dimnames(pca$loadings)[[1]]
       loadings <- matrix(as.numeric(pca$loadings), ncol = 2, 
                          dimnames = list(tag, c("PC1","PC2"))) 
-      rst.tot <- rbind(rst.tot, data.frame(loadings,tag, group = grouptag[i]))
+      rst <- rbind(rst, data.frame(loadings,tag, group = grouptag[i]))
     }
   }
   if(log) {
-    write.csv(rst.tot, paste(dirPreset("pca"),"/pcaLoading.csv",sep = ""))
+    write.csv(rst, paste(dirPreset("pca"),"/pcaLoading.csv",sep = ""))
   }
-  rst.tot
+  rst
 }
 
 pcaLoadingPlot <- function(dat, grouped = T, themeset, suffix = "", emphtag = NA){ ## output the pca loading plot
   pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("ggplot2")
-  circleFun <- function(center = c(0,0), r = 1, npoints = 100){
-    tt <- seq(0,2*pi,length.out = npoints)
-    xx <- center[1] + r * cos(tt)
-    yy <- center[2] + r * sin(tt)
-    return(data.frame(x = xx, y = yy))
-  }
   if (grouped) {
     dat <- dat%>% filter(group != "all")
   } else {
@@ -88,12 +74,9 @@ pcaLoadingPlot <- function(dat, grouped = T, themeset, suffix = "", emphtag = NA
       colSet[taglv == emphtag[i]] <- "red"
     }
   }
-  p <- p + scale_alpha_manual(breaks = taglv, values = alphaSet) +
+  p + scale_alpha_manual(breaks = taglv, values = alphaSet) +
     scale_size_manual(breaks = taglv, values = sizeSet) +
     scale_color_manual(breaks = taglv, values = colSet) 
-  ggsave(plot = p,
-         filename = paste(dirPreset("pca"),"/pcaLoading", suffix, ".png", sep = ""),
-         width = 6, height = 6, dpi = 600)
 }
 
 pairPlot <- function(dat, xtag, ytag, themeset, suffix = "") {
@@ -111,13 +94,67 @@ pairPlot <- function(dat, xtag, ytag, themeset, suffix = "") {
          width = 6, height = 6, dpi = 600)
 }
 
-## Example ----
-pcaLoading <- pcaLoadingCal(datareadln(), grouped = F)
-library(ggplot2)
-themeset <- theme_bw() + theme(aspect.ratio = 1, legend.position = "none")
-pcaLoadingPlot(pcaLoading, grouped = F, themeset = themeset, suffix = "_a", emphtag = c("depth","silt","AVS"))
+rdaLoadingCal <- function(env, trait, samptag, dir, log = T) { 
+  pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("vegan")
+  
+  null <- rda(trait~1, env, scale = T) 
+  full <- rda(trait~., env, scale = T) 
+  mod <- step(null, scope = formula(full), test = "perm")
+  
+  aov <- anova.cca(mod,permutations = how(nperm=9999))
+  print(aov)
+  # plot(mod)
+  traitload <- mod$CCA$v[,1:2] 
+  traitload <- data.frame(traitload,traittag = row.names(traitload))
+  
+  envload <- mod$CCA$biplot[,1:2] 
+  envload <- data.frame(envload,envtag = row.names(envload))
+  
+  sampload <- mod$CCA$wa[,1:2]
+  sampload <- data.frame(sampload,samptag)
+  
+  if(log) {
+    write.csv(format(aov), paste(dirPreset(dir), "/rdaANOVA.csv", sep = ""))
+    write.csv(traitload, paste(dirPreset(dir), "/rdaTraitLoad.csv", sep = ""))
+    write.csv(envload, paste(dirPreset(dir), "/rdaEnvLoad.csv", sep = ""))
+    write.csv(sampload, paste(dirPreset(dir), "/rdaSampLoad.csv", sep = ""))
+  }
+  list(traitload = traitload,
+       envload = envload,
+       sampload = sampload) -> dat
+}
 
-#pairPlot(dat = datareadln(), xtag = "orgC", ytag = "Cd", themeset = themeset)
-#pairPlot(dat = datareadln(), xtag = "Al", ytag = "Cd", themeset = themeset)
-#pairPlot(dat = datareadln(), xtag = "orgC", ytag = "S", themeset = themeset)
-
+rdaLoadingPlot <- function(dat) {
+  pkgLoad("ggplot2")
+  
+  traitload <- dat$traitload
+  traitload <- rbind(data.frame(RDA1 = 0, RDA2 = 0, traittag = dat$traitload$traittag),traitload)
+  ntrait <- length(row.names(traitload))
+  
+  envload <- dat$envload
+  envload <- rbind(data.frame(RDA1 = 0, RDA2 = 0, envtag = dat$envload$envtag),envload)
+  nenv <- length(row.names(envload))
+  
+  sampload <- dat$sampload
+  
+  ggplot() +
+    geom_path(aes(x = x, y = y),col = "black", size = 0.7, linetype = 2, 
+              data = circleFun()) +
+    geom_point(aes(x = RDA1,y = RDA2), size = 1.5, color = "grey50", shape = 1,
+               data = sampload) +
+    geom_path(aes(x = RDA1,y = RDA2, group = envtag), size = 0.7,
+              data = envload, col = "black") +
+    geom_path(aes(x = RDA1,y = RDA2, group = traittag), size = 0.7,
+              data = traitload, col = "blue") +
+    geom_label(aes(x = RDA1,y = RDA2, label = envtag), size = 3.5, 
+               data = envload[nenv/2+1:nenv,], col = "black") + 
+    geom_label(aes(x = RDA1,y = RDA2, label = traittag), size = 3.5, 
+               data = traitload[ntrait/2+1:ntrait,], col = "blue") +
+    scale_x_continuous(name = "RDA1", limits = c(-1.1,1.1)) +
+    scale_y_continuous(name = "RDA2", limits = c(-1.1,1.1)) +
+    theme_bw() + 
+    theme(aspect.ratio = 1,
+          legend.position = "none",
+          panel.grid = element_blank())
+    
+}
