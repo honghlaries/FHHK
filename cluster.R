@@ -3,7 +3,7 @@ rm(list = ls())
 source("uniTls_pkgInstall.R");source("uniTls_presetPaths.R");
 source("anaTls_spatialView.R");source("anaTls_multivariate.R");
 pkgInitialization(c("dplyr","tidyr","sp","gdata","gridExtra","ggplot2","maptools"))
-#source("grid.R")
+dirInitialization("hca")
 
 ## Functions 
 datareadln <- function() { 
@@ -109,7 +109,7 @@ ggsave(plot = plot.ca.sp, filename = "hca/casp.png", dpi = 600)
 ggsave(plot = plot.ca.bar, filename = "hca/cabar.png", dpi = 600)
 
 grid.arrange(plot.ca.sp, plot.ca.bar, ncol = 2, widths = c(10,6), heights = 3) -> plot.gather
-ggsave(plot = plot.gather, filename = "hca/gather_rdaPlot.png", dpi = 600)
+ggsave(plot = plot.gather, filename = "hca/gather_hcaPlot.png", dpi = 600)
 
 
 
