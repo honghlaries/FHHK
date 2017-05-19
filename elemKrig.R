@@ -1,19 +1,10 @@
 ## Initialization
 rm(list = ls())
-source("uniTls_pkgInstall.R");source("uniTls_presetPaths.R");source("anaTls_spatialView.R");
-pkgInitialization(c("dplyr","tidyr","sp","gstat"))
+source("constant.R");source("anaTls_spatialView.R");
+pkgInitialization(c("dplyr","tidyr","sp","gstat","ggplot2"))
 source("grid.R")
+
 ## Functions 
-datareadln <- function() { ## data readln
-  pkgLoad("dplyr");pkgLoad("tidyr")
-  read.csv("data/result_element.csv") %>%
-    dplyr::inner_join(read.csv("data/result_grainSize.csv"), by = c("sampleID" = "sampleID")) %>%
-    dplyr::right_join(read.csv("data/meta_splList.csv"), by = c("sampleID" = "sampleID")) %>%
-    dplyr::inner_join(read.csv("data/meta_sites.csv"), by = c("siteID" = "siteID")) %>% 
-    dplyr::mutate(orgC = C.ac, AVS = S - S.ac, 
-                  isComplete = complete.cases(Al,Fe,Mn,Pb,Cr,Ni,Cu,Zn,As,Cd,C,N,S,orgC,AVS,clay,silt,sand)) %>%
-    dplyr::select(siteID:depth,isComplete,Al,Fe,Mn,Pb,Cr,Ni,Cu,Zn,As,Cd,C,N,S,orgC,AVS,clay,silt,sand)
-}
 
 ## Example
 dat <- datareadln() %>% 
@@ -109,14 +100,14 @@ spView.grid(dat = grid.value.tot %>%
                        trait == "Ni"|trait == "As"|trait == "Cd"),
             leg.name = "Content(mg/kg)",grad.value = log(c(0.075,0.5,1,5,25,50,100)), 
             grad.tag = c(0.075,0.5,1,5,25,50,100), dir = "element/krig",file = "krig_heavymetals.png",
-            lonRange = c(119.2,121.8),latRange = c(33.7,35)) -> plot.hm
+            lonRange = lonRange, latRange = latRange) -> plot.hm
 
 spView.grid(dat = grid.value.tot %>% 
               filter(trait == "Al"|trait == "Fe"|trait == "Mn"|
                        trait == "orgC"|trait == "AVS"),
             leg.name = "Content(mg/kg)",grad.value = log(c(250,500,1000,2500,5000,10000,20000)), 
             grad.tag = c(250,500,1000,2500,5000,10000,20000), dir = "element/krig",file = "krig_haimeixianghao.png",
-            lonRange = c(119.2,121.8),latRange = c(33.7,35)) -> plot.bkelement
+            lonRange = lonRange, latRange = latRange) -> plot.bkelement
 
 ggsave(filename = "element/krig/gather_krig_element.png",  
        plot = grid.arrange(plot.bkelement,plot.hm, ncol = 1, widths = c(15), heights = c(10,15)))

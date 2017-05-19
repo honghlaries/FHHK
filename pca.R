@@ -1,23 +1,12 @@
-## Initialization
+# Initialization
 rm(list = ls())
-source("uniTls_pkgInstall.R");source("uniTls_presetPaths.R");
-source("anaTls_spatialView.R");source("anaTls_multivariate.R");
+source("constant.R");source("anaTls_spatialView.R");source("anaTls_multivariate.R");
 pkgInitialization(c("dplyr","tidyr","sp","gstat","gridExtra"))
 source("grid.R")
 
-## Functions 
-datareadln <- function() { 
-  pkgLoad("dplyr");pkgLoad("tidyr")
-  read.csv("data/result_element.csv") %>%
-    dplyr::inner_join(read.csv("data/result_grainSize.csv"), by = c("sampleID" = "sampleID")) %>%
-    dplyr::right_join(read.csv("data/meta_splList.csv"), by = c("sampleID" = "sampleID")) %>%
-    dplyr::inner_join(read.csv("data/meta_sites.csv"), by = c("siteID" = "siteID")) %>%
-    dplyr::mutate(orgC = C.ac, AVS = S - S.ac, 
-                  isComplete = complete.cases(Al,Fe,Mn,Pb,Cr,Ni,Cu,Zn,As,Cd,C,N,S,orgC,AVS,clay,silt,sand)) %>%
-    dplyr::select(siteID:depth,isComplete,Al,Fe,Mn,Pb,Cr,Ni,Cu,Zn,As,Cd,C,N,S,orgC,AVS,clay,silt,sand)
-}
+# Functions 
 
-## Example 
+# Example 
 env <- datareadln() %>% select(depth,Al,Fe,Mn,orgC,AVS,clay,silt,sand)
 trait <- datareadln() %>% select(Pb:Cd)
 samptag <- datareadln() %>% select(siteID)
@@ -50,7 +39,7 @@ spView.grid(dat = grid.value.tot, leg.name = "Loading",
 
 grid.arrange(plot.load, plot.sp, ncol = 2, widths = c(5,5), heights = 5) -> plot.gather
 
-## saving plot
+# saving plot
 ggsave(plot = plot.load, filename = "rda/rdaloading.png", dpi = 600)
 ggsave(plot = plot.sp, filename = "rda/rdaspatialView.png", dpi = 600)
 ggsave(plot = plot.gather, filename = "rda/gather_rdaPlot.png", dpi = 600)

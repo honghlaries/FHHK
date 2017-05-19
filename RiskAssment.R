@@ -1,24 +1,14 @@
-## clean 
+# clean 
 rm(list = ls())
-source("uniTls_pkgInstall.R");source("uniTls_presetPaths.R");source("anaTls_spatialView.R");
+source("constant.R");source("anaTls_spatialView.R");
 pkgInitialization(c("dplyr","tidyr","sp","gstat","ggplot2"))
 source("grid.R")
-## Functions 
-datareadln <- function() { ## data readln
-  pkgLoad("dplyr");pkgLoad("tidyr")
-  read.csv("data/result_element.csv") %>%
-    dplyr::inner_join(read.csv("data/result_grainSize.csv"), by = c("sampleID" = "sampleID")) %>%
-    dplyr::right_join(read.csv("data/meta_splList.csv"), by = c("sampleID" = "sampleID")) %>%
-    dplyr::inner_join(read.csv("data/meta_sites.csv"), by = c("siteID" = "siteID")) %>%
-    dplyr::mutate(orgC = C.ac, AVS = S - S.ac, 
-                  isComplete = complete.cases(Al,Fe,Mn,Pb,Cr,Ni,Cu,Zn,As,Cd,C,N,S,orgC,AVS,clay,silt,sand)) %>%
-    dplyr::select(siteID:depth,isComplete,Al,Fe,Mn,Pb,Cr,Ni,Cu,Zn,As,Cd,C,N,S,orgC,AVS,clay,silt,sand)
-}
 
+# Functions 
 
-## Example
+# Example
 
-# for Igeo
+## for Igeo
 background <- datareadln() %>% 
   gather(trait, bk, Al:orgC) %>%
   select(siteID, trait, bk) %>%
@@ -110,7 +100,7 @@ spView.grid(dat = grid.value.tot %>%
 
 grid.arrange(plot.igeo.box, plot.igeo.sp.sel, ncol = 2, widths = c(5,10), heights = 5) -> plot.igeo.gather
 
-# for enrichment factor
+## for enrichment factor
 dat <- datareadln() %>% 
   gather(trait, value, Al:Cd) %>% 
   inner_join(datareadln() %>%
