@@ -20,6 +20,8 @@ spView.grid <- function(dat,leg.name, grad.value, grad.tag, grad.col = rainbow(1
     geom_polygon(aes(x = long, y = lat, group = group), 
                  colour = "black", fill = "grey80", data = fortify(bkmap)) +
     scale_fill_gradientn(leg.name, breaks = grad.value, labels = grad.tag, colours = grad.col) +
+    scale_x_continuous(name = "", expand = c(0,0)) +
+    scale_y_continuous(name = "", expand = c(0,0)) +
     coord_quickmap(xlim = lonRange, ylim = latRange) +
     facet_wrap(~trait,ncol = pncol) + 
     theme_bw() + 
@@ -44,11 +46,11 @@ spView <- function(dat,
                  colour = "black", fill = "grey80", data = fortify(bkmap)) +
     #scale_fill_gradientn(leg.name, guide = "colourbar",
     #                     breaks = grad.value, labels = grad.tag, colours = grad.col) +
-    #scale_fill_gradient(leg.name, guide = "colourbar",
-    #                     breaks = grad.value[c(1,7)], labels = grad.tag[c(1,7)], low = "white", high = "blue") +
+    scale_fill_gradient(leg.name, guide = "colourbar",
+                         breaks = grad.value[c(1,7)], labels = grad.tag[c(1,7)], low = "white", high = "blue") +
     scale_colour_gradient(low = "black", high = "black") +
-    scale_x_continuous(name = "") +
-    scale_y_continuous(name = "") +
+    scale_x_continuous(name = "", expand = c(0,0)) +
+    scale_y_continuous(name = "", expand = c(0,0)) +
     coord_quickmap(xlim = lonRange, ylim = latRange) +
     theme_bw() + 
     theme(aspect.ratio = (latiRange[2]-latiRange[1])/(longiRange[2]-longiRange[1]),
