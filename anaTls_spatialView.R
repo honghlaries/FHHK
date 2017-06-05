@@ -1,12 +1,23 @@
 source("uniTls_pkgInstall.R");source("uniTls_presetPaths.R")
 
-conveySpCoord <- function(x) {
+conveySp <- function(x) {
   tmp <- strsplit(as.character(x),"°")
   out <- NULL
   for(i in 1:length(tmp)) {
     out <- c(out,as.numeric(tmp[[i]][1]) + as.numeric(substr(tmp[[i]][2],1,nchar(tmp[[i]][2])-1))/60)
   }
   out
+}
+
+findCoordInt <- function(range) {
+  if(length(range) != 2) stop("error range input")
+  low <- ceiling(min(range)); high <- floor(max(range))
+  r <- high - low
+  res <- rep((r / (5:3)) %% 1, 5) - rep(c(0,1/2,1/3,1/4,1/6),each = 3)
+  res[res >= 0.5] = res[res >= 0.5] - 1
+  res <- matrix(abs(res),3,5)
+  fac <-(5:3)[as.vector((res == min(res)) %*% matrix(rep(1,5),5,1))][1]
+  seq(low,high,r/fac)
 }
 
 spView.grid <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = rainbow(15),
@@ -35,17 +46,18 @@ spView <- function(dat, bkmap, lonRange, latRange, leg.name, bins = 7, grad.col 
   pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("ggplot2");pkgLoad("maptools");
   pkgLoad("rgdal");pkgLoad("directlabels")
   if(is.null(grad.value)) grad.value <- (0:bins)*(max(dat$value) - min(dat$value))/bins + min(dat$value)
-  if(is.null(grad.tag)) grad.tag <- format(grad.value,digit = 3)
-  #latiLab <- 
+  if(is.null(grad.tag)) grad.tag <- format(grad.value,digit = 2)
+  ceiling(min(latRange))
     
   ggplot() + 
     geom_raster(aes(x = lon, y = lat, fill = value), 
                 interpolate = T, show.legend = T, data = dat) +
-    geom_contour(aes(x = lon, y = lat,  z = value), 
-                 size = 0.8, col = "black", bins = bins, data = dat) +
+    geom_contour(aes(x = lon, y = lat,  z = value),
+                 col= "black", show.legend = T, size = 0.8,  bins = bins, data = dat) +
     scale_fill_gradientn(leg.name, guide = "colourbar",
                          breaks = grad.value, labels = grad.tag, 
                          colours = grad.col) +
+    scale_color_gradient2("leg.name", guide = "colourbar", low = "black", high = "white") +
     scale_x_continuous(name = "", expand = c(0,0)) +
     scale_y_continuous(name = "", expand = c(0,0)) +
     coord_quickmap(xlim = lonRange, ylim = latRange) +

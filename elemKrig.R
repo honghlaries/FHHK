@@ -101,26 +101,16 @@ grid.value <- as.data.frame(doKrig(dat, dat.grid, krigFormula = log(S) ~ 1, tag 
   select(lon, lat, value = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "AVS")))
 
-
+grid.value.tot$value <- exp(grid.value.tot$value)
 
 
 spView.elem("Cu")
-
-
-
-
-spView.grid(dat = grid.value.tot %>% 
-              filter(trait == "Cu"|trait == "Zn"|trait == "Pb"|trait == "Cr"|
-                       trait == "Ni"|trait == "As"|trait == "Cd"),
-            leg.name = "Content(mg/kg)",
-            lonRange = lonRange, latRange = latRange, pncol = 3) -> plot.hm
-
-spView.grid(dat = grid.value.tot %>% 
-              filter(trait == "Al"|trait == "Fe"|trait == "Mn"|
-                       trait == "orgC"|trait == "AVS"),
-            leg.name = "Content(mg/kg)",grad.value = log(c(250,500,1000,2500,5000,10000,20000)), 
-            grad.tag = c(250,500,1000,2500,5000,10000,20000), dir = "element/krig",file = "krig_haimeixianghao.png",
-            lonRange = lonRange, latRange = latRange) -> plot.bkelement
+spView.elem("Zn")
+spView.elem("Pb")
+spView.elem("Cr")
+spView.elem("Ni")
+spView.elem("As")
+spView.elem("Cd")
 
 ggsave(filename = "element/krig/gather_krig_element.png",  
        plot = grid.arrange(plot.bkelement,plot.hm, ncol = 1, widths = c(15), heights = c(10,15)))
