@@ -13,55 +13,48 @@ spView.grid <- function(dat,leg.name, grad.value, grad.tag, grad.col = rainbow(1
                         binwidth, lonRange, latRange, pncol) {
   pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("ggplot2");pkgLoad("maptools");
   pkgLoad("rgdal");pkgLoad("directlabels")
-  #CRS("+proj=tmerc +lat_0=0 +lon_0=108 +k=1 +x_0=36500000 +y_0=0 +ellps=krass +towgs84=15")
-  #CRS("+proj=longlat +ellps=WGS84")
-  #bkmap <- readOGR("data/zone_province.shp")
-  #proj4string(bkmap) <- CRS("+proj=tmerc +lat_0=0 +lon_0=108 +k=1 +x_0=36500000 +y_0=0 +ellps=krass +towgs84=15")
-  #bkmap <- spTransform(bkmap,  CRS("+proj=longlat +ellps=WGS84"))
-  #rivers <- readShapeLines("data/item_rivers.shp")
-  #railway <- readShapeLines("data/item_railway.shp")
-  #roads <- readShapeLines("data/item_roads.shp")
   bkmap <- readShapePoly("data/bou2_4p.shp")
   ggplot() + 
-    geom_tile(aes(x = lon, y = lat, fill = value), data = dat) +
+    geom_raster(aes(x = lon, y = lat, fill = value), data = dat) +
     geom_contour(aes(x = lon, y = lat, z = value), col = "black", binwidth = binwidth, data = dat) +
     geom_polygon(aes(x = long, y = lat, group = group), 
                  colour = "black", fill = "grey80", data = fortify(bkmap)) +
     scale_fill_gradientn(leg.name, breaks = grad.value, labels = grad.tag, colours = grad.col) +
-    
     coord_quickmap(xlim = lonRange, ylim = latRange) +
     facet_wrap(~trait,ncol = pncol) + 
     theme_bw() + 
-    theme(aspect.ratio = 1/2,
+    theme(aspect.ratio = (latiRange[2]-latiRange[1])/(longiRange[2]-longiRange[1]),
           panel.grid = element_blank(),
           strip.background = element_blank())
 }
 
-spView <- function(dat,dir,file,col.gardient,
-                   lonRange,latRange) {
+spView <- function(dat,
+                   leg.name, grad.value, grad.tag, grad.col = rainbow(15), 
+                   binwidth, lonRange, latRange) {
   pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("ggplot2");pkgLoad("maptools");
   pkgLoad("rgdal");pkgLoad("directlabels")
-  #CRS("+proj=tmerc +lat_0=0 +lon_0=108 +k=1 +x_0=36500000 +y_0=0 +ellps=krass +towgs84=15")
-  #CRS("+proj=longlat +ellps=WGS84")
-  #bkmap <- readOGR("data/zone_province.shp")
-  #proj4string(bkmap) <- CRS("+proj=tmerc +lat_0=0 +lon_0=108 +k=1 +x_0=36500000 +y_0=0 +ellps=krass +towgs84=15")
-  #bkmap <- spTransform(bkmap,  CRS("+proj=longlat +ellps=WGS84"))
-  #rivers <- readShapeLines("data/item_rivers.shp")
-  #railway <- readShapeLines("data/item_railway.shp")
-  #roads <- readShapeLines("data/item_roads.shp")
   bkmap <- readShapePoly("data/bou2_4p.shp")
+  latiLab <- 
+    
   plot <- ggplot() + 
-    geom_tile(aes(x = lon, y = lat, fill = value), data = dat) +
-    geom_contour(aes(x = lon, y = lat, z = value, colour = ..level..), binwidth = 0.2, data = dat) +
+    geom_raster(aes(x = lon, y = lat, fill = value), data = dat) +
+    geom_contour(aes(x = lon, y = lat,  z = value), 
+                 size = 0.8, col = "black", bins = 9, data = dat) +
     geom_polygon(aes(x = long, y = lat, group = group), 
                  colour = "black", fill = "grey80", data = fortify(bkmap)) +
-    scale_fill_continuous(low = "blue", high = "red") +
+    #scale_fill_gradientn(leg.name, guide = "colourbar",
+    #                     breaks = grad.value, labels = grad.tag, colours = grad.col) +
+    #scale_fill_gradient(leg.name, guide = "colourbar",
+    #                     breaks = grad.value[c(1,7)], labels = grad.tag[c(1,7)], low = "white", high = "blue") +
     scale_colour_gradient(low = "black", high = "black") +
+    scale_x_continuous(name = "") +
+    scale_y_continuous(name = "") +
     coord_quickmap(xlim = lonRange, ylim = latRange) +
-    theme_bw()
+    theme_bw() + 
+    theme(aspect.ratio = (latiRange[2]-latiRange[1])/(longiRange[2]-longiRange[1]),
+          panel.grid = element_blank())
   
-  plot <- direct.label(plot, method="top.pieces")
-  ggsave(filename = paste(dirPreset(dir),"/", file, sep = ""), plot = plot)
+  #plot <- direct.label(plot, method="top.pieces")
   plot
 }
 

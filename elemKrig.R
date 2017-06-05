@@ -7,20 +7,18 @@ source("grid.R")
 ## Functions 
 
 ## Example
-dat <- datareadln() %>% 
-  gather(trait, value, Al:sand) %>%
-  select(siteID, trait, value) %>%
-  group_by(siteID, trait) %>%
-  summarise(value = mean(value)) %>%
-  spread(trait, value) %>%
-  dplyr::inner_join(read.csv("data/meta_sites.csv"), by = c("siteID" = "siteID")) %>%
-  dplyr::select(siteID:depth,Al,Fe,Mn,Pb,Cr,Ni,Cu,Zn,As,Cd,C,N,S,orgC,AVS,clay,silt,sand) %>%
-  dplyr::mutate(AvsRatio = AVS / orgC)
+dat <- datareadln() %>%
+  dplyr::mutate(AvsRatio = AVS / orgC) %>%
+  tidyr::gather(trait,value,lon,lat,depth,Al:AvsRatio) %>%
+  dplyr::group_by(siteID,trait) %>%
+  dplyr::summarise(value = mean(value)) %>%
+  tidyr::spread(trait,value)
+
 dat <- as.data.frame(dat)
 coordinates(dat) <- ~lon+lat
 
 grid.value.tot <- NULL
-grid.value <- as.data.frame(doKrig(dat, dat.grid, krigFormula = log(Al)~1, tag = "Al", cutoff = 1.5, 
+grid.value <- as.data.frame(doKrig(dat, dat.grid, krigFormula = log(Al)~1, tag = "Al", cutoff = 1.2, 
                                    modsel = vgm(0.15,"Sph",0.5), dir = "element/krig")) %>% 
   select(lon, lat, value = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "Al")))
@@ -95,12 +93,27 @@ grid.value <- as.data.frame(doKrig(dat, dat.grid, krigFormula = log(S) ~ 1, tag 
   select(lon, lat, value = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "AVS")))
 
+
+
+
+spView(dat = grid.value.tot %>% 
+              filter(trait == "Cu"),
+            leg.name = "Cu Content(mg/kg)",
+            grad.value = log(c(1,5,25,50,100,200,500,1000)), 
+            grad.tag = c(1,5,25,50,100,200,500,1000),
+            lonRange = lonRange, latRange = latRange)
+
+
+
+
+
 spView.grid(dat = grid.value.tot %>% 
               filter(trait == "Cu"|trait == "Zn"|trait == "Pb"|trait == "Cr"|
                        trait == "Ni"|trait == "As"|trait == "Cd"),
-            leg.name = "Content(mg/kg)",grad.value = log(c(0.075,0.5,1,5,25,50,100)), 
-            grad.tag = c(0.075,0.5,1,5,25,50,100), dir = "element/krig",file = "krig_heavymetals.png",
-            lonRange = lonRange, latRange = latRange) -> plot.hm
+            leg.name = "Content(mg/kg)",
+            grad.value = log(c(0.075,0.5,1,5,25,50,100)), 
+            grad.tag = c(0.075,0.5,1,5,25,50,100),
+            lonRange = lonRange, latRange = latRange, pncol = 3) -> plot.hm
 
 spView.grid(dat = grid.value.tot %>% 
               filter(trait == "Al"|trait == "Fe"|trait == "Mn"|
