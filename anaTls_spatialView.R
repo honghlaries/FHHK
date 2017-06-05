@@ -30,15 +30,15 @@ spView.grid <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = 
           strip.background = element_blank())
 }
 
-spView <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = rainbow(15),
-                   grad.value = quantile(dat$value, probs = (1:bins)/(bins+1)), grad.tag = grad.value) {
+spView <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = rainbow(bins+1),
+                   grad.value = quantile(dat$value, probs = (1:bins)/(bins+1)), 
+                   grad.tag = grad.value) {
   pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("ggplot2");pkgLoad("maptools");
   pkgLoad("rgdal");pkgLoad("directlabels")
   bkmap <- readShapePoly("data/bou2_4p.shp")
-  
   #latiLab <- 
     
-  plot <- ggplot() + 
+  ggplot() + 
     geom_raster(aes(x = lon, y = lat, fill = value), 
                 interpolate = T, show.legend = T, data = dat) +
     geom_contour(aes(x = lon, y = lat,  z = value), 
@@ -46,7 +46,7 @@ spView <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = rainb
     geom_polygon(aes(x = long, y = lat, group = group), 
                  colour = "black", fill = "grey80", data = fortify(bkmap)) +
     scale_fill_gradientn(leg.name, guide = "colourbar",
-                         #breaks = grad.value, labels = grad.tag, 
+                         breaks = grad.value, labels = grad.tag, 
                          colours = grad.col) +
     scale_colour_gradient(low = "black", high = "black") +
     scale_x_continuous(name = "", expand = c(0,0)) +
@@ -54,7 +54,9 @@ spView <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = rainb
     coord_quickmap(xlim = lonRange, ylim = latRange) +
     theme_bw() + 
     theme(aspect.ratio = (latiRange[2]-latiRange[1])/(longiRange[2]-longiRange[1]),
-          panel.grid = element_blank())
+          panel.grid = element_blank(),
+          legend.box.margin = margin(t = 0, r = 0, b = 0, l = 0),
+          legend.box.spacing = unit(1,units = "pt"))
   
   #plot <- direct.label(plot, method="top.pieces")
   plot
