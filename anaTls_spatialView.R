@@ -1,6 +1,6 @@
 source("uniTls_pkgInstall.R");source("uniTls_presetPaths.R")
 
-conveySp <- function(x) {
+conveySpCoord <- function(x) {
   tmp <- strsplit(as.character(x),"°")
   out <- NULL
   for(i in 1:length(tmp)) {
@@ -9,14 +9,14 @@ conveySp <- function(x) {
   out
 }
 
-spView.grid <- function(dat,leg.name, grad.value, grad.tag, grad.col = rainbow(15), 
-                        binwidth, lonRange, latRange, pncol) {
+spView.grid <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = rainbow(15),
+                        grad.value = quantile(dat$value, probs = (1:bins)/(bins+1)), grad.tag = grad.value, pncol) {
   pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("ggplot2");pkgLoad("maptools");
   pkgLoad("rgdal");pkgLoad("directlabels")
   bkmap <- readShapePoly("data/bou2_4p.shp")
   ggplot() + 
     geom_raster(aes(x = lon, y = lat, fill = value), data = dat) +
-    geom_contour(aes(x = lon, y = lat, z = value), col = "black", binwidth = binwidth, data = dat) +
+    geom_contour(aes(x = lon, y = lat, z = value), col = "black", bins = bins, data = dat) +
     geom_polygon(aes(x = long, y = lat, group = group), 
                  colour = "black", fill = "grey80", data = fortify(bkmap)) +
     scale_fill_gradientn(leg.name, breaks = grad.value, labels = grad.tag, colours = grad.col) +
@@ -30,24 +30,24 @@ spView.grid <- function(dat,leg.name, grad.value, grad.tag, grad.col = rainbow(1
           strip.background = element_blank())
 }
 
-spView <- function(dat,
-                   leg.name, grad.value, grad.tag, grad.col = rainbow(15), 
-                   binwidth, lonRange, latRange) {
+spView <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = rainbow(15),
+                   grad.value = quantile(dat$value, probs = (1:bins)/(bins+1)), grad.tag = grad.value) {
   pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("ggplot2");pkgLoad("maptools");
   pkgLoad("rgdal");pkgLoad("directlabels")
   bkmap <- readShapePoly("data/bou2_4p.shp")
-  latiLab <- 
+  
+  #latiLab <- 
     
   plot <- ggplot() + 
-    geom_raster(aes(x = lon, y = lat, fill = value), data = dat) +
+    geom_raster(aes(x = lon, y = lat, fill = value), 
+                interpolate = T, show.legend = T, data = dat) +
     geom_contour(aes(x = lon, y = lat,  z = value), 
-                 size = 0.8, col = "black", bins = 9, data = dat) +
+                 size = 0.8, col = "black", bins = bins, data = dat) +
     geom_polygon(aes(x = long, y = lat, group = group), 
                  colour = "black", fill = "grey80", data = fortify(bkmap)) +
-    #scale_fill_gradientn(leg.name, guide = "colourbar",
-    #                     breaks = grad.value, labels = grad.tag, colours = grad.col) +
-    scale_fill_gradient(leg.name, guide = "colourbar",
-                         breaks = grad.value[c(1,7)], labels = grad.tag[c(1,7)], low = "white", high = "blue") +
+    scale_fill_gradientn(leg.name, guide = "colourbar",
+                         #breaks = grad.value, labels = grad.tag, 
+                         colours = grad.col) +
     scale_colour_gradient(low = "black", high = "black") +
     scale_x_continuous(name = "", expand = c(0,0)) +
     scale_y_continuous(name = "", expand = c(0,0)) +

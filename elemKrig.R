@@ -99,8 +99,6 @@ grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = 
 spView(dat = grid.value.tot %>% 
               filter(trait == "Cu"),
             leg.name = "Cu Content(mg/kg)",
-            grad.value = log(c(1,5,25,50,100,200,500,1000)), 
-            grad.tag = c(1,5,25,50,100,200,500,1000),
             lonRange = lonRange, latRange = latRange)
 
 
@@ -111,8 +109,6 @@ spView.grid(dat = grid.value.tot %>%
               filter(trait == "Cu"|trait == "Zn"|trait == "Pb"|trait == "Cr"|
                        trait == "Ni"|trait == "As"|trait == "Cd"),
             leg.name = "Content(mg/kg)",
-            grad.value = log(c(0.075,0.5,1,5,25,50,100)), 
-            grad.tag = c(0.075,0.5,1,5,25,50,100),
             lonRange = lonRange, latRange = latRange, pncol = 3) -> plot.hm
 
 spView.grid(dat = grid.value.tot %>% 
