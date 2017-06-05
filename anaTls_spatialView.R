@@ -12,7 +12,7 @@ conveySpCoord <- function(x) {
 spView.grid <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = rainbow(15),
                         grad.value = quantile(dat$value, probs = (1:bins)/(bins+1)), grad.tag = grad.value, pncol) {
   pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("ggplot2");pkgLoad("maptools");
-  pkgLoad("rgdal");pkgLoad("directlabels")
+  pkgLoad("rgdal")
   bkmap <- readShapePoly("data/bou2_4p.shp")
   ggplot() + 
     geom_raster(aes(x = lon, y = lat, fill = value), data = dat) +
@@ -30,12 +30,12 @@ spView.grid <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = 
           strip.background = element_blank())
 }
 
-spView <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = rainbow(bins+1),
-                   grad.value = quantile(dat$value, probs = (1:bins)/(bins+1)), 
-                   grad.tag = grad.value) {
+spView <- function(dat, bkmap, lonRange, latRange, leg.name, bins = 7, grad.col = rainbow(bins+1),
+                   grad.value = NULL, grad.tag = NULL) {
   pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("ggplot2");pkgLoad("maptools");
   pkgLoad("rgdal");pkgLoad("directlabels")
-  bkmap <- readShapePoly("data/bou2_4p.shp")
+  if(is.null(grad.value)) grad.value <- (0:bins)*(max(dat$value) - min(dat$value))/bins + min(dat$value)
+  if(is.null(grad.tag)) grad.tag <- format(grad.value,digit = 3)
   #latiLab <- 
     
   ggplot() + 
@@ -43,12 +43,9 @@ spView <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = rainb
                 interpolate = T, show.legend = T, data = dat) +
     geom_contour(aes(x = lon, y = lat,  z = value), 
                  size = 0.8, col = "black", bins = bins, data = dat) +
-    geom_polygon(aes(x = long, y = lat, group = group), 
-                 colour = "black", fill = "grey80", data = fortify(bkmap)) +
     scale_fill_gradientn(leg.name, guide = "colourbar",
                          breaks = grad.value, labels = grad.tag, 
                          colours = grad.col) +
-    scale_colour_gradient(low = "black", high = "black") +
     scale_x_continuous(name = "", expand = c(0,0)) +
     scale_y_continuous(name = "", expand = c(0,0)) +
     coord_quickmap(xlim = lonRange, ylim = latRange) +
@@ -57,9 +54,6 @@ spView <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = rainb
           panel.grid = element_blank(),
           legend.box.margin = margin(t = 0, r = 0, b = 0, l = 0),
           legend.box.spacing = unit(1,units = "pt"))
-  
-  #plot <- direct.label(plot, method="top.pieces")
-  plot
 }
 
 doKrig <- function(dat, dat.grid, tag, cutoff, 

@@ -5,6 +5,14 @@ pkgInitialization(c("dplyr","tidyr","sp","gstat","ggplot2"))
 source("grid.R")
 
 ## Functions 
+spView.elem <- function(elem,...) {
+  spView(dat = grid.value.tot %>% 
+           filter(trait == elem),
+         leg.name = paste(elem,"(mg/kg)",sep = " "),
+         lonRange = lonRange, latRange = latRange) +
+    geom_polygon(aes(x = long, y = lat, group = group), 
+                 colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp")))
+}
 
 ## Example
 dat <- datareadln() %>%
@@ -96,11 +104,7 @@ grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = 
 
 
 
-spView(dat = grid.value.tot %>% 
-              filter(trait == "Cu"),
-            leg.name = "Cu Content(mg/kg)",
-            lonRange = lonRange, latRange = latRange)
-
+spView.elem("Cu")
 
 
 
