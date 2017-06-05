@@ -1,17 +1,31 @@
 source("uniTls_pkgInstall.R");source("uniTls_presetPaths.R")
 
-conveySp <- function(x) {
-  tmp <- strsplit(as.character(x),"°")
-  out <- NULL
-  for(i in 1:length(tmp)) {
-    out <- c(out,as.numeric(tmp[[i]][1]) + as.numeric(substr(tmp[[i]][2],1,nchar(tmp[[i]][2])-1))/60)
+conveySpCoord <- function(x, conveyFrom, conveyTo, type) {
+  if(conveyFrom == "char.degree.nosuffix") {
+    tmp <- strsplit(as.character(x),"°")
+    out <- NULL
+    for(i in 1:length(tmp)) {
+      out <- c(out,as.numeric(tmp[[i]][1]) + as.numeric(substr(tmp[[i]][2],1,nchar(tmp[[i]][2])-1))/60)
+    }
+    out
+  }
+  
+  if(conveyFrom == "num.degree.nosuffix") {
+    out <- x
+  }
+  
+  if(conveyTo == "char.minute.suffix") {
+    if(type == "lat") {suffix <- if(out >= 0) "N" else "S"}
+    if(type == "lon") {suffix <- if(out >= 0) "E" else "W"}
+    out <- paste(floor(abs(out)),"°",format(60*(abs(out) %% 1),3),"'",suffix,sep = "")
   }
   out
 }
 
-findCoordInt <- function(range) {
+findInt.coord <- function(range) {
   if(length(range) != 2) stop("error range input")
-  low <- ceiling(min(range)); high <- floor(max(range))
+  low <- 0.9*min(range) + 0.1*max(range); high <- 0.9*max(range) + 0.1*min(range)
+  
   r <- high - low
   res <- rep((r / (5:3)) %% 1, 5) - rep(c(0,1/2,1/3,1/4,1/6),each = 3)
   res[res >= 0.5] = res[res >= 0.5] - 1
@@ -45,10 +59,15 @@ spView <- function(dat, bkmap, lonRange, latRange, leg.name, bins = 7, grad.col 
                    grad.value = NULL, grad.tag = NULL) {
   pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("ggplot2");pkgLoad("maptools");
   pkgLoad("rgdal");pkgLoad("directlabels")
+  
   if(is.null(grad.value)) grad.value <- (0:bins)*(max(dat$value) - min(dat$value))/bins + min(dat$value)
   if(is.null(grad.tag)) grad.tag <- format(grad.value,digit = 2)
-  ceiling(min(latRange))
-    
+  
+  break.lon <- findInt.coord(lonRange)
+  label.lon <- conveySpCoord(break.lon,conveyFrom = "num.degree.nosuffix",conveyTo = "char.minute.suffix",type = "lon")
+  break.lat <- findInt.coord(latRange)
+  label.lat <- conveySpCoord(break.lat,conveyFrom = "num.degree.nosuffix",conveyTo = "char.minute.suffix",type = "lat")
+  
   ggplot() + 
     geom_raster(aes(x = lon, y = lat, fill = value), 
                 interpolate = T, show.legend = T, data = dat) +
@@ -58,13 +77,13 @@ spView <- function(dat, bkmap, lonRange, latRange, leg.name, bins = 7, grad.col 
                          breaks = grad.value, labels = grad.tag, 
                          colours = grad.col) +
     scale_color_gradient2("leg.name", guide = "colourbar", low = "black", high = "white") +
-    scale_x_continuous(name = "", expand = c(0,0)) +
-    scale_y_continuous(name = "", expand = c(0,0)) +
+    scale_x_continuous(name = "", breaks = break.lon, labels = label.lon, expand = c(0,0)) +
+    scale_y_continuous(name = "", breaks = break.lat, labels = label.lat, expand = c(0,0)) +
     coord_quickmap(xlim = lonRange, ylim = latRange) +
     theme_bw() + 
     theme(aspect.ratio = (latiRange[2]-latiRange[1])/(longiRange[2]-longiRange[1]),
           panel.grid = element_blank(),
-          legend.box.margin = margin(t = 0, r = 0, b = 0, l = 0),
+          legend.box.margin = margin(t = 2, r = 2, b = 2, l = 2),
           legend.box.spacing = unit(1,units = "pt"))
 }
 

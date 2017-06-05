@@ -11,7 +11,11 @@ spView.elem <- function(elem,...) {
          leg.name = paste(elem,"(mg/kg)",sep = " "),
          lonRange = lonRange, latRange = latRange) +
     geom_polygon(aes(x = long, y = lat, group = group), 
-                 colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp")))
+                 colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
+    theme(#legend.key.height = unit(5, "mm"),
+          axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          plot.margin = margin(0,0,0,0))
 }
 
 ## Example
@@ -104,13 +108,15 @@ grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = 
 grid.value.tot$value <- exp(grid.value.tot$value)
 
 
-spView.elem("Cu")
-spView.elem("Zn")
-spView.elem("Pb")
-spView.elem("Cr")
-spView.elem("Ni")
-spView.elem("As")
-spView.elem("Cd")
+plot.cu <- spView.elem("Cu") 
+plot.zn <- spView.elem("Zn")
+plot.pb <- spView.elem("Pb")
+plot.cr <- spView.elem("Cr")
+plot.ni <- spView.elem("Ni")
+plot.as <- spView.elem("As")
+plot.cd <- spView.elem("Cd")
 
-ggsave(filename = "element/krig/gather_krig_element.png",  
-       plot = grid.arrange(plot.bkelement,plot.hm, ncol = 1, widths = c(15), heights = c(10,15)))
+p <- grid.arrange(plot.cu,plot.zn,plot.pb,plot.cr,plot.ni,plot.as,plot.cd,
+             nrow = 4, ncol = 2, widths = c(11,11), heights = rep(7,4))
+
+ggsave(filename = "element/krig/gather_krig_element.png", plot = p)
