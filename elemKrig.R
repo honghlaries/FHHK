@@ -16,8 +16,7 @@ spView.elem <- function(elem,...) {
     geom_point(aes(x = lon, y = lat), color = "black", data = sites) +
     theme(#legend.key.height = unit(5, "mm"),
           axis.text = element_blank(),
-          axis.ticks = element_blank(),
-          plot.margin = margin(0,0,0,0))
+          axis.ticks = element_blank())
 }
 
 ## Example
