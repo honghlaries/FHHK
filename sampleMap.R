@@ -55,7 +55,9 @@ ggplot() +
         panel.grid = element_blank(),
         legend.box.margin = margin(t = 2, r = 2, b = 2, l = 2),
         legend.box.spacing = unit(1,units = "pt"),
-        plot.margin = margin(0,0,0,0))
+        plot.margin = margin(0,0,0,0),
+        axis.text = element_blank(),
+        axis.ticks = element_blank())
   
 ggsave("map/samplemap.png",dpi = 1200)
 
