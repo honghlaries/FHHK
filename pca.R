@@ -1,13 +1,15 @@
 # Initialization
 rm(list = ls())
 source("constant.R");source("anaTls_spatialView.R");source("anaTls_multivariate.R");
-pkgInitialization(c("dplyr","tidyr","sp","gstat","gridExtra"))
+pkgInitialization(c("dplyr","tidyr","sp","gstat","gridExtra","ColorPalette"))
 source("grid.R")
 
 # Functions 
 
 # Example 
-env <- datareadln() %>% select(depth,Al,Fe,Mn,orgC,AVS,clay,silt,sand)
+env <- datareadln() %>% 
+  mutate(proton = 10^(-pH)) %>%
+  select(depth,distance,salinity,proton,Al,Fe,Mn,orgC,AVS,clay,silt,sand) 
 trait <- datareadln() %>% select(Pb:Cd)
 samptag <- datareadln() %>% select(siteID)
 rda <- rdaLoadingCal(env, trait, samptag, dir = "rda", log = T)
@@ -32,10 +34,11 @@ grid.value <- as.data.frame(tmp) %>%  select(lon, lat, value = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "RDA2")))
 
 spView.grid(dat = grid.value.tot, leg.name = "Loading",
-            grad.value = c(-0.25,-0.2,-0.1,0,0.1,0.2,0.3), 
-            grad.tag = c(-0.25,-0.2,-0.1,0,0.1,0.2,0.3), 
-            binwidth = 0.05, lonRange = c(119.2,121.8),
-            latRange = c(33.7,35), pncol = 1) -> plot.sp
+            grad.value = c(-0.25,-0.2,-0.1,0,0.1,0.2,0.25), 
+            grad.tag = c(-0.25,-0.2,-0.1,0,0.1,0.2,0.25), 
+            #grad.col = c("#D2E9FF","#97CBFF","#66B3FF","#2894FF","#0072E3","#005AB5","#003D79"),
+            lonRange = lonRange,
+            latRange = latRange, pncol = 1) -> plot.sp
 
 grid.arrange(plot.load, plot.sp, ncol = 2, widths = c(5,5), heights = 5) -> plot.gather
 

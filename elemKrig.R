@@ -4,6 +4,7 @@ source("constant.R");source("anaTls_spatialView.R");
 pkgInitialization(c("dplyr","tidyr","sp","gstat","ggplot2"))
 source("grid.R")
 
+
 ## Functions 
 spView.elem <- function(elem,...) {
   spView(dat = grid.value.tot %>% 
@@ -12,17 +13,18 @@ spView.elem <- function(elem,...) {
          lonRange = lonRange, latRange = latRange) +
     geom_polygon(aes(x = long, y = lat, group = group), 
                  colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
+    geom_point(aes(x = lon, y = lat), color = "black", data = sites) +
     theme(#legend.key.height = unit(5, "mm"),
-          axis.text = element_blank(),
-          axis.ticks = element_blank(),
+          #axis.text = element_blank(),
+          #axis.ticks = element_blank(),
           plot.margin = margin(0,0,0,0))
 }
 
 ## Example
 dat <- datareadln() %>%
   dplyr::mutate(AvsRatio = AVS / orgC) %>%
-  tidyr::gather(trait,value,lon,lat,depth,Al:AvsRatio) %>%
-  dplyr::group_by(siteID,trait) %>%
+  tidyr::gather(trait,value,depth,Al:AvsRatio) %>%
+  dplyr::group_by(siteID,trait,lon,lat) %>%
   dplyr::summarise(value = mean(value)) %>%
   tidyr::spread(trait,value)
 

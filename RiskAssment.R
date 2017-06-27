@@ -5,7 +5,18 @@ pkgInitialization(c("dplyr","tidyr","sp","gstat","ggplot2"))
 source("grid.R")
 
 # Functions 
-
+spView.elem <- function(elem,...) {
+  spView(dat = grid.value.tot %>% 
+           filter(trait == elem),
+         leg.name = paste(elem,"(mg/kg)",sep = " "),
+         lonRange = lonRange, latRange = latRange) +
+    geom_polygon(aes(x = long, y = lat, group = group), 
+                 colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
+    theme(#legend.key.height = unit(5, "mm"),
+      #axis.text = element_blank(),
+      #axis.ticks = element_blank(),
+      plot.margin = margin(0,0,0,0))
+}
 # Example
 
 ## for Igeo
@@ -25,7 +36,7 @@ dat <- datareadln() %>%
 ggplot(data = dat %>% 
          mutate(trait = factor(trait, levels = c("Al","Fe","Mn","Pb","Cr","Ni","Cu","Zn","As","Cd")))) + 
   geom_hline(yintercept = c(0:2), col = "red", linetype = 2) +
-  geom_boxplot(aes(x = trait, y = value),fill = "grey80") +
+  geom_boxplot(aes(x = trait, y = value), fill = "grey80") +
   scale_x_discrete("Element") +
   scale_y_continuous("Geo-accumulation Index",
                      breaks = c(0:2)) +
@@ -89,14 +100,14 @@ spView.grid(dat = grid.value.tot %>%
                        trait == "Zn"|trait == "Pb"|trait == "Cr"|
                        trait == "Ni"|trait == "As"|trait == "Cd"),
             leg.name = "Igeo",grad.value = c(-2,-1,0,1), 
-            grad.tag = c(-2,-1,0,1), binwidth = 0.25, lonRange = c(119.2,121.8),
-            latRange = c(33.7,35), pncol = 3) -> plot.igeo.sp.all
+            grad.tag = c(-2,-1,0,1), lonRange = lonRange,
+            latRange = latRange, pncol = 3) -> plot.igeo.sp.all
 
 spView.grid(dat = grid.value.tot %>% 
               filter(trait == "Cu"|trait == "Zn"|trait == "As"|trait == "Cd"),
             leg.name = "Igeo",grad.value = c(-2,-1,0,1), 
-            grad.tag = c(-2,-1,0,1), binwidth = 0.25, lonRange = c(119.2,121.8),
-            latRange = c(33.7,35), pncol = 2) -> plot.igeo.sp.sel
+            grad.tag = c(-2,-1,0,1),lonRange = lonRange,
+            latRange = latRange, pncol = 2) -> plot.igeo.sp.sel
 
 grid.arrange(plot.igeo.box, plot.igeo.sp.sel, ncol = 2, widths = c(5,10), heights = 5) -> plot.igeo.gather
 
@@ -178,14 +189,14 @@ spView.grid(dat = grid.value.tot %>%
                        trait == "Cu"|trait == "Zn"|trait == "Pb"|
                        trait == "Ni"|trait == "As"|trait == "Cd"),
             leg.name = "EF",grad.value = c(0,0.67,1,1.5,2,2.5), 
-            grad.tag = c(0,0.67,1,1.5,2,2.5), binwidth = 0.25, lonRange = c(119.2,121.8),
-            latRange = c(33.7,35), pncol = 3)  -> plot.ef.sp.all
+            grad.tag = c(0,0.67,1,1.5,2,2.5), lonRange = lonRange,
+            latRange = latRange, pncol = 3)  -> plot.ef.sp.all
 
 spView.grid(dat = grid.value.tot %>% 
               filter(trait == "Cu"|trait == "Zn"|trait == "As"|trait == "Cd"),
             leg.name = "EF",grad.value = c(0,0.67,1,1.5,2,2.5), 
-            grad.tag = c(0,0.67,1,1.5,2,2.5), binwidth = 0.25, lonRange = c(119.2,121.8),
-            latRange = c(33.7,35), pncol = 2)  -> plot.ef.sp.sel
+            grad.tag = c(0,0.67,1,1.5,2,2.5), lonRange = lonRange,
+            latRange = latRange, pncol = 2)  -> plot.ef.sp.sel
 
 grid.arrange(plot.ef.box, plot.ef.sp.sel, ncol = 2, widths = c(5,10), heights = 5) -> plot.ef.gather
 

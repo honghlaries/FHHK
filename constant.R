@@ -6,14 +6,20 @@ pkgInitialization(c("dplyr","tidyr"))
 #lonRange = c(119.2,121.8);latRange = c(33.7,35)
 lonRange = c(119.9,121.8);latRange = c(33.7,34.9)
 
+sites <- read.csv("data/meta_sites.csv")
+
 # data readln
 datareadln <- function() { 
   pkgLoad("dplyr");pkgLoad("tidyr")
   read.csv("data/result_element.csv") %>%
+    dplyr::inner_join(read.csv("data/result_basic.csv"), by = c("sampleID" = "sampleID")) %>%
     dplyr::inner_join(read.csv("data/result_grainSize.csv"), by = c("sampleID" = "sampleID")) %>%
     dplyr::right_join(read.csv("data/meta_splList.csv"), by = c("sampleID" = "sampleID")) %>%
     dplyr::inner_join(read.csv("data/meta_sites.csv"), by = c("siteID" = "siteID")) %>%
     dplyr::mutate(orgC = C.ac, AVS = S - S.ac, 
                   isComplete = complete.cases(Al,Fe,Mn,Pb,Cr,Ni,Cu,Zn,As,Cd,C,N,S,orgC,AVS,clay,silt,sand)) %>%
-    dplyr::select(siteID:depth,isComplete,Al,Fe,Mn,Pb,Cr,Ni,Cu,Zn,As,Cd,C,N,S,orgC,AVS,clay,silt,sand)
+    dplyr::select(siteID:depth,distance,
+                  isComplete,salinity,pH,
+                  Al,Fe,Mn,Pb,Cr,Ni,Cu,Zn,As,Cd,C,N,S,orgC,AVS,
+                  clay,silt,sand)
 }

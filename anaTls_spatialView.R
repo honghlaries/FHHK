@@ -41,7 +41,7 @@ spView.grid <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = 
   bkmap <- readShapePoly("data/bou2_4p.shp")
   ggplot() + 
     geom_raster(aes(x = lon, y = lat, fill = value), data = dat) +
-    geom_contour(aes(x = lon, y = lat, z = value), col = "black", bins = bins, data = dat) +
+    #geom_contour(aes(x = lon, y = lat, z = value), col = "black", bins = bins, data = dat) +
     geom_polygon(aes(x = long, y = lat, group = group), 
                  colour = "black", fill = "grey80", data = fortify(bkmap)) +
     scale_fill_gradientn(leg.name, breaks = grad.value, labels = grad.tag, colours = grad.col) +
@@ -55,7 +55,7 @@ spView.grid <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = 
           strip.background = element_blank())
 }
 
-spView <- function(dat, bkmap, lonRange, latRange, leg.name, bins = 7, grad.col = rainbow(bins+1),
+spView <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = rainbow(bins+1),
                    grad.value = NULL, grad.tag = NULL) {
   pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("ggplot2");pkgLoad("maptools");
   pkgLoad("rgdal");pkgLoad("directlabels")
@@ -71,8 +71,8 @@ spView <- function(dat, bkmap, lonRange, latRange, leg.name, bins = 7, grad.col 
   ggplot() + 
     geom_raster(aes(x = lon, y = lat, fill = value), 
                 interpolate = T, show.legend = T, data = dat) +
-    geom_contour(aes(x = lon, y = lat,  z = value),
-                 col= "black", show.legend = T, size = 0.8,  bins = bins, data = dat) +
+    #geom_contour(aes(x = lon, y = lat,  z = value),
+    #             col= "black", show.legend = T, size = 0.8,  bins = bins, data = dat) +
     scale_fill_gradientn(leg.name, guide = "colourbar",
                          breaks = grad.value, labels = grad.tag, 
                          colours = grad.col) +
