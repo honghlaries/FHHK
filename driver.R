@@ -30,6 +30,8 @@ dat <- datareadln() %>%
 taglist <- c("Cr","As","Ni","Cu","Pb","Zn","Cd")
 
 for(i in 1:length(taglist)) {
-  relationPlot.gather(dat,taglist[i])
-  ggsave(paste(dirPreset("relation/driver"),"/",taglist[i],".png",sep = ""),dpi = 600)
+  relationPlot.gather(dat,taglist[i]) -> p
+  ggsave(plot = p,
+         filename = paste(dirPreset("relation/driver"),"/",taglist[i],".png",sep = ""),dpi = 600)
+  p
 }
