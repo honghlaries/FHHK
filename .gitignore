@@ -5,6 +5,8 @@
 /riskAssment
 /rda
 /hca
+/map
+
 # Rstudio files
 *.Rproj
 # History files
