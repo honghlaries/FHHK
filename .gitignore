@@ -6,7 +6,7 @@
 /rda
 /hca
 /map
-
+/relation
 # Rstudio files
 *.Rproj
 # History files
