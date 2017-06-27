@@ -5,10 +5,23 @@ pkgInitialization(c("dplyr","tidyr","sp","gstat","ggplot2"))
 source("grid.R")
 
 # Functions 
-spView.elem <- function(elem,...) {
+spView.igeo <- function(elem,...) {
   spView(dat = grid.value.tot %>% 
            filter(trait == elem),
-         leg.name = paste(elem,"(mg/kg)",sep = " "),
+         leg.name = paste("Igeo(",elem,")",sep = " "),
+         lonRange = lonRange, latRange = latRange) +
+    geom_polygon(aes(x = long, y = lat, group = group), 
+                 colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
+    theme(#legend.key.height = unit(5, "mm"),
+      #axis.text = element_blank(),
+      #axis.ticks = element_blank(),
+      plot.margin = margin(0,0,0,0))
+}
+
+spView.ef <- function(elem,...) {
+  spView(dat = grid.value.tot %>% 
+           filter(trait == elem),
+         leg.name = paste("EF(",elem,")",sep = " "),
          lonRange = lonRange, latRange = latRange) +
     geom_polygon(aes(x = long, y = lat, group = group), 
                  colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
@@ -94,6 +107,14 @@ grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = 
 
 grid.value.tot <- grid.value.tot %>%
   mutate(element = factor(element, levels = c("Al","Fe","Mn","Pb","Cr","Ni","Cu","Zn","As","Cd")))
+
+plot.cu <- spView.igeo("Cu");ggsave(filename = "riskAssment/krig/igeo/Cu_Igeo.png")
+plot.zn <- spView.igeo("Zn");ggsave(filename = "riskAssment/krig/igeo/Zn_Igeo.png")
+plot.pb <- spView.igeo("Pb");ggsave(filename = "riskAssment/krig/igeo/Pb_Igeo.png")
+plot.cr <- spView.igeo("Cr");ggsave(filename = "riskAssment/krig/igeo/Cr_Igeo.png")
+plot.ni <- spView.igeo("Ni");ggsave(filename = "riskAssment/krig/igeo/Ni_Igeo.png")
+plot.as <- spView.igeo("As");ggsave(filename = "riskAssment/krig/igeo/As_Igeo.png")
+plot.cd <- spView.igeo("Cd");ggsave(filename = "riskAssment/krig/igeo/Cd_Igeo.png")
 
 spView.grid(dat = grid.value.tot %>% 
               filter(trait == "Al"|trait == "Fe"|trait == "Mn"|trait == "Cu"|
@@ -183,6 +204,15 @@ grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = 
 
 grid.value.tot <- grid.value.tot %>%
   mutate(element = factor(element, levels = c("Al","Fe","Mn","Pb","Cr","Ni","Cu","Zn","As","Cd")))
+
+
+plot.cu <- spView.ef("Cu");ggsave(filename = "riskAssment/krig/EF/Cu_EF.png")
+plot.zn <- spView.ef("Zn");ggsave(filename = "riskAssment/krig/EF/Zn_EF.png")
+plot.pb <- spView.ef("Pb");ggsave(filename = "riskAssment/krig/EF/Pb_EF.png")
+plot.cr <- spView.ef("Cr");ggsave(filename = "riskAssment/krig/EF/Cr_EF.png")
+plot.ni <- spView.ef("Ni");ggsave(filename = "riskAssment/krig/EF/Ni_EF.png")
+plot.as <- spView.ef("As");ggsave(filename = "riskAssment/krig/EF/As_EF.png")
+plot.cd <- spView.ef("Cd");ggsave(filename = "riskAssment/krig/EF/Cd_EF.png")
 
 spView.grid(dat = grid.value.tot %>% 
               filter(trait == "Al"|trait == "Mn"|trait == "Cr"|

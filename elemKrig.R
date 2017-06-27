@@ -110,13 +110,13 @@ grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = 
 grid.value.tot$value <- exp(grid.value.tot$value)
 
 
-plot.cu <- spView.elem("Cu") 
-plot.zn <- spView.elem("Zn")
-plot.pb <- spView.elem("Pb")
-plot.cr <- spView.elem("Cr")
-plot.ni <- spView.elem("Ni")
-plot.as <- spView.elem("As")
-plot.cd <- spView.elem("Cd")
+plot.cu <- spView.elem("Cu");ggsave(filename = "element/krig/Cu.png")
+plot.zn <- spView.elem("Zn");ggsave(filename = "element/krig/Zn.png")
+plot.pb <- spView.elem("Pb");ggsave(filename = "element/krig/Pb.png")
+plot.cr <- spView.elem("Cr");ggsave(filename = "element/krig/Cr.png")
+plot.ni <- spView.elem("Ni");ggsave(filename = "element/krig/Ni.png")
+plot.as <- spView.elem("As");ggsave(filename = "element/krig/As.png")
+plot.cd <- spView.elem("Cd");ggsave(filename = "element/krig/Cd.png")
 
 p <- grid.arrange(plot.cu,plot.zn,plot.pb,plot.cr,plot.ni,plot.as,plot.cd,
              nrow = 4, ncol = 2, widths = c(11,11), heights = rep(7,4))
