@@ -18,7 +18,8 @@ relationPlot.gather <- function(dat,tag) {
   plot.al <- relationPlot(dat, "Al", tag, "purple")
   plot.h <- relationPlot(dat, "proton", tag, "orange")
   plot.sal <- relationPlot(dat, "salinity", tag, "brown")
-  grid.arrange(plot.dist,plot.dep,plot.clay,plot.al,plot.h,plot.sal, nrow=2, ncol=3)
+  p <- grid.arrange(plot.dist,plot.dep,plot.clay,plot.al,plot.h,plot.sal, nrow=2, ncol=3)
+  p
 }
 
 ## Example
