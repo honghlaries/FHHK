@@ -1,7 +1,7 @@
 ## Initialization
 rm(list = ls())
 source("constant.R");
-pkgInitialization(c("dplyr","tidyr","ggplot2"))
+pkgInitialization(c("dplyr","tidyr","ggplot2","gridExtra"))
 
 ## Functions 
 relationPlot <- function(dat, fact, resp, col) {

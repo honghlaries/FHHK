@@ -1,12 +1,23 @@
 # Initialization
 source("uniTls_pkgInstall.R");source("uniTls_presetPaths.R");
-pkgInitialization(c("dplyr","tidyr"))
+pkgInitialization(c("dplyr","tidyr","sp","maptools"))
 
 # constant
 #lonRange = c(119.2,121.8);latRange = c(33.7,35)
 lonRange = c(119.9,121.8);latRange = c(33.7,34.9)
 
 sites <- read.csv("data/meta_sites.csv")
+
+#rivers <- readShapeLines("data/item_rivers.shp")
+#proj4string(rivers) <- CRS("+init=epsg:4030")
+#rivers <- spTransform(rivers, 
+#                      CRS("+init=EPSG:4326"))
+#ggplot() + 
+#  geom_polygon(aes(x = long, y = lat, group = group), 
+#               colour = "black", fill = "grey80", 
+#               data = fortify(readShapePoly("data/bou2_4p.shp"))) +
+#  geom_path(aes(x = long, y = lat, group = group), 
+#            colour = "blue", data = fortify(rivers)) 
 
 # data readln
 datareadln <- function() { 

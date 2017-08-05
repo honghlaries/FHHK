@@ -40,9 +40,9 @@ ggplot() +
   geom_polygon(aes(x = long, y = lat, group = group), 
                colour = "black", fill = "grey80", 
                data = fortify(readShapePoly("data/bou2_4p.shp"))) +
-  #geom_path(aes(x = long, y = lat, group = group), 
-  #          colour = "blue", 
-  #          data = fortify(readShapeLines("data/item_rivers.shp"))) +
+  geom_path(aes(x = long, y = lat, group = group), 
+            colour = "blue", 
+            data = fortify(rivers)) +
   geom_point(aes(x = lon, y = lat), color = "black", data = sites) +
   geom_text(aes(x = lon, y = lat, label = siteID), vjust = 0.7, hjust = 1.2, 
             color = "black", data = sites) +

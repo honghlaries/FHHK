@@ -8,6 +8,8 @@ R.prob2.5 = matrix(c(
   .30,   .20,  1.00,   .70,   .60 ,                                               
   .20,   .30,   .70,  1.00,   .50,                                                
   .20,   .10,   .60,  .50,  1.00), ncol=5,byrow=TRUE)   
+
+
 model2.5=matrix(c(
   'Ambit ->  Amb1',      'a', NA,
   'Ambit -> Amb2' ,      'b', NA,
