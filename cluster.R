@@ -100,13 +100,3 @@ ggsave(plot = plot.ca.bar, filename = "hca/cabar.png", dpi = 600)
 grid.arrange(plot.ca.sp, plot.ca.bar, ncol = 2, widths = c(10,6), heights = 3) -> plot.gather
 ggsave(plot = plot.gather, filename = "hca/gather_hcaPlot.png", dpi = 600)
 
-
-
-  
-
-
-  
- 
-
-
-
