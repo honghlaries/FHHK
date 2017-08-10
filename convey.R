@@ -24,6 +24,6 @@ for(i in 1:length(taglist)) {
   for(j in 1:length(dat$p.Estimate.)) dat$p.Estimate.[j] <-sigNotation(dat$p.Estimate.[j])
   for(j in 1:length(dat$p.Estimate.)) dat$p.ANOVA.[j] <- sigNotation(dat$p.ANOVA.[j])
   colnames(dat)[c(5,7)] <- c("p(Estimate)","p(ANOVA)")
-  
+  dat$parameter <- as.character(dat$parameter)
   conveyLaTex(dat,paste("relation/driver/polyRegression_",taglist[i],"_latexcode.txt",sep = ""))
 }
