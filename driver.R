@@ -22,6 +22,12 @@ relationPlot.gather <- function(dat,tag) {
   p
 }
 
+stepFitting <- function(dat,tag) {
+  null <- lm(as.formula(paste(tag,"~1",sep = "")), data = dat) 
+  full <- lm(as.formula(paste(tag,"~distance*depth*clay*Al*proton*salinity",sep = "")), data = dat) 
+  step(null, scope = formula(full), test = "F")
+}
+
 ## Example
 dat <- datareadln() %>%
   dplyr::select(depth,distance,salinity:sand) %>% 
@@ -96,3 +102,5 @@ grid.arrange(plot.dist.Pb,plot.dep.Pb,plot.clay.Pb,plot.al.Pb,plot.h.Pb,plot.sal
 ggsave(plot = p.gather,
        filename = paste(dirPreset("relation/driver"),"/gather_relation.png",sep = ""),
        dpi = 300, width = 12, height = 14)
+
+
