@@ -121,5 +121,6 @@ for(i in 1:length(taglist)) {
   mod.sum <- full_join(mod.est,mod.aov,by = c("parameter" = "parameter"))
   
   write.csv(mod.sum, 
-            paste(dirPreset("relation/driver"),"/polyRegression_",taglist[i],".csv",sep = ""))
+            paste(dirPreset("relation/driver"),"/polyRegression_",taglist[i],".csv",sep = ""),
+            row.names = F)
 }
