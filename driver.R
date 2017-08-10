@@ -91,16 +91,35 @@ plot.al.Cd <- relationPlot(dat, "Al", "Cd", "purple")
 plot.h.Cd <- relationPlot(dat, "proton", "Cd", "orange")
 plot.sal.Cd <- relationPlot(dat, "salinity", "Cd", "brown")
 
-grid.arrange(plot.dist.Pb,plot.dep.Pb,plot.clay.Pb,plot.al.Pb,plot.h.Pb,plot.sal.Pb, 
-             plot.dist.Cr,plot.dep.Cr,plot.clay.Cr,plot.al.Cr,plot.h.Cr,plot.sal.Cr,
-             plot.dist.Ni,plot.dep.Ni,plot.clay.Ni,plot.al.Ni,plot.h.Ni,plot.sal.Ni,
-             plot.dist.Cu,plot.dep.Cu,plot.clay.Cu,plot.al.Cu,plot.h.Cu,plot.sal.Cu,
-             plot.dist.Zn,plot.dep.Zn,plot.clay.Zn,plot.al.Zn,plot.h.Zn,plot.sal.Zn,
-             plot.dist.As,plot.dep.As,plot.clay.As,plot.al.As,plot.h.As,plot.sal.As,
-             plot.dist.Cd,plot.dep.Cd,plot.clay.Cd,plot.al.Cd,plot.h.Cd,plot.sal.Cd,
-             nrow=7, ncol=6) -> p.gather
+p.gather <- grid.arrange(plot.dist.Pb,plot.dep.Pb,plot.clay.Pb,plot.al.Pb,plot.h.Pb,plot.sal.Pb, 
+                         plot.dist.Cr,plot.dep.Cr,plot.clay.Cr,plot.al.Cr,plot.h.Cr,plot.sal.Cr,
+                         plot.dist.Ni,plot.dep.Ni,plot.clay.Ni,plot.al.Ni,plot.h.Ni,plot.sal.Ni,
+                         plot.dist.Cu,plot.dep.Cu,plot.clay.Cu,plot.al.Cu,plot.h.Cu,plot.sal.Cu,
+                         plot.dist.Zn,plot.dep.Zn,plot.clay.Zn,plot.al.Zn,plot.h.Zn,plot.sal.Zn,
+                         plot.dist.As,plot.dep.As,plot.clay.As,plot.al.As,plot.h.As,plot.sal.As,
+                         plot.dist.Cd,plot.dep.Cd,plot.clay.Cd,plot.al.Cd,plot.h.Cd,plot.sal.Cd,
+                         nrow=7, ncol=6)
 ggsave(plot = p.gather,
        filename = paste(dirPreset("relation/driver"),"/gather_relation.png",sep = ""),
        dpi = 300, width = 12, height = 14)
 
+taglist <- c("Cr","As","Ni","Cu","Pb","Zn","Cd")
 
+for(i in 1:length(taglist)) {
+  mod <- stepFitting(dat, taglist[i])
+  
+  mod.est <- summary(mod)$coefficients
+  mod.est <- cbind (parameter = rownames(mod.est),mod.est)
+  colnames(mod.est)[5] <- "p(Estimate)"
+  mod.est <- as.data.frame(mod.est)
+  
+  mod.aov <- anova(mod)
+  mod.aov <- cbind (parameter = rownames(mod.aov),mod.aov)
+  colnames(mod.aov)[6] <- "p(ANOVA)"
+  mod.aov <- as.data.frame(mod.aov)
+  
+  mod.sum <- full_join(mod.est,mod.aov,by = c("parameter" = "parameter"))
+  
+  write.csv(mod.sum, 
+            paste(dirPreset("relation/driver"),"/polyRegression_",taglist[i],".csv",sep = ""))
+}
