@@ -110,12 +110,12 @@ for(i in 1:length(taglist)) {
   
   mod.est <- summary(mod)$coefficients
   mod.est <- cbind (parameter = rownames(mod.est),mod.est)
-  colnames(mod.est)[5] <- "p(Estimate)"
+  colnames(mod.est)[5] <- "p.Estimate."
   mod.est <- as.data.frame(mod.est)
   
   mod.aov <- anova(mod)
   mod.aov <- cbind (parameter = rownames(mod.aov),mod.aov)
-  colnames(mod.aov)[6] <- "p(ANOVA)"
+  colnames(mod.aov)[6] <- "p.ANOVA."
   mod.aov <- as.data.frame(mod.aov)
   
   mod.sum <- full_join(mod.est,mod.aov,by = c("parameter" = "parameter"))
@@ -125,4 +125,4 @@ for(i in 1:length(taglist)) {
             row.names = F)
 }
 
-mod.Pb <- lm(Pb~clay+Al + clay:Al, data = dat)
+
