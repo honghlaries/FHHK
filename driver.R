@@ -131,7 +131,7 @@ for(i in 1:length(taglist)) {
            as.numeric(as.character(p.Estimate.)) < alphalevel,
            as.numeric(as.character(p.ANOVA.)) < alphalevel) %>%
     select(parameter)  %>% unlist() %>% as.vector()
-  if (length(tag) ==0) break
+  if (length(tag) ==0) next
   formulas <- paste(taglist[i],"~",sep = "")
   for (j in 1:length(tag)) {
     formulas <- paste(formulas,tag[j],sep = "")
