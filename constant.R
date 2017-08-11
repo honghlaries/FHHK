@@ -5,6 +5,7 @@ pkgInitialization(c("dplyr","tidyr","sp","maptools"))
 # constant
 #lonRange = c(119.2,121.8);latRange = c(33.7,35)
 lonRange = c(119.9,121.8);latRange = c(33.7,34.9)
+alphalevel = 0.01
 
 sites <- read.csv("data/meta_sites.csv")
 

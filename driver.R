@@ -28,6 +28,20 @@ stepFitting <- function(dat,tag) {
   step(null, scope = formula(full), test = "F")
 }
 
+modExamine <- function(mod) {
+  mod.est <- summary(mod)$coefficients
+  mod.est <- cbind (parameter = rownames(mod.est),mod.est)
+  colnames(mod.est)[5] <- "p.Estimate."
+  mod.est <- as.data.frame(mod.est)
+  
+  mod.aov <- anova(mod)
+  mod.aov <- cbind (parameter = rownames(mod.aov),mod.aov)
+  colnames(mod.aov)[6] <- "p.ANOVA."
+  mod.aov <- as.data.frame(mod.aov)
+  
+  full_join(mod.est,mod.aov,by = c("parameter" = "parameter"))
+}
+
 ## Example
 dat <- datareadln() %>%
   dplyr::select(depth,distance,salinity:sand) %>% 
@@ -107,22 +121,33 @@ taglist <- c("Cr","As","Ni","Cu","Pb","Zn","Cd")
 
 for(i in 1:length(taglist)) {
   mod <- stepFitting(dat, taglist[i])
-  
-  mod.est <- summary(mod)$coefficients
-  mod.est <- cbind (parameter = rownames(mod.est),mod.est)
-  colnames(mod.est)[5] <- "p.Estimate."
-  mod.est <- as.data.frame(mod.est)
-  
-  mod.aov <- anova(mod)
-  mod.aov <- cbind (parameter = rownames(mod.aov),mod.aov)
-  colnames(mod.aov)[6] <- "p.ANOVA."
-  mod.aov <- as.data.frame(mod.aov)
-  
-  mod.sum <- full_join(mod.est,mod.aov,by = c("parameter" = "parameter"))
-  
+  mod.sum <- modExamine(mod)
   write.csv(mod.sum, 
-            paste(dirPreset("relation/driver"),"/polyRegression_",taglist[i],".csv",sep = ""),
+            paste(dirPreset("relation/driver"),"/multiRegExplo_",taglist[i],".csv",sep = ""),
+            row.names = F)
+  tag <- mod.sum %>%
+    filter(parameter != "(Intercept)",
+           parameter != "Residuals",
+           as.numeric(as.character(p.Estimate.)) < alphalevel,
+           as.numeric(as.character(p.ANOVA.)) < alphalevel) %>%
+    select(parameter)  %>% unlist() %>% as.vector()
+  if (length(tag) ==0) break
+  formulas <- paste(taglist[i],"~",sep = "")
+  for (j in 1:length(tag)) {
+    formulas <- paste(formulas,tag[j],sep = "")
+    if (j < length(tag)) formulas <- paste(formulas,"+",sep = "")
+  }
+  formulas <- as.formula(formulas)
+  mod.refined <- lm(formulas, data = dat)
+  mod.sum.refined <- modExamine(mod.refined)
+  write.csv(mod.sum.refined, 
+            paste(dirPreset("relation/driver"),"/multiRegRefined_",taglist[i],".csv",sep = ""),
             row.names = F)
 }
 
+mod.pb.refined <- lm(Pb ~ clay:Al,data = dat)
+mod.pb.sum.refined <- modExamine(mod.pb.refined)
 
+write.csv(mod.pb.sum.refined, 
+          paste(dirPreset("relation/driver"),"/multiRegRefined_Pb.csv",sep = ""),
+          row.names = F)
