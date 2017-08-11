@@ -127,7 +127,7 @@ for(i in 1:length(taglist)) {
             row.names = F)
   mod.refined <- mod.sum 
   for(k in 1:3) {
-    tag <- mod.sum %>%
+    tag <- mod.refined %>%
       filter(parameter != "(Intercept)",
              parameter != "Residuals",
              as.numeric(as.character(p.Estimate.)) < alphalevel,
