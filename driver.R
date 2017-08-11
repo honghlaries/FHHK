@@ -125,24 +125,27 @@ for(i in 1:length(taglist)) {
   write.csv(mod.sum, 
             paste(dirPreset("relation/driver"),"/multiRegExplo_",taglist[i],".csv",sep = ""),
             row.names = F)
-  tag <- mod.sum %>%
-    filter(parameter != "(Intercept)",
-           parameter != "Residuals",
-           as.numeric(as.character(p.Estimate.)) < alphalevel,
-           as.numeric(as.character(p.ANOVA.)) < alphalevel) %>%
-    select(parameter)  %>% unlist() %>% as.vector()
-  if (length(tag) ==0) next
-  formulas <- paste(taglist[i],"~",sep = "")
-  for (j in 1:length(tag)) {
-    formulas <- paste(formulas,tag[j],sep = "")
-    if (j < length(tag)) formulas <- paste(formulas,"+",sep = "")
+  mod.refined <- mod.sum 
+  for(k in 1:3) {
+    tag <- mod.sum %>%
+      filter(parameter != "(Intercept)",
+             parameter != "Residuals",
+             as.numeric(as.character(p.Estimate.)) < alphalevel,
+             as.numeric(as.character(p.ANOVA.)) < alphalevel) %>%
+      select(parameter)  %>% unlist() %>% as.vector()
+    if (length(tag) ==0) next
+    formulas <- paste(taglist[i],"~",sep = "")
+    for (j in 1:length(tag)) {
+      formulas <- paste(formulas,tag[j],sep = "")
+      if (j < length(tag)) formulas <- paste(formulas,"+",sep = "")
+    }
+    formulas <- as.formula(formulas)
+    mod.refined <- lm(formulas, data = dat)
+    mod.sum.refined <- modExamine(mod.refined)
+    write.csv(mod.sum.refined, 
+              paste(dirPreset("relation/driver"),"/multiRegRefined_",taglist[i],".csv",sep = ""),
+              row.names = F)
   }
-  formulas <- as.formula(formulas)
-  mod.refined <- lm(formulas, data = dat)
-  mod.sum.refined <- modExamine(mod.refined)
-  write.csv(mod.sum.refined, 
-            paste(dirPreset("relation/driver"),"/multiRegRefined_",taglist[i],".csv",sep = ""),
-            row.names = F)
 }
 
 mod.pb.refined <- lm(Pb ~ clay:Al,data = dat)
