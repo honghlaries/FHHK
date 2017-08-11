@@ -124,3 +124,5 @@ for(i in 1:length(taglist)) {
             paste(dirPreset("relation/driver"),"/polyRegression_",taglist[i],".csv",sep = ""),
             row.names = F)
 }
+
+mod.Pb <- lm(Pb~clay+Al + clay:Al, data = dat)
