@@ -125,9 +125,9 @@ for(i in 1:length(taglist)) {
   write.csv(mod.sum, 
             paste(dirPreset("relation/driver"),"/multiRegExplo_",taglist[i],".csv",sep = ""),
             row.names = F)
-  mod.refined <- mod.sum 
-  for(k in 1:3) {
-    tag <- mod.refined %>%
+  mod.sum.refined <- mod.sum 
+  for(k in 1:10) {
+    tag <- mod.sum.refined %>%
       filter(parameter != "(Intercept)",
              parameter != "Residuals",
              as.numeric(as.character(p.Estimate.)) < alphalevel,
@@ -142,15 +142,17 @@ for(i in 1:length(taglist)) {
     formulas <- as.formula(formulas)
     mod.refined <- lm(formulas, data = dat)
     mod.sum.refined <- modExamine(mod.refined)
+    
+  }
+  if(length(tag) !=0) {
     write.csv(mod.sum.refined, 
               paste(dirPreset("relation/driver"),"/multiRegRefined_",taglist[i],".csv",sep = ""),
               row.names = F)
-  }
+    }
 }
 
 mod.pb.refined <- lm(Pb ~ clay:Al,data = dat)
 mod.pb.sum.refined <- modExamine(mod.pb.refined)
-
 write.csv(mod.pb.sum.refined, 
           paste(dirPreset("relation/driver"),"/multiRegRefined_Pb.csv",sep = ""),
           row.names = F)
