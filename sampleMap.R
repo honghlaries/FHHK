@@ -50,7 +50,7 @@ plot.map <- ggplot() +
                      expand = c(0,0)) +
   scale_y_continuous(name = "", breaks = break.lat, labels = label.lat, 
                      expand = c(0,0)) +
-  scale_fill_gradient(low = blues9[5], high = blues9[8]) +
+  scale_fill_gradient("Depth",low = blues9[5], high = blues9[8]) +
   scale_color_gradient(low = "black", high = "black") +
   coord_quickmap(xlim = lonRange, ylim = latRange) +
   theme_bw() + 
@@ -63,7 +63,8 @@ plot.map <- ggplot() +
 
 p <- direct.label(plot.map,list("bottom.pieces",vjust = -0.2))
 
-ggsave("map/samplemap.png",p,dpi = 600)
+ggsave("map/samplemap.png",plot.map,dpi = 600)
+ggsave("map/samplemap_label.png",p,dpi = 600)
 
 
 
