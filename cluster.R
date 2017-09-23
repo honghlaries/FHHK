@@ -1,10 +1,26 @@
 # Initialization
 rm(list = ls())
-source("constant.R");source("anaTls_multivariate.R");
+source("constant.R");source("anaTls_multivariate.R");source("anaTls_spatialView.R");
 pkgInitialization(c("dplyr","tidyr","sp","gdata","gridExtra","ggplot2","maptools"))
 dirInitialization("hca")
+bkmap <- readShapePoly("data/bou2_4p.shp")
+lonRange = c(119.2,121.8);latRange = c(33.7,35)
+source("grid.R")
 
 # Functions 
+spView.class <- function(elem,...) {
+  spView(dat = grid.value.tot %>% 
+           filter(trait == elem),
+         leg.name = paste("Igeo(",elem,")",sep = " "),
+         lonRange = lonRange, latRange = latRange) +
+    geom_polygon(aes(x = long, y = lat, group = group), 
+                 colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
+    theme(#legend.key.height = unit(5, "mm"),
+      #axis.text = element_blank(),
+      #axis.ticks = element_blank(),
+      plot.margin = margin(0,0,0,0))
+}
+
 
 # Examples
 dat <- datareadln() %>%
@@ -32,21 +48,19 @@ cluster.site <- hcluster(dat %>% select(Pb:Cd),
 
 plot.ca.tree <- plot(cluster.site) 
 
-dat <- data.frame(dat,class = cutree(cluster.site,5)) %>%
-  gather(trait, value, Al:sand,depth) 
-
-dat1 <- dat %>%
+dat1 <- data.frame(dat,class = cutree(cluster.site,5)) %>%
+  gather(trait, value, Al:sand,depth) %>%
   spread(trait, value) %>%
   dplyr::inner_join(read.csv("data/meta_sites.csv"), by = c("siteID" = "siteID")) %>%
   dplyr::select(lon, lat, class) %>%
-  mutate(class = factor(class))
+  mutate(group1 = (class == 1),group2 = (class == 2),group3 = (class == 3),
+         group4 = (class == 4),group5 = (class == 5),class = factor(class))
 
 dat1 <- as.data.frame(dat1)
+coordinates(dat1) <- ~lon+lat
 
-bkmap <- readShapePoly("data/bou2_4p.shp")
-lonRange = c(119.2,121.8);latRange = c(33.7,35)
 
-ggplot() + 
+plot.ca.sp <- ggplot() + 
   geom_point(aes(x = lon, y = lat, col = class), size = 2, data = dat1) +
   geom_polygon(aes(x = long, y = lat, group = group), 
                colour = "black", fill = "grey80", data = fortify(bkmap)) +
@@ -55,12 +69,36 @@ ggplot() +
   theme(aspect.ratio = 1/2,
         panel.grid = element_blank(),
         strip.background = element_blank(),
-        legend.position = "none") -> plot.ca.sp
+        legend.position = "none")
 
+doKrig(dat1, dat.grid, tag = "group1", cutoff = 2, 
+       modsel = vgm(0.1,"Mat",1,0.02,kappa = 1), 
+       dir = "hca/site/krig/group1") -> tmp
+grid.value <- as.data.frame(tmp) %>%  
+  select(lon, lat, value = var1.pred) %>%
+  #mutate(value = (value>=0.6)) %>%
+  as.data.frame()
+
+plot.ca.group1 <- ggplot() + 
+  geom_raster(aes(x = lon, y = lat, fill = value),
+              interpolate = T, show.legend = T, data = grid.value) +
+  geom_point(aes(x = lon, y = lat, col = group1), 
+             size = 2, data = as.data.frame(dat1)) +
+  geom_polygon(aes(x = long, y = lat, group = group), 
+               colour = "black", fill = "grey80", data = fortify(bkmap)) +
+  scale_color_grey(start = 0.8, end = 0.2) +
+  scale_alpha_continuous(range = c(0,0.8)) +
+  coord_quickmap(xlim = lonRange, ylim = latRange) +
+  theme_bw() + 
+  theme(aspect.ratio = 1/2,
+        panel.grid = element_blank(),
+        strip.background = element_blank(),
+        legend.position = "none")
 
 dat <- dat %>%
   group_by(trait,class) %>%
-  summarise(mean = mean(value,na.rm=T), se = sd(value,na.rm=T)/sqrt(sum(1-is.na(value))))
+  summarise(mean = mean(value,na.rm=T), 
+            se = sd(value,na.rm=T)/sqrt(sum(1-is.na(value))))
 
 dat <-dat %>%  
   group_by() %>%
@@ -92,6 +130,62 @@ ggplot(data = dat) +
         axis.text = element_blank(),
         axis.ticks = element_blank(),
         legend.position = "right") -> plot.ca.bar
+
+## sample layer
+dat <- datareadln() %>%
+  dplyr::select(Al:Cd,orgC:sand,depth,siteID)
+
+cluster.samp <- hcluster(dat %>% select(Pb:Cd),
+                         rname = dat$siteID)
+
+plot.ca.tree <- plot(cluster.samp) 
+
+dat1 <- data.frame(dat,class = cutree(cluster.samp,5)) %>%
+  group_by(siteID) %>%
+  summarise(group1 = sum(class == 1)/n(),group2 = sum(class == 2)/n(),
+            group3 = sum(class == 3)/n(),group4 = sum(class == 4)/n(),
+            group5 = sum(class == 5)/n()) %>%
+  dplyr::inner_join(read.csv("data/meta_sites.csv"), by = c("siteID" = "siteID")) %>%
+  select(lon,lat,group1:group5)
+  
+dat1 <- as.data.frame(dat1)
+coordinates(dat1) <- ~lon+lat
+
+plot.ca.sp <- ggplot() + 
+  geom_point(aes(x = lon, y = lat, col = class), 
+             size = 2, data = as.data.frame(dat1)) +
+  geom_polygon(aes(x = long, y = lat, group = group), 
+               colour = "black", fill = "grey80", data = fortify(bkmap)) +
+  coord_quickmap(xlim = lonRange, ylim = latRange) +
+  theme_bw() + 
+  theme(aspect.ratio = 1/2,
+        panel.grid = element_blank(),
+        strip.background = element_blank(),
+        legend.position = "none")
+
+doKrig(dat1, dat.grid, tag = "group1", cutoff = 2, 
+       modsel = vgm(0.1,"Mat",1,0.02,kappa = 1), 
+       dir = "hca/samp/krig/group1") -> tmp
+grid.value <- as.data.frame(tmp) %>%  
+  select(lon, lat, value = var1.pred) %>%
+  mutate(value = (value>=0.5)) %>%
+  as.data.frame()
+
+plot.ca.group1 <- ggplot() + 
+  geom_raster(aes(x = lon, y = lat, fill = value),
+              interpolate = T, show.legend = T, data = grid.value) +
+  geom_point(aes(x = lon, y = lat), 
+             size = 2, data = as.data.frame(dat1)) +
+  geom_polygon(aes(x = long, y = lat, group = group), 
+               colour = "black", fill = "grey80", data = fortify(bkmap)) +
+  scale_color_grey(start = 0.8, end = 0.2) +
+  scale_alpha_continuous(range = c(0,0.8)) +
+  coord_quickmap(xlim = lonRange, ylim = latRange) +
+  theme_bw() + 
+  theme(aspect.ratio = 1/2,
+        panel.grid = element_blank(),
+        strip.background = element_blank(),
+        legend.position = "none")
 
 ## saving plot
 ggsave(plot = plot.ca.sp, filename = "hca/casp.png", dpi = 600)
