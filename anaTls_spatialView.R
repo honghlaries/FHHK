@@ -89,20 +89,37 @@ spView <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = rainb
 
 doKrig <- function(dat, dat.grid, tag, cutoff, 
                    krigFormula = as.formula(paste(tag,"~1",sep="")), 
-                   modsel, dir = NULL) {
+                   modsel, quietmode = FALSE, addlog = NULL) {
   pkgLoad("sp");pkgLoad("gstat");pkgLoad("gridExtra");pkgLoad("RColorBrewer")
   
-  mod <- variogram(krigFormula,  dat, cutoff = cutoff)
-  fit <- fit.variogram(mod, model = modsel)
-  p2 <- plot(mod,fit, main = tag)
-  if (is.null(dir)) return(p2)
-  krig <- krige(krigFormula, dat, dat.grid, model = modsel)
-  col <- brewer.pal(9,"OrRd")
-  p1 <- spplot(dat, tag, do.log = F, main = tag, xlab = "Longi", ylab = "Lati") 
-  p3 <- spplot(krig["var1.pred"], main = tag, xlab = "Longi", ylab = "Lati", 
-               col.regions = col)
-  ggsave(filename = paste(dirPreset(dir),"/", "modelfit_",tag,".png", sep = ""), 
-         plot = grid.arrange(p1,p3,p2, ncol = 2, widths = c(15,15), heights = c(5,5)))
+  fitting <- FALSE
+  while (!fitting) {
+    mod <- variogram(krigFormula,  dat, cutoff = cutoff)
+    fit <- fit.variogram(mod, model = modsel)
+    krig <- krige(krigFormula, dat, dat.grid, model = modsel)
+    if(quietmode) {return(krig)}
+    col <- brewer.pal(9,"OrRd")
+    p1 <- spplot(dat, tag, do.log = F, main = tag, xlab = "Longi", ylab = "Lati") 
+    p2 <- plot(mod,fit, main = tag)
+    p3 <- spplot(krig["var1.pred"], main = tag, xlab = "Longi", ylab = "Lati", 
+                 col.regions = col)
+    grid.arrange(p1,p3,p2, ncol = 2, widths = c(15,15), heights = c(5,5))
+    print("Is fitting correct? 1:YES; 0:NO.")
+    fitting <- scan(n=1)
+    if(!fitting) print("Change condition? 1:YES; 0:NO."); if(!scan(n=1)) stop("fitting stopped")
+    print("Change formula? 1:YES; 0:NO.")
+    if(scan(n=1)) {print("Input New Formula:"); krigFormula = as.formula(scan(n=1,what = character()))}
+    print("Change cutoff? 1:YES; 0:NO.")
+    if(scan(n=1)) {print("Input New Cutoff:"); krigFormula = as.formula(scan(n=1))}
+    #print("Change model? 1:YES; 0:NO.")
+    #if(scan(n=1)) {print("Input New Model:"); modsel = as.formula(scan(n=1))}
+  }
+  
+  if(is.null(addlog)) {print("Add log file? 1:YES; 0:NO.")} addlog <- scan(n=1)
+  if(addlog) ggsave(filename = scan(what = character()), 
+                    plot = grid.arrange(p1,p3,p2, ncol = 2, 
+                                        widths = c(15,15), heights = c(5,5)))
+  
   krig
 }
 
