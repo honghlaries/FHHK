@@ -106,16 +106,18 @@ doKrig <- function(dat, dat.grid, tag, cutoff,
     grid.arrange(p1,p3,p2, ncol = 2, widths = c(15,15), heights = c(5,5))
     print("Is fitting correct? 1:YES; 0:NO.")
     fitting <- scan(n=1)
-    if(!fitting) print("Change condition? 1:YES; 0:NO."); if(!scan(n=1)) stop("fitting stopped")
-    print("Change formula? 1:YES; 0:NO.")
-    if(scan(n=1)) {print("Input New Formula:"); krigFormula = as.formula(scan(n=1,what = character()))}
-    print("Change cutoff? 1:YES; 0:NO.")
-    if(scan(n=1)) {print("Input New Cutoff:"); krigFormula = as.formula(scan(n=1))}
-    #print("Change model? 1:YES; 0:NO.")
-    #if(scan(n=1)) {print("Input New Model:"); modsel = as.formula(scan(n=1))}
+    if(!fitting) {
+      print("Change condition? 1:YES; 0:NO."); if(!scan(n=1)) stop("fitting stopped") 
+      print("Change formula? 1:YES; 0:NO.")
+      if(scan(n=1)) {print("Input New Formula:"); krigFormula = as.formula(scan(n=1,what = character()))}
+      print("Change cutoff? 1:YES; 0:NO.")
+      if(scan(n=1)) {print("Input New Cutoff:"); krigFormula = as.formula(scan(n=1))}
+      #print("Change model? 1:YES; 0:NO.")
+      #if(scan(n=1)) {print("Input New Model:"); modsel = as.formula(scan(n=1))}
+    }  
   }
   
-  if(is.null(addlog)) {print("Add log file? 1:YES; 0:NO.")} addlog <- scan(n=1)
+  if(is.null(addlog)) {print("Add log file? 1:YES; 0:NO."); addlog <- scan(n=1)}
   if(addlog) ggsave(filename = scan(what = character()), 
                     plot = grid.arrange(p1,p3,p2, ncol = 2, 
                                         widths = c(15,15), heights = c(5,5)))
