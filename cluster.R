@@ -71,23 +71,43 @@ plot.ca.sp <- ggplot() +
         strip.background = element_blank(),
         legend.position = "none")
 
-doKrig(dat1, dat.grid, tag = "group1", cutoff = 2, 
-       modsel = vgm(0.1,"Mat",1,0.02,kappa = 1), 
-       dir = "hca/site/krig/group1") -> tmp
-grid.value <- as.data.frame(tmp) %>%  
-  select(lon, lat, value = var1.pred) %>%
-  #mutate(value = (value>=0.6)) %>%
-  as.data.frame()
+grid.value.tot <- NULL
+grid.value <- as.data.frame(doKrig(dat1, dat.grid, tag = "group1", cutoff = 1.7,
+                                   modsel = vgm(0.25,"Sph",1,0), quietmode = T)) %>%  
+  select(lon, lat, value = var1.pred) 
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, class = 1)))
+
+grid.value <- as.data.frame(doKrig(dat1, dat.grid, tag = "group2", cutoff = 2,
+                                   modsel = vgm(0.25,"Sph",1,0), quietmode = T)) %>%  
+  select(lon, lat, value = var1.pred) 
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, class = 2)))
+
+grid.value <- as.data.frame(doKrig(dat1, dat.grid, tag = "group3", cutoff = 1,
+                                   modsel = vgm(0.15,"Lin",0,0.15), quietmode = T)) %>%  
+  select(lon, lat, value = var1.pred) 
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, class = 3)))
+
+grid.value <- as.data.frame(doKrig(dat1, dat.grid, tag = "group4", cutoff = 1.5,
+                                   modsel = vgm(0.15,"Sph",1,0), quietmode = T)) %>%  
+  select(lon, lat, value = var1.pred) 
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, class = 4)))
+
+grid.value <- as.data.frame(doKrig(dat1, dat.grid, tag = "group5", cutoff = 1,
+                                   modsel = vgm(0.09,"Lin",0,0.09), quietmode = T)) %>%  
+  select(lon, lat, value = var1.pred) 
+grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, class = 5)))
 
 plot.ca.group1 <- ggplot() + 
   geom_raster(aes(x = lon, y = lat, fill = value),
-              interpolate = T, show.legend = T, data = grid.value) +
-  geom_point(aes(x = lon, y = lat, col = group1), 
+              interpolate = T, show.legend = F, data = grid.value.tot) +
+  geom_contour(aes(x = lon, y = lat, z = value), breaks = 0.25, col = "red", 
+               size = 1.35, show.legend = F, data = grid.value.tot) +
+  geom_point(aes(x = lon, y = lat), col = "grey80",
              size = 2, data = as.data.frame(dat1)) +
   geom_polygon(aes(x = long, y = lat, group = group), 
                colour = "black", fill = "grey80", data = fortify(bkmap)) +
   scale_color_grey(start = 0.8, end = 0.2) +
-  scale_alpha_continuous(range = c(0,0.8)) +
+  facet_wrap(~class,ncol = 1) + 
   coord_quickmap(xlim = lonRange, ylim = latRange) +
   theme_bw() + 
   theme(aspect.ratio = 1/2,
