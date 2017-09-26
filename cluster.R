@@ -8,19 +8,6 @@ lonRange = c(119.2,121.8);latRange = c(33.7,35)
 source("grid.R")
 
 # Functions 
-spView.class <- function(elem,...) {
-  spView(dat = grid.value.tot %>% 
-           filter(trait == elem),
-         leg.name = paste("Igeo(",elem,")",sep = " "),
-         lonRange = lonRange, latRange = latRange) +
-    geom_polygon(aes(x = long, y = lat, group = group), 
-                 colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
-    theme(#legend.key.height = unit(5, "mm"),
-      #axis.text = element_blank(),
-      #axis.ticks = element_blank(),
-      plot.margin = margin(0,0,0,0))
-}
-
 
 # Examples
 dat <- datareadln() %>%
@@ -48,20 +35,20 @@ cluster.site <- hcluster(dat %>% select(Pb:Cd),
 
 plot.ca.tree <- plot(cluster.site) 
 
-dat1 <- data.frame(dat,class = cutree(cluster.site,5)) %>%
+dat1 <- data.frame(dat,class = cutree(cluster.site,3)) %>%
   gather(trait, value, Al:sand,depth) %>%
   spread(trait, value) %>%
   dplyr::inner_join(read.csv("data/meta_sites.csv"), by = c("siteID" = "siteID")) %>%
   dplyr::select(lon, lat, class) %>%
   mutate(group1 = (class == 1),group2 = (class == 2),group3 = (class == 3),
-         group4 = (class == 4),group5 = (class == 5),class = factor(class))
+         group4 = (class == 4),class = factor(class))
 
 dat1 <- as.data.frame(dat1)
 coordinates(dat1) <- ~lon+lat
 
 
 plot.ca.sp <- ggplot() + 
-  geom_point(aes(x = lon, y = lat, col = class), size = 2, data = dat1) +
+  geom_point(aes(x = lon, y = lat, col = class), size = 2, data = as.data.frame(dat1)) +
   geom_polygon(aes(x = long, y = lat, group = group), 
                colour = "black", fill = "grey80", data = fortify(bkmap)) +
   coord_quickmap(xlim = lonRange, ylim = latRange) +
@@ -82,31 +69,22 @@ grid.value <- as.data.frame(doKrig(dat1, dat.grid, tag = "group2", cutoff = 2,
   select(lon, lat, value = var1.pred) 
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, class = 2)))
 
-grid.value <- as.data.frame(doKrig(dat1, dat.grid, tag = "group3", cutoff = 1,
-                                   modsel = vgm(0.15,"Lin",0,0.15), quietmode = T)) %>%  
+grid.value <- as.data.frame(doKrig(dat1, dat.grid, tag = "group3", cutoff = 1.5,
+                                   modsel = vgm(0.10,"Sph",0.5), quietmode = T)) %>%  
   select(lon, lat, value = var1.pred) 
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, class = 3)))
 
-grid.value <- as.data.frame(doKrig(dat1, dat.grid, tag = "group4", cutoff = 1.5,
-                                   modsel = vgm(0.15,"Sph",1,0), quietmode = T)) %>%  
-  select(lon, lat, value = var1.pred) 
-grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, class = 4)))
 
-grid.value <- as.data.frame(doKrig(dat1, dat.grid, tag = "group5", cutoff = 1,
-                                   modsel = vgm(0.09,"Lin",0,0.09), quietmode = T)) %>%  
-  select(lon, lat, value = var1.pred) 
-grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, class = 5)))
-
-plot.ca.group1 <- ggplot() + 
+plot.ca.group <- ggplot() + 
   geom_raster(aes(x = lon, y = lat, fill = value),
               interpolate = T, show.legend = F, data = grid.value.tot) +
-  geom_contour(aes(x = lon, y = lat, z = value), breaks = 0.25, col = "red", 
-               size = 1.35, show.legend = F, data = grid.value.tot) +
-  geom_point(aes(x = lon, y = lat), col = "grey80",
+  geom_contour(aes(x = lon, y = lat, z = value), breaks = 0.5, col = "black", 
+               size = 1, show.legend = F, data = grid.value.tot) +
+  geom_point(aes(x = lon, y = lat), col = "black", shape = 2,
              size = 2, data = as.data.frame(dat1)) +
   geom_polygon(aes(x = long, y = lat, group = group), 
                colour = "black", fill = "grey80", data = fortify(bkmap)) +
-  scale_color_grey(start = 0.8, end = 0.2) +
+  scale_fill_gradient(low = "white", high = "grey20") +
   facet_wrap(~class,ncol = 1) + 
   coord_quickmap(xlim = lonRange, ylim = latRange) +
   theme_bw() + 
