@@ -98,24 +98,22 @@ spView.trait("salinity","") +
 
 spView.trait("pH","") + 
   scale_fill_gradientn("pH",guide = "colourbar",
-                       breaks = c(10,30,50,70,85), 
-                       labels = paste(c(10,30,50,70,85),"%",sep = ""),
                        colors = rainbow(7)) +
   guides(fill = guide_colourbar(barwidth = 1, barheight = 6)) -> p.pH
 
 spView.trait("orgC","") + 
-  scale_fill_gradientn("orgC",guide = "colourbar",
-                       breaks = c(0.5,1.5,3,4.5,6,7.5), 
-                       labels = paste(c(0.5,1.5,3,4.5,6,7.5),"%",sep = ""),
+  scale_fill_gradientn("orgC(g/kg)",guide = "colourbar",
+                       breaks = 300+1:5*1000, 
+                       labels = 0.3+1:5,
                        colors = rainbow(7)) +
   guides(fill = guide_colourbar(barwidth = 1, barheight = 6)) -> p.orgC
 
 spView.trait("AVS","") + 
-  scale_fill_gradientn("AVS",guide = "colourbar",
-                       breaks = c(0.5,1.5,3,4.5,6,7.5), 
-                       labels = paste(c(0.5,1.5,3,4.5,6,7.5),"%",sep = ""),
+  scale_fill_gradientn("AVS(mg/kg)",guide = "colourbar",
+                       breaks = 170+1:7*50, 
+                       labels = 170+1:7*50,
                        colors = rainbow(7)) +
   guides(fill = guide_colourbar(barwidth = 1, barheight = 6)) -> p.AVS
 
-ggsave(filename = "map/sand.silt.clay.png", dpi = 600, width = 4,height = 5.5,
-       plot = grid.arrange(p.clay,p.silt,p.sand,ncol=1,widths = 15))
+ggsave(filename = "map/sal.ph.orgc.avs.png", dpi = 600, width = 7.5,height = 5,
+       plot = grid.arrange(p.salinity,p.pH,p.orgC,p.AVS,ncol=2,widths = c(15,15)))
