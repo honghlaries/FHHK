@@ -94,7 +94,7 @@ pairPlot <- function(dat, xtag, ytag, themeset, suffix = "") {
          width = 6, height = 6, dpi = 600)
 }
 
-rdaLoadingCal <- function(env, trait, samptag, dir, log = T) { 
+rdaLoadingCal <- function(env, trait, samptag, nfact = 2, dir, log = T) { 
   pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("vegan")
   
   null <- rda(trait~1, env, scale = T) 
@@ -104,13 +104,13 @@ rdaLoadingCal <- function(env, trait, samptag, dir, log = T) {
   aov <- anova.cca(mod,permutations = how(nperm=9999))
   print(aov)
   # plot(mod)
-  traitload <- mod$CCA$v[,1:2] 
+  traitload <- mod$CCA$v[,1:nfact] 
   traitload <- data.frame(traitload,traittag = row.names(traitload))
   
-  envload <- mod$CCA$biplot[,1:2] 
+  envload <- mod$CCA$biplot[,1:nfact] 
   envload <- data.frame(envload,envtag = row.names(envload))
   
-  sampload <- mod$CCA$wa[,1:2]
+  sampload <- mod$CCA$wa[,1:nfact]
   sampload <- data.frame(sampload,samptag)
   
   if(log) {
@@ -124,34 +124,49 @@ rdaLoadingCal <- function(env, trait, samptag, dir, log = T) {
        sampload = sampload) -> dat
 }
 
-rdaLoadingPlot <- function(dat) {
-  pkgLoad("ggplot2")
+rdaLoadingPlot <- function(dat,nfact = 2) {
+  pkgLoad("ggplot2");pkgLoad("dplyr");pkgLoad("tidyr");
   
-  traitload <- dat$traitload
-  traitload <- rbind(data.frame(RDA1 = 0, RDA2 = 0, traittag = dat$traitload$traittag),traitload)
-  ntrait <- length(row.names(traitload))
+  traitload <- dat$traitload %>%
+    gather_("axixs", "RDAx",paste("RDA",2:nfact,sep=""))
+  ntrait <- length(unique(traitload$traittag))
+  traitload <- rbind(data.frame(RDA1 = 0, RDAx = 0, 
+                                axixs = rep(paste("RDA",2:nfact,sep=""),each = ntrait),
+                                traittag = rep(unique(traitload$traittag),times = nfact-1) ),
+                     traitload)
   
-  envload <- dat$envload
-  envload <- rbind(data.frame(RDA1 = 0, RDA2 = 0, envtag = dat$envload$envtag),envload)
-  nenv <- length(row.names(envload))
+  envload <- dat$envload%>%
+    gather_("axixs", "RDAx",paste("RDA",2:nfact,sep=""))
+  nenv <- length(unique(envload$envtag))
+  envload <- rbind(data.frame(RDA1 = 0, RDAx = 0, 
+                              axixs = rep(paste("RDA",2:nfact,sep=""),each = nenv),
+                              envtag = rep(unique(envload$envtag),times = nfact-1) ),
+                   envload)
   
-  sampload <- dat$sampload
+  
+  sampload <- dat$sampload%>%
+    gather_("axixs", "RDAx",paste("RDA",2:nfact,sep=""))
+  
+  labelerFun <- function(str){
+    paste("RDA1(x) vs ",str,"(y)",sep = "")
+  }
   
   ggplot() +
     geom_path(aes(x = x, y = y),col = "black", size = 0.7, linetype = 2, 
               data = circleFun()) +
-    geom_point(aes(x = RDA1,y = RDA2), size = 1.5, color = "grey50", shape = 1,
+    geom_point(aes(x = RDA1,y = RDAx), size = 1.5, color = "grey50", shape = 1,
                data = sampload) +
-    geom_path(aes(x = RDA1,y = RDA2, group = envtag), size = 0.7,
+    geom_path(aes(x = RDA1,y = RDAx, group = envtag), size = 0.7,
               data = envload, col = "black") +
-    geom_path(aes(x = RDA1,y = RDA2, group = traittag), size = 0.7,
+    geom_path(aes(x = RDA1,y = RDAx, group = traittag), size = 0.7,
               data = traitload, col = "blue") +
-    geom_label(aes(x = RDA1,y = RDA2, label = envtag), size = 3.5, 
-               data = envload[nenv/2+1:nenv,], col = "black") + 
-    geom_label(aes(x = RDA1,y = RDA2, label = traittag), size = 3.5, 
-               data = traitload[ntrait/2+1:ntrait,], col = "blue") +
-    scale_x_continuous(name = "RDA1", limits = c(-1.1,1.1)) +
-    scale_y_continuous(name = "RDA2", limits = c(-1.1,1.1)) +
+    geom_label(aes(x = RDA1,y = RDAx, label = envtag), size = 3.5, 
+               data = envload[(nenv*(nfact-1)+1):(2*nenv*(nfact-1)),], col = "black") + 
+    geom_label(aes(x = RDA1,y = RDAx, label = traittag), size = 3.5, 
+               data = traitload[(ntrait*(nfact-1)+1):(2*ntrait*(nfact-1)),], col = "blue") +
+    scale_x_continuous("",limits = c(-1.1,1.1)) +
+    scale_y_continuous("",limits = c(-1.1,1.1)) +
+    facet_wrap(~axixs,labeller = labeller(axixs = labelerFun),ncol = 1)+
     theme_bw() + 
     theme(aspect.ratio = 1,
           legend.position = "none",
