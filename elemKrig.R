@@ -1,6 +1,6 @@
 ## Initialization
 rm(list = ls())
-source("constant.R");source("anaTls_spatialView.R");
+source("constant.R");source("anaTls_spatialView.R");source("uniTls_csv2latex.R")
 pkgInitialization(c("dplyr","tidyr","sp","gstat","ggplot2"))
 source("grid.R")
 
@@ -25,6 +25,15 @@ compare_lv <- function(dat,tag) {
                       quantile(read.csv("data/result_element.csv")[,tag],
                                probs = 0.75),][,tag])) 
   data.frame(tag,ratio)
+}
+
+summary.tab <- function(dat,tag,digit=3) {
+  dat <- dat[,tag] 
+  min <- format(min(unlist(dat)),digit = digit)
+  max <- format(max(unlist(dat)),digit = digit)
+  mean <- format(mean(unlist(dat),na.rm = T),digit = digit)
+  sd <- format(sd(unlist(dat),na.rm = T),digit = digit)
+  paste("$",mean,"\\","pm",sd,"(",min,"-",max,")","$",sep="")
 }
 
 ## Example
@@ -149,4 +158,28 @@ compare_lv(dat,"Pb") %>%
   rbind(compare_lv(dat,"Zn")) %>%
   rbind(compare_lv(dat,"As")) %>%
   rbind(compare_lv(dat,"Cd")) 
+
+## latex table for basic info
+108 %>% 
+  cbind(summary.tab(dat,"Pb")) %>%
+  cbind(summary.tab(dat,"Ni")) %>%
+  cbind(summary.tab(dat,"Cu")) %>%
+  cbind(summary.tab(dat,"Zn")) %>%
+  cbind(summary.tab(dat,"Cr")) %>%
+  cbind(summary.tab(dat,"As")) %>%
+  cbind(summary.tab(dat,"Cd")) %>%
+  cbind("This study") %>%
+  as.data.frame()-> tab.sum
+
+colnames(tab.sum) <- c("Sample size","Pb","Ni","Cu","Zn","Cr","As","Cd","Source") 
+
+for(i in 1:9) {
+  tab.sum[,i]<- as.character(tab.sum[,i])
+}
+
+conveyLaTex(tab.sum,"element/summary.txt")
+  
+
+
+  
 
