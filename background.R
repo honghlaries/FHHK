@@ -151,4 +151,27 @@ for(i in 1:6) {
 
 conveyLaTex(dat.sum,"map/background.txt")
 
+
+## SOC & AVS : surrounding structure
+dat <-datareadln() %>% 
+  dplyr::select(siteID,distance,orgC,AVS) 
+
+qplot(x = distance, y = orgC, data = dat) + 
+  geom_smooth(method = "loess") +
+  geom_point(aes(x = distance, y = orgC), col = "red", data = dat[order(dat$orgC)[82:108],])
+max(dat[order(dat$orgC)[82:108],"distance"])
+
+qplot(x = distance, y = AVS, data = dat) + 
+  geom_smooth(method = "loess") +
+  geom_point(aes(x = distance, y = AVS), col = "red", data = dat[order(dat$AVS)[82:108],])
+max(dat[order(dat$AVS)[82:108],"distance"])
+  
+qplot(x = orgC, y = AVS, data = dat) + 
+  geom_smooth(method = "loess")
+
+
+
+
+
+
   
