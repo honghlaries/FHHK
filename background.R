@@ -1,6 +1,6 @@
 ## Initialization
 rm(list = ls())
-source("constant.R");source("anaTls_spatialView.R");
+source("constant.R");source("anaTls_spatialView.R");source("uniTls_csv2latex.R")
 pkgInitialization(c("dplyr","tidyr","sp","gstat","ggplot2"))
 source("grid.R")
 
@@ -17,6 +17,20 @@ spView.trait <- function(traittag,unit,...) {
           axis.ticks = element_blank())
 }
 
+summary.tab <- function(dat,tag,digit=3) {
+  dat <- dat[c(tag,"siteID")] 
+  order <- order(as.data.frame(dat[tag]))
+  n <- length(dat$siteID)
+  min <- paste(format(dat[tag][order[1],],digit = digit),
+                 "(",dat['siteID'][order[1],],")",sep = "")
+  max <- paste(format(dat[tag][order[n],],digit = digit),
+                 "(",dat['siteID'][order[n],],")",sep = "")
+  mean <- format(mean(unlist(dat[tag]),na.rm = T),digit = digit)
+  sd <- format(sd(unlist(dat[tag]),na.rm = T),digit = digit)
+  data.frame(tag,n,mean,sd,min,max)
+}
+
+## datareadln
 dat <- datareadln() %>% 
   dplyr::select(siteID,lon,lat,salinity,pH,orgC,AVS,clay,silt,sand) %>%
   tidyr::gather(trait,value,salinity:sand) %>%
@@ -117,3 +131,24 @@ spView.trait("AVS","") +
 
 ggsave(filename = "map/sal.ph.orgc.avs.png", dpi = 600, width = 7.5,height = 5,
        plot = grid.arrange(p.salinity,p.pH,p.orgC,p.AVS,ncol=2,widths = c(15,15)))
+
+## summary table 
+dat <-datareadln() %>% 
+  dplyr::select(siteID,lon,lat,salinity,pH,orgC,AVS,clay,silt,sand)
+
+summary.tab(dat,"pH") %>% 
+  rbind(summary.tab(dat,"salinity")) %>%
+  rbind(summary.tab(dat,"orgC")) %>%
+  rbind(summary.tab(dat,"AVS")) %>%
+  rbind(summary.tab(dat,"clay")) %>%
+  rbind(summary.tab(dat,"silt")) %>%
+  rbind(summary.tab(dat,"sand")) -> dat.sum
+
+for(i in 1:6) {
+  dat.sum[,i]<- as.character(dat.sum[,i])
+}
+
+
+conveyLaTex(dat.sum,"map/background.txt")
+
+  
