@@ -160,7 +160,8 @@ compare_lv(dat,"Pb") %>%
   rbind(compare_lv(dat,"Cd")) 
 
 ## latex table for basic info
-108 %>% 
+"Abandoned Yellow River Delta" %>% 
+  cbind(108) %>%
   cbind(summary.tab(dat,"Pb")) %>%
   cbind(summary.tab(dat,"Ni")) %>%
   cbind(summary.tab(dat,"Cu")) %>%
@@ -171,9 +172,9 @@ compare_lv(dat,"Pb") %>%
   cbind("This study") %>%
   as.data.frame()-> tab.sum
 
-colnames(tab.sum) <- c("Sample size","Pb","Ni","Cu","Zn","Cr","As","Cd","Source") 
+colnames(tab.sum) <- c("Location","Sample size","Pb","Ni","Cu","Zn","Cr","As","Cd","Source") 
 
-for(i in 1:9) {
+for(i in 1:10) {
   tab.sum[,i]<- as.character(tab.sum[,i])
 }
 
