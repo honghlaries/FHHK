@@ -17,6 +17,16 @@ spView.elem <- function(elem,...) {
           axis.ticks = element_blank())
 }
 
+compare_lv <- function(dat,tag) {
+  ratio <- mean(unlist(dat[dat[,tag] >=
+                           quantile(read.csv("data/result_element.csv")[,tag],
+                                               probs = 0.75),][,tag])) /
+    mean(unlist(dat[dat[,tag] < 
+                      quantile(read.csv("data/result_element.csv")[,tag],
+                               probs = 0.75),][,tag])) 
+  data.frame(tag,ratio)
+}
+
 ## Example
 dat <- datareadln() %>%
   tidyr::gather(trait,value,depth,Pb:Cd) %>%
@@ -124,3 +134,19 @@ p <- grid.arrange(plot.pb,plot.ni,plot.cu,plot.zn,plot.cr,plot.as,plot.cd,
 
 ggsave(filename = "element/krig/gather_krig_element.png", plot = p, 
        dpi = 600, width = 8, height = 8)
+
+## estimate uneven
+dat <- datareadln() %>%
+  tidyr::gather(trait,value,depth,Pb:Cd) %>%
+  dplyr::group_by(siteID,trait,lon,lat) %>%
+  dplyr::summarise(value = mean(value)) %>%
+  tidyr::spread(trait,value)
+
+compare_lv(dat,"Pb") %>%
+  rbind(compare_lv(dat,"Cr")) %>%
+  rbind(compare_lv(dat,"Ni")) %>%
+  rbind(compare_lv(dat,"Cu")) %>%
+  rbind(compare_lv(dat,"Zn")) %>%
+  rbind(compare_lv(dat,"As")) %>%
+  rbind(compare_lv(dat,"Cd")) 
+
