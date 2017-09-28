@@ -8,8 +8,7 @@ source("grid.R")
 
 # Example 
 env <- datareadln() %>% 
-  mutate(proton = 10^(-pH)) %>%
-  select(depth,distance,salinity,proton,Al,Fe,Mn,orgC,AVS,clay,silt,sand) 
+  select(depth,distance,salinity,pH,Al,Fe,Mn,orgC,AVS,clay,silt,sand) 
 trait <- datareadln() %>% select(Pb:Cd)
 samptag <- datareadln() %>% select(siteID)
 rda <- rdaLoadingCal(env, trait, samptag, 3, dir = "rda", log = F)
@@ -24,17 +23,14 @@ dat <- rda$sampload %>%
 dat <- as.data.frame(dat)
 coordinates(dat) <- ~lon+lat
 
-doKrig(dat1, dat.grid, tag = "group1", cutoff = 1.7,
-       modsel = vgm(0.25,"Sph",1,0), quietmode = T)
-
 grid.value.tot <- NULL
 grid.value <- as.data.frame(doKrig(dat, dat.grid, tag = "RDA1", cutoff = 1.5, 
                                    modsel = vgm(0.015,"Sph",0.7), quietmode = T)) %>%  
   select(lon, lat, value = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "RDA1")))
 
-grid.value <- as.data.frame(doKrig(dat, dat.grid, tag = "RDA2", cutoff = 2.3, 
-                                   modsel = vgm(0.05,"Mat",1, kappa = 0.25), quietmode = T)) %>% 
+grid.value <- as.data.frame(doKrig(dat, dat.grid, tag = "RDA2", cutoff = 2, 
+                                   modsel = vgm(0.02,"Mat",1.5, kappa = 0.25), quietmode = T)) %>% 
   select(lon, lat, value = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "RDA2")))
 
@@ -45,10 +41,12 @@ grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = 
 
 spView.grid(dat = grid.value.tot, leg.name = "Loading",
             grad.value = c(-0.25,-0.2,-0.1,0,0.1,0.2,0.25), 
-            grad.tag = c(-0.25,-0.2,-0.1,0,0.1,0.2,0.25), 
+            grad.tag = c(-0.49,-0.2,-0.1,0,0.1,0.2,0.25), 
             #grad.col = c("#D2E9FF","#97CBFF","#66B3FF","#2894FF","#0072E3","#005AB5","#003D79"),
             lonRange = lonRange,
-            latRange = latRange, pncol = 1) -> plot.sp
+            latRange = latRange, pncol = 1)+
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank())-> plot.sp
 
 grid.arrange(plot.load, plot.sp, ncol = 2, widths = c(5,5), heights = 10) -> plot.gather
 
