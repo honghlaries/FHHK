@@ -186,15 +186,18 @@ grid.value.tot1 <- grid.value.tot1 %>%
   tidyr::gather(class,value,c1:c4) %>%
   dplyr::filter(value != 0) 
   
-plot.ca.indicator1 <- ggplot() + 
+plot.ca.indicator1 <- 
+  
+  ggplot() + 
   geom_raster(aes(x = lon, y = lat, fill = class),
               interpolate = T, show.legend = F, data = grid.value.tot1) +
   geom_polygon(aes(x = long, y = lat, group = group), 
                colour = "black", fill = "grey80", data = fortify(bkmap)) +
-  geom_text(aes(x = c(),
-                y = c(),
-                label = c(),
-                angle = c())) + 
+  geom_text(aes(x = c(120.48,120.48,121.58,120.38,120.58,121.38),
+                y = c(34.36,34.80,34.75,34.57,34.20,34.00),
+                label = c("Class 4","Class 1","Class 1","Class 3","Class 3","Class 2"),
+                angle = c(0,-5,-45,25,-5,65),
+                size = c(20,20,20,20,20,20))) + 
   scale_fill_grey() +
   xlab("") + ylab("") +
   coord_quickmap(xlim = lonRange, ylim = latRange) +
