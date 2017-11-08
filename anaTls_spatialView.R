@@ -38,13 +38,40 @@ spView.grid <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = 
                         grad.value = quantile(dat$value, probs = (1:bins)/(bins+1)), grad.tag = grad.value, pncol) {
   pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("ggplot2");pkgLoad("maptools");
   pkgLoad("rgdal")
-  bkmap <- readShapePoly("data/bou2_4p.shp")
+  
   ggplot() + 
     geom_raster(aes(x = lon, y = lat, fill = value), data = dat) +
-    #geom_contour(aes(x = lon, y = lat, z = value), col = "black", bins = bins, data = dat) +
-    geom_polygon(aes(x = long, y = lat, group = group), 
-                 colour = "black", fill = "grey80", data = fortify(bkmap)) +
     scale_fill_gradientn(leg.name, breaks = grad.value, labels = grad.tag, colours = grad.col) +
+    scale_x_continuous(name = "", expand = c(0,0)) +
+    scale_y_continuous(name = "", expand = c(0,0)) +
+    coord_quickmap(xlim = lonRange, ylim = latRange) +
+    facet_wrap(~trait,ncol = pncol) + 
+    theme_bw() + 
+    theme(aspect.ratio = (latiRange[2]-latiRange[1])/(longiRange[2]-longiRange[1]),
+          panel.grid = element_blank(),
+          strip.background = element_blank())
+}
+
+spView.grid.interval <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = rainbow(15),
+                        grad.value = quantile(dat$value, probs = (1:bins)/(bins+1)), grad.tag = grad.value, pncol) {
+  pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("ggplot2");pkgLoad("maptools");
+  pkgLoad("rgdal")
+  
+  dat$class <- "c0"
+  labels <- paste("<", grad.value[1])
+  
+  for(i in 1:(length(grad.value)-1)) {
+    dat[(dat$value - grad.value[i])> 0.0001,"class"] <- paste("c", i, sep = "")
+    labels <- c(labels, paste(grad.value[i], "~", grad.value[i+1]))
+  }
+  
+  dat[(dat$value - grad.value[length(grad.value)])> 0.0001,"class"] <- paste("c", length(grad.value), sep = "")
+  labels <- c(labels, paste(">", grad.value[i]))
+  
+  
+  ggplot() + 
+    geom_raster(aes(x = lon, y = lat, fill = class), data = dat) +
+    scale_fill_brewer(leg.name, labels = labels) +
     scale_x_continuous(name = "", expand = c(0,0)) +
     scale_y_continuous(name = "", expand = c(0,0)) +
     coord_quickmap(xlim = lonRange, ylim = latRange) +
