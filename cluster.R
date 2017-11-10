@@ -12,7 +12,6 @@ source("grid.R")
 dat <- datareadln() %>%
   group_by(siteID) %>%
   summarise(depth = mean(depth),
-            Al = mean(Al),
             Fe = mean(Fe),
             Mn = mean(Mn),
             Pb = mean(Pb),
@@ -27,7 +26,7 @@ dat <- datareadln() %>%
             clay = mean(clay),
             silt = mean(silt),
             sand = mean(sand)) %>%
-  dplyr::select(Al:Cd,orgC:sand,depth,siteID)
+  dplyr::select(Fe:Cd,orgC:sand,depth,siteID)
 
 cluster.site <- hcluster(dat %>% select(Pb:Cd),
                          rname = dat$siteID)
@@ -35,7 +34,7 @@ cluster.site <- hcluster(dat %>% select(Pb:Cd),
 plot.ca.tree <- plot(cluster.site) 
 
 dat1 <- data.frame(dat,class = cutree(cluster.site,3)) %>%
-  gather(trait, value, Al:sand,depth) %>%
+  gather(trait, value, Fe:sand,depth) %>%
   spread(trait, value) %>%
   dplyr::inner_join(read.csv("data/meta_sites.csv"), by = c("siteID" = "siteID")) %>%
   dplyr::select(lon, lat, class) %>%
@@ -92,29 +91,30 @@ plot.ca.group <- ggplot() +
         strip.background = element_blank(),
         legend.position = "none")
 
-dat <- dat %>%
+dat2 <- data.frame(dat,class = cutree(cluster.site,3)) %>%
+  gather(trait, value, Fe:sand,depth) %>% 
   group_by(trait,class) %>%
   summarise(mean = mean(value,na.rm=T), 
-            se = sd(value,na.rm=T)/sqrt(sum(1-is.na(value))))
+            se = sd(value,na.rm=T)/sqrt(sum(1-is.na(value)))) 
 
-dat <-dat %>%  
+dat2 <-dat2 %>%  
   group_by() %>%
-  mutate(trait = factor(trait,levels = c("sand","silt","clay","depth","Al","Fe","Mn","orgC","AVS","Pb","Cr","Ni","Cu","Zn","As","Cd")),
+  mutate(trait = factor(trait,levels = c("sand","silt","clay","depth","Fe","Mn","orgC","AVS","Pb","Cr","Ni","Cu","Zn","As","Cd")),
          class = factor(class))%>%
   arrange(trait)
 
-cache <- rep(NA,length(row.names(dat)))
-tmp <- c("sand","silt","clay","depth","Al","Fe","Mn","orgC","AVS")
+cache <- rep(NA,length(row.names(dat2)))
+tmp <- c("sand","silt","clay","depth","Fe","Mn","orgC","AVS")
 for(i in 1:length(tmp)) {
-  cache[dat$trait == tmp[i]] <- "Environment Factor" 
+  cache[dat2$trait == tmp[i]] <- "Environment Factor" 
 }
 tmp <- c("Pb","Cr","Ni","Cu","Zn","As","Cd")
 for(i in 1:length(tmp)) {
-  cache[dat$trait == tmp[i]] <- "Trageted Heavy Metal" 
+  cache[dat2$trait == tmp[i]] <- "Trageted Heavy Metal" 
 }
-dat <- data.frame(dat, taggroup = cache)
+dat2 <- data.frame(dat2, taggroup = cache)
 
-ggplot(data = dat) + 
+ggplot(data = dat2) + 
   geom_bar(aes(x = trait, y = mean, group = class, fill = class), stat = "identity",
            position = position_dodge(width = 0.9)) +
   geom_errorbar(aes(x = trait, ymin = mean - se, ymax = mean + se, group = class), width = 0.5 ,size = 0.7, col = "black",
@@ -130,7 +130,7 @@ ggplot(data = dat) +
 
 ## sample layer
 dat <- datareadln() %>%
-  dplyr::select(Al:Cd,orgC:sand,depth,siteID)
+  dplyr::select(Fe:Cd,orgC:sand,depth,siteID)
 
 cluster.samp <- hcluster(dat %>% select(Pb:Cd),
                          rname = dat$siteID)
@@ -198,26 +198,7 @@ plot.ca.indicator1 <-
                 label = c("Class 4","Class 1","Class 1","Class 3","Class 3","Class 2"),
                 angle = c(0,-5,-45,25,-5,65),
                 size = c(20,20,20,20,20,20))) + 
-  scale_fill_grey() +
-  xlab("") + ylab("") +
-  coord_quickmap(xlim = lonRange, ylim = latRange) +
-  theme_bw() + 
-  theme(aspect.ratio = (latiRange[2]-latiRange[1])/(longiRange[2]-longiRange[1]),
-        panel.grid = element_blank(),
-        strip.background = element_blank(),
-        axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        legend.position = "none")
-
-grid.value.tot2 <- grid.value.tot %>%
-  dplyr::filter(value >= 0.5)  
-
-plot.ca.indicator2 <- ggplot() + 
-  geom_raster(aes(x = lon, y = lat, fill = class),
-              interpolate = T, show.legend = F, data = grid.value.tot2) +
-  geom_polygon(aes(x = long, y = lat, group = group), 
-               colour = "black", fill = "grey80", data = fortify(bkmap)) +
-  #scale_fill_grey() +
+  scale_fill_manual(values = blues9[1:4*2]) +
   xlab("") + ylab("") +
   coord_quickmap(xlim = lonRange, ylim = latRange) +
   theme_bw() + 
@@ -229,19 +210,19 @@ plot.ca.indicator2 <- ggplot() +
         legend.position = "none")
 
 dat1 <-data.frame(dat,class = cutree(cluster.samp,4)) %>%  
-  gather(trait, value, Al:depth) %>%
+  gather(trait, value, Fe:depth) %>%
   group_by(trait,class) %>%
   summarise(mean = mean(value,na.rm = T),
             se = sd(value,na.rm= T)/sqrt(n()-sum(is.na(value)))) %>%
   group_by()%>%
-  mutate(trait = factor(trait,levels = c("sand","silt","clay","depth","Al","Fe",
+  mutate(trait = factor(trait,levels = c("sand","silt","clay","depth","Fe",
                                          "Mn","orgC","AVS","Pb","Cr","Ni","Cu",
                                          "Zn","As","Cd")),
          class = factor(class))%>%
   arrange(trait)
 
 cache <- rep(NA,length(row.names(dat1)))
-tmp <- c("sand","silt","clay","depth","Al","Fe","Mn","orgC","AVS")
+tmp <- c("sand","silt","clay","depth","Fe","Mn","orgC","AVS")
 for(i in 1:length(tmp)) {
   cache[dat1$trait == tmp[i]] <- "Environment Factor" 
 }
@@ -251,14 +232,15 @@ for(i in 1:length(tmp)) {
 }
 dat1 <- data.frame(dat1, taggroup = cache)
 
-plot.ca.bar <- ggplot(data = dat1) + 
+plot.ca.bar <- 
+  ggplot(data = dat1) + 
   geom_bar(aes(x = trait, y = mean, group = class, fill = class), stat = "identity",
            position = position_dodge(width = 0.9)) +
   geom_errorbar(aes(x = trait, ymin = mean - se, ymax = mean + se, group = class),
                 width = 0.5 ,size = 0.7, col = "black",
                 position = position_dodge(width = 0.9)) + 
   facet_wrap(~trait, scale = "free") + 
-  scale_fill_grey() +
+  scale_fill_manual(values = blues9[1:4*2]) +
   xlab("") + ylab("") +
   theme_bw() + 
   theme(aspect.ratio = 1,
@@ -268,8 +250,9 @@ plot.ca.bar <- ggplot(data = dat1) +
         axis.ticks = element_blank(),
         legend.position = "right") 
 
-plot.gather <- grid.arrange(plot.ca.indicator1,plot.ca.bar,
-               ncol = 2, widths = c(10,6))
+plot.gather <- 
+  grid.arrange(plot.ca.indicator1,plot.ca.bar,
+               ncol = 2, widths = c(10,6.5))
 
 ggsave(filename = "hca/gather_hcaPlot.png", plot = plot.gather, 
        dpi = 600, width = 16, height = 6)

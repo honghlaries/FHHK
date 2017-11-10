@@ -160,9 +160,9 @@ rdaLoadingPlot <- function(dat,nfact = 2) {
               data = envload, col = "black") +
     geom_path(aes(x = RDA1,y = RDAx, group = traittag), size = 0.7,
               data = traitload, col = "blue") +
-    geom_label(aes(x = RDA1,y = RDAx, label = envtag), size = 3.5, 
+    geom_label(aes(x = RDA1,y = RDAx, label = envtag), size = 3, alpha = 0.7,
                data = envload[(nenv*(nfact-1)+1):(2*nenv*(nfact-1)),], col = "black") + 
-    geom_label(aes(x = RDA1,y = RDAx, label = traittag), size = 3.5, 
+    geom_label(aes(x = RDA1,y = RDAx, label = traittag), size = 3, alpha = 0.7,
                data = traitload[(ntrait*(nfact-1)+1):(2*ntrait*(nfact-1)),], col = "blue") +
     scale_x_continuous("",limits = c(-1.1,1.1)) +
     scale_y_continuous("",limits = c(-1.1,1.1)) +

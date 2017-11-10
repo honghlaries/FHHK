@@ -1,34 +1,55 @@
 ## Initialization
 rm(list = ls())
 source("constant.R");
-pkgInitialization(c("dplyr","tidyr","ggplot2","gridExtra"))
+pkgInitialization(c("dplyr","tidyr","ggplot2","gridExtra","MASS"))
 
 ## Functions 
-relationPlot <- function(dat, fact, resp, col) {
-  ggplot() +
-    geom_point(aes_string(x = fact, y = resp), col = "black", data = dat) +
-    geom_smooth(aes_string(x = fact, y = resp), method = "loess", col = col, fill = col, data = dat) +
-    theme_bw()
+relationPlot <- function(dat, fact, resp, col, family) {
+ 
+  ggplot(aes_string(x = fact, y = resp),data = dat) +
+    geom_point(col = "grey80") +
+    geom_smooth(method="loess", se = F, linetype = 2, col = "black") +
+    stat_smooth(method="glm", method.args=list(family = family), 
+                col = col, fill = col, alpha = 0.3) +
+    theme_bw() + 
+    theme(panel.grid = element_blank())
 }
 
-relationPlot.gather <- function(dat,tag) {
-  plot.dist <- relationPlot(dat, "distance", tag, "green")
-  plot.clay <- relationPlot(dat, "clay", tag, "black")
-  plot.dep <- relationPlot(dat, "depth", tag, "blue")
-  plot.al <- relationPlot(dat, "Al", tag, "purple")
-  plot.h <- relationPlot(dat, "proton", tag, "orange")
-  plot.sal <- relationPlot(dat, "salinity", tag, "brown")
-  p <- grid.arrange(plot.dist,plot.dep,plot.clay,plot.al,plot.h,plot.sal, nrow=2, ncol=3)
+relationPlot.gather <- function(dat, tag, modfamilies = rep("poisson",6)) {
+ 
+  plot.clay <- relationPlot(dat, "clay", tag, "black",family = modfamilies[1])
+  plot.dep <- relationPlot(dat, "depth", tag, "blue",family = modfamilies[2])
+  plot.h <- relationPlot(dat, "pH", tag, "orange",family = modfamilies[3])
+  plot.fe <- relationPlot(dat, "Fe", tag, "purple",family = modfamilies[4])
+  plot.sal <- relationPlot(dat, "salinity", tag, "brown",family = modfamilies[5])
+  plot.avs <- relationPlot(dat, "AVS", tag, "green",family = modfamilies[6])
+  
+  p <- grid.arrange(plot.clay, plot.dep, plot.h, plot.fe, plot.sal, plot.avs, 
+                    nrow=2, ncol=3)
   p
 }
 
-stepFitting <- function(dat,tag) {
-  null <- lm(as.formula(paste(tag,"~1",sep = "")), data = dat) 
-  full <- lm(as.formula(paste(tag,"~distance*depth*clay*Al*proton*salinity",sep = "")), data = dat) 
-  step(null, scope = formula(full), test = "F")
+stepFitting <- function(dat, tag, method = "lm", family) {
+  
+  if (method == "lm") {
+    null <- lm(as.formula(paste(tag,"~1",sep = "")), data = dat) 
+    # full mod was based on RDA result
+    full <- lm(as.formula(paste(tag,"~ clay * depth * pH * Fe * salinity * AVS", 
+                                sep = "")), data = dat) 
+    return(step(null, scope = formula(full), test = "F"))
+  }
+ 
+  if (method == "glm") {
+    #glm <- glm(as.formula(paste(tag,"~clay + depth + pH + Fe + salinity + AVS",
+    #                            sep = "")), family = family, data = dat)
+    return(MASS::stepAIC(glm, trace = T))
+  }
+  stop("Wrong Fitting Method.")
+  
 }
 
 modExamine <- function(mod) {
+  
   mod.est <- summary(mod)$coefficients
   mod.est <- cbind (parameter = rownames(mod.est),mod.est)
   colnames(mod.est)[5] <- "p.Estimate."
@@ -44,8 +65,8 @@ modExamine <- function(mod) {
 
 ## Example
 dat <- datareadln() %>%
-  dplyr::select(depth,distance,salinity:sand) %>% 
-  dplyr::mutate(proton = 10^(-pH))
+  dplyr::select(depth,distance,salinity:sand) %>%
+  dplyr::mutate(Fe = Fe/10000)
 
 taglist <- c("Cr","As","Ni","Cu","Pb","Zn","Cd")
 
@@ -56,62 +77,62 @@ for(i in 1:length(taglist)) {
   p
 }
 
-plot.dist.Cr <- relationPlot(dat, "distance", "Cr", "green")
-plot.clay.Cr <- relationPlot(dat, "clay", "Cr", "black")
-plot.dep.Cr <- relationPlot(dat, "depth", "Cr", "blue")
-plot.al.Cr <- relationPlot(dat, "Al", "Cr", "purple")
-plot.h.Cr <- relationPlot(dat, "proton", "Cr", "orange")
-plot.sal.Cr <- relationPlot(dat, "salinity", "Cr", "brown")
+plot.avs.Cr <- relationPlot(dat, "AVS", "Cr", "green", "poisson")
+plot.clay.Cr <- relationPlot(dat, "clay", "Cr", "black", "poisson")
+plot.dep.Cr <- relationPlot(dat, "depth", "Cr", "blue", "poisson")
+plot.fe.Cr <- relationPlot(dat, "Fe", "Cr", "purple", "poisson")
+plot.h.Cr <- relationPlot(dat, "pH", "Cr", "orange", "poisson")
+plot.sal.Cr <- relationPlot(dat, "salinity", "Cr", "brown", "poisson")
 
-plot.dist.As <- relationPlot(dat, "distance", "As", "green")
-plot.clay.As <- relationPlot(dat, "clay", "As", "black")
-plot.dep.As <- relationPlot(dat, "depth", "As", "blue")
-plot.al.As <- relationPlot(dat, "Al", "As", "purple")
-plot.h.As <- relationPlot(dat, "proton", "As", "orange")
-plot.sal.As <- relationPlot(dat, "salinity", "As", "brown")
+plot.avs.As <- relationPlot(dat, "AVS", "As", "green", "poisson")
+plot.clay.As <- relationPlot(dat, "clay", "As", "black", "poisson")
+plot.dep.As <- relationPlot(dat, "depth", "As", "blue", "poisson")
+plot.fe.As <- relationPlot(dat, "Fe", "As", "purple", "poisson")
+plot.h.As <- relationPlot(dat, "pH", "As", "orange", "poisson")
+plot.sal.As <- relationPlot(dat, "salinity", "As", "brown", "poisson")
 
-plot.dist.Ni <- relationPlot(dat, "distance", "Ni", "green")
-plot.clay.Ni <- relationPlot(dat, "clay", "Ni", "black")
-plot.dep.Ni <- relationPlot(dat, "depth", "Ni", "blue")
-plot.al.Ni <- relationPlot(dat, "Al", "Ni", "purple")
-plot.h.Ni <- relationPlot(dat, "proton", "Ni", "orange")
-plot.sal.Ni <- relationPlot(dat, "salinity", "Ni", "brown")
+plot.avs.Ni <- relationPlot(dat, "AVS", "Ni", "green", "poisson")
+plot.clay.Ni <- relationPlot(dat, "clay", "Ni", "black", "poisson")
+plot.dep.Ni <- relationPlot(dat, "depth", "Ni", "blue", "poisson")
+plot.fe.Ni <- relationPlot(dat, "Fe", "Ni", "purple", "poisson")
+plot.h.Ni <- relationPlot(dat, "pH", "Ni", "orange", "poisson")
+plot.sal.Ni <- relationPlot(dat, "salinity", "Ni", "brown", "poisson")
 
-plot.dist.Cu <- relationPlot(dat, "distance", "Cu", "green")
-plot.clay.Cu <- relationPlot(dat, "clay", "Cu", "black")
-plot.dep.Cu <- relationPlot(dat, "depth", "Cu", "blue")
-plot.al.Cu <- relationPlot(dat, "Al", "Cu", "purple")
-plot.h.Cu <- relationPlot(dat, "proton", "Cu", "orange")
-plot.sal.Cu <- relationPlot(dat, "salinity", "Cu", "brown")
+plot.avs.Cu <- relationPlot(dat, "AVS", "Cu", "green", "poisson")
+plot.clay.Cu <- relationPlot(dat, "clay", "Cu", "black", "poisson")
+plot.dep.Cu <- relationPlot(dat, "depth", "Cu", "blue", "poisson")
+plot.fe.Cu <- relationPlot(dat, "Fe", "Cu", "purple", "poisson")
+plot.h.Cu <- relationPlot(dat, "pH", "Cu", "orange", "poisson")
+plot.sal.Cu <- relationPlot(dat, "salinity", "Cu", "brown", "poisson")
 
-plot.dist.Pb <- relationPlot(dat, "distance", "Pb", "green")
-plot.clay.Pb <- relationPlot(dat, "clay", "Pb", "black")
-plot.dep.Pb <- relationPlot(dat, "depth", "Pb", "blue")
-plot.al.Pb <- relationPlot(dat, "Al", "Pb", "purple")
-plot.h.Pb <- relationPlot(dat, "proton", "Pb", "orange")
-plot.sal.Pb <- relationPlot(dat, "salinity", "Pb", "brown")
+plot.avs.Pb <- relationPlot(dat, "AVS", "Pb", "green", "poisson")
+plot.clay.Pb <- relationPlot(dat, "clay", "Pb", "black", "poisson")
+plot.dep.Pb <- relationPlot(dat, "depth", "Pb", "blue", "poisson")
+plot.fe.Pb <- relationPlot(dat, "Fe", "Pb", "purple", "poisson")
+plot.h.Pb <- relationPlot(dat, "pH", "Pb", "orange", "poisson")
+plot.sal.Pb <- relationPlot(dat, "salinity", "Pb", "brown", "poisson")
 
-plot.dist.Zn <- relationPlot(dat, "distance", "Zn", "green")
-plot.clay.Zn <- relationPlot(dat, "clay", "Zn", "black")
-plot.dep.Zn <- relationPlot(dat, "depth", "Zn", "blue")
-plot.al.Zn <- relationPlot(dat, "Al", "Zn", "purple")
-plot.h.Zn <- relationPlot(dat, "proton", "Zn", "orange")
-plot.sal.Zn <- relationPlot(dat, "salinity", "Zn", "brown")
+plot.avs.Zn <- relationPlot(dat, "AVS", "Zn", "green", "poisson")
+plot.clay.Zn <- relationPlot(dat, "clay", "Zn", "black", "poisson")
+plot.dep.Zn <- relationPlot(dat, "depth", "Zn", "blue", "poisson")
+plot.fe.Zn <- relationPlot(dat, "Fe", "Zn", "purple", "poisson")
+plot.h.Zn <- relationPlot(dat, "pH", "Zn", "orange", "poisson")
+plot.sal.Zn <- relationPlot(dat, "salinity", "Zn", "brown", "poisson")
 
-plot.dist.Cd <- relationPlot(dat, "distance", "Cd", "green")
-plot.clay.Cd <- relationPlot(dat, "clay", "Cd", "black")
-plot.dep.Cd <- relationPlot(dat, "depth", "Cd", "blue")
-plot.al.Cd <- relationPlot(dat, "Al", "Cd", "purple")
-plot.h.Cd <- relationPlot(dat, "proton", "Cd", "orange")
-plot.sal.Cd <- relationPlot(dat, "salinity", "Cd", "brown")
+plot.avs.Cd <- relationPlot(dat, "AVS", "Cd", "green", "poisson")
+plot.clay.Cd <- relationPlot(dat, "clay", "Cd", "black", "poisson")
+plot.dep.Cd <- relationPlot(dat, "depth", "Cd", "blue", "poisson")
+plot.fe.Cd <- relationPlot(dat, "Fe", "Cd", "purple", "poisson")
+plot.h.Cd <- relationPlot(dat, "pH", "Cd", "orange", "poisson")
+plot.sal.Cd <- relationPlot(dat, "salinity", "Cd", "brown", "poisson")
 
-p.gather <- grid.arrange(plot.dist.Pb,plot.dep.Pb,plot.clay.Pb,plot.al.Pb,plot.h.Pb,plot.sal.Pb, 
-                         plot.dist.Cr,plot.dep.Cr,plot.clay.Cr,plot.al.Cr,plot.h.Cr,plot.sal.Cr,
-                         plot.dist.Ni,plot.dep.Ni,plot.clay.Ni,plot.al.Ni,plot.h.Ni,plot.sal.Ni,
-                         plot.dist.Cu,plot.dep.Cu,plot.clay.Cu,plot.al.Cu,plot.h.Cu,plot.sal.Cu,
-                         plot.dist.Zn,plot.dep.Zn,plot.clay.Zn,plot.al.Zn,plot.h.Zn,plot.sal.Zn,
-                         plot.dist.As,plot.dep.As,plot.clay.As,plot.al.As,plot.h.As,plot.sal.As,
-                         plot.dist.Cd,plot.dep.Cd,plot.clay.Cd,plot.al.Cd,plot.h.Cd,plot.sal.Cd,
+p.gather <- grid.arrange(plot.clay.Pb, plot.dep.Pb, plot.h.Pb, plot.fe.Pb, plot.sal.Pb, plot.avs.Pb, 
+                         plot.clay.Cr, plot.dep.Cr, plot.h.Cr, plot.fe.Cr, plot.sal.Cr, plot.avs.Cr, 
+                         plot.clay.Ni, plot.dep.Ni, plot.h.Ni, plot.fe.Ni, plot.sal.Ni, plot.avs.Ni, 
+                         plot.clay.Cu, plot.dep.Cu, plot.h.Cu, plot.fe.Cu, plot.sal.Cu, plot.avs.Cu, 
+                         plot.clay.Zn, plot.dep.Zn, plot.h.Zn, plot.fe.Zn, plot.sal.Zn, plot.avs.Zn, 
+                         plot.clay.As, plot.dep.As, plot.h.As, plot.fe.As, plot.sal.As, plot.avs.As, 
+                         plot.clay.Cd, plot.dep.Cd, plot.h.Cd, plot.fe.Cd, plot.sal.Cd, plot.avs.Cd,
                          nrow=7, ncol=6)
 ggsave(plot = p.gather,
        filename = paste(dirPreset("relation/driver"),"/gather_relation.png",sep = ""),
@@ -128,11 +149,11 @@ for(i in 1:length(taglist)) {
   mod.sum.refined <- mod.sum 
   for(k in 1:10) {
     tag <- mod.sum.refined %>%
-      filter(parameter != "(Intercept)",
+      dplyr::filter(parameter != "(Intercept)",
              parameter != "Residuals",
              as.numeric(as.character(p.Estimate.)) < alphalevel,
              as.numeric(as.character(p.ANOVA.)) < alphalevel) %>%
-      select(parameter)  %>% unlist() %>% as.vector()
+      dplyr::select(parameter)  %>% unlist() %>% as.vector()
     if (length(tag) ==0) next
     formulas <- paste(taglist[i],"~",sep = "")
     for (j in 1:length(tag)) {
@@ -150,9 +171,3 @@ for(i in 1:length(taglist)) {
               row.names = F)
     }
 }
-
-mod.pb.refined <- lm(Pb ~ clay:Al,data = dat)
-mod.pb.sum.refined <- modExamine(mod.pb.refined)
-write.csv(mod.pb.sum.refined, 
-          paste(dirPreset("relation/driver"),"/multiRegRefined_Pb.csv",sep = ""),
-          row.names = F)

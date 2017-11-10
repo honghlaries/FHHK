@@ -8,11 +8,14 @@ source("grid.R")
 
 # Example 
 env <- datareadln() %>% 
-  select(depth,distance,salinity,pH,Al,Fe,Mn,orgC,AVS,clay,silt,sand) 
+  select(depth,distance,salinity,pH,Fe,Mn,orgC,AVS,clay,silt,sand) 
 trait <- datareadln() %>% select(Pb:Cd)
 samptag <- datareadln() %>% select(siteID)
 rda <- rdaLoadingCal(env, trait, samptag, 3, dir = "rda", log = F)
-rdaLoadingPlot(rda,3) -> plot.load
+
+rdaLoadingPlot(rda,3)+
+  theme(panel.grid = element_blank(),
+        strip.background = element_blank()) -> plot.load
 
 
 dat <- rda$sampload %>%
@@ -34,21 +37,22 @@ grid.value <- as.data.frame(doKrig(dat, dat.grid, tag = "RDA2", cutoff = 2,
   select(lon, lat, value = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "RDA2")))
 
-grid.value <- as.data.frame(doKrig(dat, dat.grid, tag = "RDA3", cutoff = 1.5, 
-                                   modsel = vgm(0.05,"Sph",1), quietmode = T)) %>% 
+grid.value <- as.data.frame(doKrig(dat, dat.grid, tag = "RDA3", cutoff = 1.2, 
+                                   modsel = vgm(0.05,"Sph",0.5), quietmode = T)) %>% 
   select(lon, lat, value = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "RDA3")))
 
-spView.grid(dat = grid.value.tot, leg.name = "Loading",
-            grad.value = c(-0.25,-0.2,-0.1,0,0.1,0.2,0.25), 
-            grad.tag = c(-0.49,-0.2,-0.1,0,0.1,0.2,0.25), 
-            #grad.col = c("#D2E9FF","#97CBFF","#66B3FF","#2894FF","#0072E3","#005AB5","#003D79"),
+spView.grid.interval(dat = grid.value.tot, leg.name = "Loading",
+            grad.value = c(-0.2,-0.1,-0.05,0.05,0.1,0.25), 
+            grad.col = blues9[2:8],
             lonRange = lonRange,
-            latRange = latRange, pncol = 1)+
+            latRange = latRange, pncol = 1) + 
+  geom_polygon(aes(x = long, y = lat, group = group), 
+               colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
   theme(axis.text = element_blank(),
-        axis.ticks = element_blank())-> plot.sp
+        axis.ticks = element_blank()) -> plot.sp
 
-grid.arrange(plot.load, plot.sp, ncol = 2, widths = c(5,5), heights = 10) -> plot.gather
+grid.arrange(plot.load, plot.sp, ncol = 2, widths = c(5,6), heights = 10) -> plot.gather
 
 # saving plot
 ggsave(plot = plot.load, filename = "rda/rdaloading.png", dpi = 600)

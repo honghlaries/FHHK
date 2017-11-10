@@ -66,12 +66,12 @@ spView.grid.interval <- function(dat, lonRange, latRange, leg.name, bins = 7, gr
   }
   
   dat[(dat$value - grad.value[length(grad.value)])> 0.0001,"class"] <- paste("c", length(grad.value), sep = "")
-  labels <- c(labels, paste(">", grad.value[i]))
-  
+  labels <- c(labels, paste(">", grad.value[length(grad.value)]))
   
   ggplot() + 
     geom_raster(aes(x = lon, y = lat, fill = class), data = dat) +
-    scale_fill_brewer(leg.name, labels = labels) +
+    scale_fill_manual(leg.name, labels = labels, 
+                      limits = paste("c",0:length(grad.value),sep = ""), values = grad.col) +
     scale_x_continuous(name = "", expand = c(0,0)) +
     scale_y_continuous(name = "", expand = c(0,0)) +
     coord_quickmap(xlim = lonRange, ylim = latRange) +
