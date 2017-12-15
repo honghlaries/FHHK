@@ -103,7 +103,7 @@ spView <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = rainb
     scale_fill_gradientn(leg.name, guide = "colourbar",
                          breaks = grad.value, labels = grad.tag, 
                          colours = grad.col) +
-    scale_color_gradient2("leg.name", guide = "colourbar", low = "black", high = "white") +
+    #scale_color_gradient2("leg.name", guide = "colourbar", low = "black", high = "white") +
     scale_x_continuous(name = "", breaks = break.lon, labels = label.lon, expand = c(0,0)) +
     scale_y_continuous(name = "", breaks = break.lat, labels = label.lat, expand = c(0,0)) +
     coord_quickmap(xlim = lonRange, ylim = latRange) +

@@ -1,7 +1,7 @@
 # clean 
 rm(list = ls())
 source("constant.R");source("anaTls_spatialView.R");
-pkgInitialization(c("dplyr","tidyr","sp","gstat","ggplot2"))
+pkgInitialization(c("dplyr","tidyr","sp","gstat","ggplot2","directlabels"))
 source("grid.R")
 
 # Functions 
@@ -12,6 +12,7 @@ spView.igeo <- function(elem,...) {
          lonRange = lonRange, latRange = latRange) +
     geom_polygon(aes(x = long, y = lat, group = group), 
                  colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
+    #scale_color_gradient(low = "black", high = "black") +
     theme(axis.text = element_blank(),
           axis.ticks = element_blank(),
           plot.margin = margin(0,0,0,0))
@@ -30,16 +31,12 @@ spView.ef <- function(elem,...) {
 }
 # Example
 
-## for Igeo
-background <- datareadln() %>% 
-  gather(trait, bk, Al,As,Cd,Cr,Cu,Ni,Pb,Zn) %>%
-  select(siteID, trait, bk) %>%
-  group_by(trait) %>%
-  summarise(bk = mean(bk)) %>% 
-  mutate(bk2 = bk / 28066.7)
+background <- read.csv("data/meta_baseline.csv") %>%
+  mutate(bk2 = bk / 18185.06314)
 
+## for Igeo
 dat <- datareadln() %>% 
-  gather(trait, value, Al:orgC) %>% 
+  gather(trait, value, Fe:Cd) %>% 
   inner_join(background, by = c("trait" = "trait")) %>% 
   mutate(value = log2(value / bk /1.5)) %>%
   select(siteID, trait, value) 
@@ -104,7 +101,7 @@ grid.value <- as.data.frame(doKrig(dat, dat.grid, tag = "Cd", cutoff = 1.5,
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "Cd")))
 
 grid.value.tot <- grid.value.tot %>%
-  mutate(element = factor(element, levels = c("Pb","Cr","Ni","Cu","Zn","As","Cd")))
+  mutate(trait = factor(trait, levels = c("Pb","Cr","Ni","Cu","Zn","As","Cd")))
 
 plot.cu <- spView.igeo("Cu");ggsave(filename = "riskAssment/krig/igeo/Cu_Igeo.png")
 plot.zn <- spView.igeo("Zn");ggsave(filename = "riskAssment/krig/igeo/Zn_Igeo.png")
@@ -114,24 +111,37 @@ plot.ni <- spView.igeo("Ni");ggsave(filename = "riskAssment/krig/igeo/Ni_Igeo.pn
 plot.as <- spView.igeo("As");ggsave(filename = "riskAssment/krig/igeo/As_Igeo.png")
 plot.cd <- spView.igeo("Cd");ggsave(filename = "riskAssment/krig/igeo/Cd_Igeo.png")
 
-spView.grid(dat = grid.value.tot,
-            leg.name = "Igeo",grad.value = c(-2,-1,0,1), 
-            grad.tag = c(-2,-1,0,1), lonRange = lonRange,
-            latRange = latRange, pncol = 3) +
-  guides(fill = guide_colourbar(barwidth = 1, barheight = 20)) +
+spView.grid.interval(dat = grid.value.tot, leg.name = "Igeo",
+                     grad.value = c(-2,-1,0,1), 
+                     grad.col = blues9[3:7],
+                     lonRange = lonRange,
+                     latRange = latRange, pncol = 3) + 
+  geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
+               show.legend = F, size = 0.8, breaks = 0, linetype = 2,
+               data = grid.value.tot) +
+  geom_polygon(aes(x = long, y = lat, group = group), 
+               colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
   theme(axis.text = element_blank(),
         axis.ticks = element_blank()) -> plot.igeo.sp.all
 
-spView.grid(dat = grid.value.tot %>% 
-              filter(trait == "Cu"|trait == "Zn"|trait == "As"|trait == "Cd"),
-            leg.name = "Igeo",grad.value = c(-2,-1,0,1), 
-            grad.tag = c(-2,-1,0,1),lonRange = lonRange,
-            latRange = latRange, pncol = 2) +
-  guides(fill = guide_colourbar(barwidth = 1, barheight = 10)) +
+spView.grid.interval(dat = grid.value.tot%>% 
+                       filter(trait %in% c("Zn", "As", "Cd")), 
+                     leg.name = "Igeo",
+                     grad.value = c(-2,-1,0,1), 
+                     grad.col = blues9[3:7],
+                     lonRange = lonRange,
+                     latRange = latRange, pncol = 1) + 
+  geom_contour(aes(x = lon, y = lat,  z = value), col= "black",
+               show.legend = F, size = 0.8, breaks = 0, linetype = 2,
+               data = grid.value.tot %>% 
+                 filter(trait %in% c("Zn", "As", "Cd"))) +
+  geom_polygon(aes(x = long, y = lat, group = group), 
+               colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
   theme(axis.text = element_blank(),
         axis.ticks = element_blank()) -> plot.igeo.sp.sel
 
-grid.arrange(plot.igeo.box, plot.igeo.sp.sel, ncol = 2, widths = c(5,7), heights = 5) -> plot.igeo.gather
+
+grid.arrange(plot.igeo.box, plot.igeo.sp.sel, ncol = 2, widths = c(5,3.25), heights = 5) -> plot.igeo.gather
 
 ## for enrichment factor
 dat <- datareadln() %>% 
@@ -144,11 +154,11 @@ dat <- datareadln() %>%
   select(siteID, trait, value) 
 
 ggplot(data = dat %>% filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","As","Cd")) %>% 
-         mutate(trait = factor(trait, levels = c("Al","Mn","Pb","Cr","Ni","Cu","Zn","As","Cd")))) + 
-  geom_hline(yintercept = c(0.667,1,1.5,2,3,4), col = "red", linetype = 2) +
+         mutate(trait = factor(trait, levels = c("Pb","Cr","Ni","Cu","Zn","As","Cd")))) + 
+  geom_hline(yintercept = c(0.5,1,1.5,2,3,4), col = "red", linetype = 2) +
   geom_boxplot(aes(x = trait, y = value),fill = "grey80") +
   scale_x_discrete("Element") +
-  scale_y_continuous("Enrichment Factor",labels = c("0.67","1.0","1.5","2.0","3.0","4.0"),
+  scale_y_continuous("Enrichment Factor",labels = c("0.5","1.0","1.5","2.0","3.0","4.0"),
                      breaks = c(0.667,1,1.5,2,3,4)) +
   coord_flip() +
   theme_bw() + 
@@ -203,7 +213,7 @@ grid.value <- as.data.frame(doKrig(dat, dat.grid, tag = "Cd", cutoff = 1.5,
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "Cd")))
 
 grid.value.tot <- grid.value.tot %>%
-  mutate(element = factor(element, levels = c("Pb","Cr","Ni","Cu","Zn","As","Cd")))
+  mutate(trait = factor(trait, levels = c("Pb","Cr","Ni","Cu","Zn","As","Cd")))
 
 
 plot.cu <- spView.ef("Cu");ggsave(filename = "riskAssment/krig/EF/Cu_EF.png")
@@ -214,27 +224,36 @@ plot.ni <- spView.ef("Ni");ggsave(filename = "riskAssment/krig/EF/Ni_EF.png")
 plot.as <- spView.ef("As");ggsave(filename = "riskAssment/krig/EF/As_EF.png")
 plot.cd <- spView.ef("Cd");ggsave(filename = "riskAssment/krig/EF/Cd_EF.png")
 
-spView.grid(dat = grid.value.tot %>% 
-              filter(trait == "Cr"|
-                       trait == "Cu"|trait == "Zn"|trait == "Pb"|
-                       trait == "Ni"|trait == "As"|trait == "Cd"),
-            leg.name = "EF",grad.value = c(0,0.67,1,1.5,2,2.5), 
-            grad.tag = c(0,0.67,1,1.5,2,2.5), lonRange = lonRange,
-            latRange = latRange, pncol = 3) +
-  guides(fill = guide_colourbar(barwidth = 1, barheight = 20)) +
+spView.grid.interval(dat = grid.value.tot, leg.name = "EF",
+                     grad.value = c(0.5,1,1.5,2,3), 
+                     grad.col = blues9[3:8],
+                     lonRange = lonRange,
+                     latRange = latRange, pncol = 3) + 
+  geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
+               show.legend = F, size = 0.8, breaks = 1.5, linetype = 2,
+               data = grid.value.tot) +
+  geom_polygon(aes(x = long, y = lat, group = group), 
+               colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
   theme(axis.text = element_blank(),
         axis.ticks = element_blank()) -> plot.ef.sp.all
 
-spView.grid(dat = grid.value.tot %>% 
-              filter(trait == "Cu"|trait == "Zn"|trait == "As"|trait == "Cd"),
-            leg.name = "EF",grad.value = c(0,0.67,1,1.5,2,2.5), 
-            grad.tag = c(0,0.67,1,1.5,2,2.5), lonRange = lonRange,
-            latRange = latRange, pncol = 2) +
-  guides(fill = guide_colourbar(barwidth = 1, barheight = 10)) +
+spView.grid.interval(dat = grid.value.tot%>% 
+                       filter(trait %in% c("Zn", "As", "Cd")), 
+                     leg.name = "EF",
+                     grad.value = c(0.5,1,1.5,2,3),  
+                     grad.col = blues9[3:8],
+                     lonRange = lonRange,
+                     latRange = latRange, pncol = 1) + 
+  geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
+               show.legend = F, size = 0.8, breaks = 1.5, linetype = 2,
+               data = grid.value.tot %>% 
+                 filter(trait %in% c("Zn", "As", "Cd"))) +
+  geom_polygon(aes(x = long, y = lat, group = group), 
+               colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
   theme(axis.text = element_blank(),
         axis.ticks = element_blank()) -> plot.ef.sp.sel
 
-grid.arrange(plot.ef.box, plot.ef.sp.sel, ncol = 2, widths = c(5,7), heights = 5) -> plot.ef.gather
+grid.arrange(plot.ef.box, plot.ef.sp.sel, ncol = 2, widths = c(5,3.25), heights = 5) -> plot.ef.gather
 
 # saving plot 
 ggsave(plot = plot.igeo.box, filename = "riskAssment/box_igeo.png", dpi = 600)
