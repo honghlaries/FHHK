@@ -130,7 +130,7 @@ spView.grid.interval(dat = grid.value.tot%>%
                      grad.value = c(-2,-1,0,1), 
                      grad.col = blues9[3:7],
                      lonRange = lonRange,
-                     latRange = latRange, pncol = 1) + 
+                     latRange = latRange, pncol = 2) + 
   geom_contour(aes(x = lon, y = lat,  z = value), col= "black",
                show.legend = F, size = 0.8, breaks = 0, linetype = 2,
                data = grid.value.tot %>% 
@@ -141,7 +141,7 @@ spView.grid.interval(dat = grid.value.tot%>%
         axis.ticks = element_blank()) -> plot.igeo.sp.sel
 
 
-grid.arrange(plot.igeo.box, plot.igeo.sp.sel, ncol = 2, widths = c(5,3.25), heights = 5) -> plot.igeo.gather
+grid.arrange(plot.igeo.box, plot.igeo.sp.sel, ncol = 2, widths = c(5,7), heights = 5) -> plot.igeo.gather
 
 ## for enrichment factor
 dat <- datareadln() %>% 
@@ -243,7 +243,7 @@ spView.grid.interval(dat = grid.value.tot%>%
                      grad.value = c(0.5,1,1.5,2,3),  
                      grad.col = blues9[3:8],
                      lonRange = lonRange,
-                     latRange = latRange, pncol = 1) + 
+                     latRange = latRange, pncol = 2) + 
   geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
                show.legend = F, size = 0.8, breaks = 1.5, linetype = 2,
                data = grid.value.tot %>% 
@@ -253,7 +253,7 @@ spView.grid.interval(dat = grid.value.tot%>%
   theme(axis.text = element_blank(),
         axis.ticks = element_blank()) -> plot.ef.sp.sel
 
-grid.arrange(plot.ef.box, plot.ef.sp.sel, ncol = 2, widths = c(5,3.25), heights = 5) -> plot.ef.gather
+grid.arrange(plot.ef.box, plot.ef.sp.sel, ncol = 2, widths = c(5,7), heights = 5) -> plot.ef.gather
 
 # saving plot 
 ggsave(plot = plot.igeo.box, filename = "riskAssment/box_igeo.png", dpi = 600)

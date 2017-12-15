@@ -33,6 +33,8 @@ cluster.site <- hcluster(dat %>% select(Pb:Cd),
 
 plot.ca.tree <- plot(cluster.site) 
 
+## site layer
+
 dat1 <- data.frame(dat,class = cutree(cluster.site,3)) %>%
   gather(trait, value, Fe:sand,depth) %>%
   spread(trait, value) %>%
@@ -252,7 +254,7 @@ plot.ca.bar <-
 
 plot.gather <- 
   grid.arrange(plot.ca.indicator1,plot.ca.bar,
-               ncol = 2, widths = c(10,6.5))
+               ncol = 1, heights = c(7.5,12))
 
 ggsave(filename = "hca/gather_hcaPlot.png", plot = plot.gather, 
-       dpi = 600, width = 16, height = 6)
+       dpi = 600, width = 4.5, height = 7.5)

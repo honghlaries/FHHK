@@ -37,3 +37,4 @@ vignettes/*.pdf
 # other
 vgms.png
 tmp.png
+.RDataTmp
