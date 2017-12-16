@@ -123,7 +123,7 @@ doKrig <- function(dat, dat.grid, tag, cutoff,
   while (!fitting) {
     mod <- variogram(krigFormula,  dat, cutoff = cutoff)
     fit <- fit.variogram(mod, model = modsel)
-    krig <- krige(krigFormula, dat, dat.grid, model = modsel)
+    krig <- krige(krigFormula, dat, dat.grid, model = modsel, debug.level = 0)
     if(quietmode) {return(krig)}
     col <- brewer.pal(9,"OrRd")
     p1 <- spplot(dat, tag, do.log = F, main = tag, xlab = "Longi", ylab = "Lati") 
@@ -148,7 +148,49 @@ doKrig <- function(dat, dat.grid, tag, cutoff,
   if(addlog) ggsave(filename = scan(what = character()), 
                     plot = grid.arrange(p1,p3,p2, ncol = 2, 
                                         widths = c(15,15), heights = c(5,5)))
-  
   krig
+}
+
+doKrig.resamp <- function(dat, dat.grid.resample, tag, cutoff, 
+                   krigFormula = as.formula(paste(tag,"~1",sep="")), 
+                   modsel, nsamp, nsite, group) {
+  pkgLoad("sp");pkgLoad("gstat");pkgLoad("gridExtra");pkgLoad("dplyr")
+  
+  dat <- dat %>% select_("lon","lat",tag,group)
+  krig.tot <- NULL
+  for(i in 1:nsamp) {
+    if (i %in% c(1,ceiling(1:9*0.1*nsamp),nsamp)) print(paste("Calculating on",tag,"(",i,"/",nsamp,")"))
+    subdat <- dat %>% group_by_(group) %>% sample_n(1)
+    subdat <- as.data.frame(subdat)
+    coordinates(subdat) <- ~lon+lat
+    mod <- variogram(krigFormula, subdat, cutoff = cutoff)
+    #fit <- fit.variogram(mod, model = modsel)
+    krig <- krige(krigFormula, subdat, dat.grid.resample, 
+                  model = modsel, debug.level = 0)
+    krig <- as.data.frame(krig) %>% rename(value = var1.pred, var.mod =  var1.var)
+    
+    subdat <- as.data.frame(subdat)
+    kirg.siteresamp.tot <- NULL
+    for(j in 1:nsite) {
+      if ((i %in% c(1,ceiling(1:9*0.1*nsamp),nsamp)) && (j %in% c(1,ceiling(1:3*0.25*nsite),nsite))) print(paste("Site resampling:","(",j,"/",nsite,")"))
+      subsubdat <- subdat %>% filter(siteID %in% sample(levels(siteID), ceiling(0.75*length(levels(siteID)))))
+      subsubdat <- as.data.frame(subsubdat)
+      coordinates(subsubdat) <- ~lon+lat
+      mod <- variogram(krigFormula, subsubdat, cutoff = cutoff)
+      #fit <- fit.variogram(mod, model = modsel)
+      kirg.siteresamp <- krige(krigFormula, subsubdat, dat.grid.resample, 
+                               model = modsel, debug.level = 0)
+      kirg.siteresamp <- as.data.frame(kirg.siteresamp) %>% select(lon, lat, value = var1.pred) 
+      kirg.siteresamp.tot <- rbind(kirg.siteresamp.tot, kirg.siteresamp)
+    }
+    krig <- kirg.siteresamp.tot %>% group_by(lon,lat) %>% 
+      summarise(var.site = sd(value)) %>% inner_join(krig)
+    
+    krig.tot <- rbind(krig.tot,krig)
+  }
+    
+  krig.tot %>% group_by(lon,lat) %>% 
+    summarise(mean = mean(value), var.mod = mean(var.mod), 
+              var.samp = sd(value), var.site = mean(var.site))
 }
 
