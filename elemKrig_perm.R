@@ -17,6 +17,20 @@ spView.elem <- function(elem,...) {
           axis.ticks = element_blank())
 }
 
+spView.delta <- function(elem,...) {
+  spView(dat = grid.value.tot %>% 
+           filter(trait == elem),
+         leg.name = elem,
+         lonRange = lonRange, latRange = latRange) +
+    geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
+                 show.legend = F, size = 0.8, breaks = 0, linetype = 2,
+                 data = grid.value.tot %>% filter(trait == elem)) +
+    geom_polygon(aes(x = long, y = lat, group = group), 
+                 colour = "black", fill = "grey80", 
+                 data = fortify(readShapePoly("data/bou2_4p.shp"))) +
+    theme(axis.text = element_blank(),
+          axis.ticks = element_blank())
+}
 
 
 ## Example
@@ -396,7 +410,8 @@ p <- grid.arrange(plot.pb,plot.ni,plot.cu,plot.zn,plot.cr,plot.as,plot.cd,
 ggsave(filename = "element/krig/gather_krig_perm_element.png", plot = p, 
        dpi = 600, width = 8, height = 8)
 
-grid.value.tot <- grid.value.tot %>% mutate(value = 100*(exp(mean+var.mod)/exp(mean)-1))
+grid.value.tot <- grid.value.tot %>% 
+  mutate(value = 100*(exp(mean+var.mod)/exp(mean)-1))
 plot.pb.mod <- spView.elem("Pb") + guides.elem
 plot.cr.mod <- spView.elem("Cr") + guides.elem
 plot.ni.mod <- spView.elem("Ni") + guides.elem
@@ -405,13 +420,15 @@ plot.zn.mod <- spView.elem("Zn") + guides.elem
 plot.as.mod <- spView.elem("As") + guides.elem
 plot.cd.mod <- spView.elem("Cd") + guides.elem
 
-p <- grid.arrange(plot.pb.mod,plot.ni.mod,plot.cu.mod,plot.zn.mod,plot.cr.mod,plot.as.mod,plot.cd.mod,
+p <- grid.arrange(plot.pb.mod,plot.ni.mod,plot.cu.mod,plot.zn.mod,
+                  plot.cr.mod,plot.as.mod,plot.cd.mod,
                   ncol = 2, widths = c(11,11))
 
 ggsave(filename = "element/krig/gather_krig_perm_element_mod.png", plot = p, 
        dpi = 600, width = 8, height = 8)
 
-grid.value.tot <- grid.value.tot %>% mutate(value = 100*(exp(mean+var.samp)/exp(mean)-1))
+grid.value.tot <- grid.value.tot %>% 
+  mutate(value = 100*(exp(mean+var.samp)/exp(mean)-1))
 plot.pb.samp <- spView.elem("Pb") + guides.elem
 plot.cr.samp <- spView.elem("Cr") + guides.elem
 plot.ni.samp <- spView.elem("Ni") + guides.elem
@@ -420,13 +437,15 @@ plot.zn.samp <- spView.elem("Zn") + guides.elem
 plot.as.samp <- spView.elem("As") + guides.elem
 plot.cd.samp <- spView.elem("Cd") + guides.elem
 
-p <- grid.arrange(plot.pb.samp,plot.ni.samp,plot.cu.samp,plot.zn.samp,plot.cr.samp,plot.as.samp,plot.cd.samp,
+p <- grid.arrange(plot.pb.samp,plot.ni.samp,plot.cu.samp,plot.zn.samp,
+                  plot.cr.samp,plot.as.samp,plot.cd.samp,
                   ncol = 2, widths = c(11,11))
 
 ggsave(filename = "element/krig/gather_krig_perm_element_samp.png", plot = p, 
        dpi = 600, width = 8, height = 8)
 
-grid.value.tot <- grid.value.tot %>% mutate(value = 100*(exp(mean+var.site)/exp(mean)-1))
+grid.value.tot <- grid.value.tot %>% 
+  mutate(value = 100*(exp(mean+var.site)/exp(mean)-1))
 plot.pb.site <- spView.elem("Pb") + guides.elem
 plot.cr.site <- spView.elem("Cr") + guides.elem
 plot.ni.site <- spView.elem("Ni") + guides.elem
@@ -435,8 +454,29 @@ plot.zn.site <- spView.elem("Zn") + guides.elem
 plot.as.site <- spView.elem("As") + guides.elem
 plot.cd.site <- spView.elem("Cd") + guides.elem
 
-p <- grid.arrange(plot.pb.site,plot.ni.site,plot.cu.site,plot.zn.site,plot.cr.site,plot.as.site,plot.cd.site,
+p <- grid.arrange(plot.pb.site,plot.ni.site,plot.cu.site,plot.zn.site,
+                  plot.cr.site,plot.as.site,plot.cd.site,
                   ncol = 2, widths = c(11,11))
-
 ggsave(filename = "element/krig/gather_krig_perm_element_site.png", plot = p, 
        dpi = 600, width = 8, height = 8)
+
+grid.value.tot <- grid.value.tot %>% 
+  mutate(delta = 100*((exp(mean+var.samp)/exp(mean))/
+                        (exp(mean+var.site)/exp(mean))-1))
+spView.grid.interval(dat = grid.value.tot, leg.name = "delta",
+                     grad.value = c(-25,-10,-5,5,10,25), 
+                     grad.col = c("#3A5FCD","#436EEE","#4876FF",
+                                  "grey90",
+                                  "#FF83FA","#EE7AE9","#CD69C9"),
+                     lonRange = lonRange,
+                     latRange = latRange, pncol = 3) + 
+  geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
+               show.legend = F, size = 0.8, breaks = 0, linetype = 2,
+               data = grid.value.tot) +
+  geom_polygon(aes(x = long, y = lat, group = group), 
+               colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank()) -> p
+
+ggsave(filename = "element/krig/gather_krig_perm_element_delta.png", plot = p, 
+       dpi = 600, width = 8, height = 6)
