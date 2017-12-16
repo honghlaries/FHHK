@@ -7,10 +7,10 @@ latiRange <-  seq(from = 33.7, to = 34.9, length.out = 125)
 dat.grid <- data.frame(lat = c(1), lon = c(1))
 for (i in 1:125) {
   for (j in 1:125) {
-    if(((longiRange[j] - landliplon) * (latiRange[i] - land1lat) - 
-        (longiRange[j] - land1lon) * (latiRange[i] - landliplat)) > 0 ||
-       ((longiRange[j] - landliplon) * (latiRange[i] - land2lat) - 
-        (longiRange[j] - land2lon) * (latiRange[i] - landliplat)) > 0 ){
+    if((((longiRange[j] - landliplon) * (latiRange[i] - land1lat) - 
+         (longiRange[j] - land1lon) * (latiRange[i] - landliplat)) > 0) ||
+       (((longiRange[j] - landliplon) * (latiRange[i] - land2lat) -
+         (longiRange[j] - land2lon) * (latiRange[i] - landliplat)) > 0) ){
     dat.grid <- rbind(dat.grid, c(latiRange[i],longiRange[j]))
     }
   }
