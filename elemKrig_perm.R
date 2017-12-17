@@ -34,12 +34,12 @@ spView.delta <- function(elem,...) {
 
 
 ## Example
-set.seed(20171216082111)
+set.seed(20171216.082111)
 
 dat <- datareadln() 
 
 grid.perm.tot = NULL
-nsamp = 50; nsite = 50
+nsamp = 30; nsite = 30
 
 grid.perm <- as.data.frame(doKrig.resamp(dat, dat.grid.resample, 
                                           krigFormula = log(Pb) ~ 1, tag = "Pb", 
@@ -461,22 +461,25 @@ ggsave(filename = "element/krig/gather_krig_perm_element_site.png", plot = p,
        dpi = 600, width = 8, height = 8)
 
 grid.value.tot <- grid.value.tot %>% 
-  mutate(delta = 100*((exp(mean+var.samp)/exp(mean))/
+  mutate(value = 100*((exp(mean+var.samp)/exp(mean))/
                         (exp(mean+var.site)/exp(mean))-1))
-spView.grid.interval(dat = grid.value.tot, leg.name = "delta",
-                     grad.value = c(-25,-10,-5,5,10,25), 
+spView.grid.interval(dat = grid.value.tot, leg.name = "Vsamp vs Vsite(%)",
+                     grad.value = c(-20,-5,-1,1,5,20), 
                      grad.col = c("#3A5FCD","#436EEE","#4876FF",
                                   "grey90",
                                   "#FF83FA","#EE7AE9","#CD69C9"),
                      lonRange = lonRange,
-                     latRange = latRange, pncol = 3) + 
+                   latRange = latRange, pncol = 3) + 
   geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
                show.legend = F, size = 0.8, breaks = 0, linetype = 2,
                data = grid.value.tot) +
   geom_polygon(aes(x = long, y = lat, group = group), 
                colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
   theme(axis.text = element_blank(),
-        axis.ticks = element_blank()) -> p
+        axis.ticks = element_blank(),
+        legend.position = c(1,0),
+        legend.direction = "horizontal",
+        legend.justification = c(1.1,-1.15)) -> p
 
 ggsave(filename = "element/krig/gather_krig_perm_element_delta.png", plot = p, 
        dpi = 600, width = 8, height = 6)
