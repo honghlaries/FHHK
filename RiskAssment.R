@@ -32,7 +32,7 @@ spView.ef <- function(elem,...) {
 # Example
 
 background <- read.csv("data/meta_baseline.csv") %>%
-  mutate(bk2 = bk / 18185.06314)
+  mutate(bk2 = bk / 27786)
 
 ## for Igeo
 dat <- datareadln() %>% 
