@@ -33,19 +33,12 @@ spView.delta <- function(elem,...) {
 }
 
 view.delta <- function(elem,...) {
-  spView(dat = grid.value.tot %>% 
-           filter(trait == elem),
-         leg.name = elem,
-         lonRange = lonRange, latRange = latRange) +
-    geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
-                 show.legend = F, size = 0.8, breaks = 0, linetype = 2,
-                 data = grid.value.tot %>% filter(trait == elem)) +
-    geom_polygon(aes(x = long, y = lat, group = group), 
-                 colour = "black", fill = "grey80", 
-                 data = fortify(readShapePoly("data/bou2_4p.shp"))) +
-    theme(axis.text = element_blank(),
-          axis.ticks = element_blank())
-}
+  dat <- dplyr::filter(grid.perm.tot, trait %in% elem) 
+  ggplot()+
+    geom_point(aes(x = var.site, y = var.samp),data = dat)+
+    geom_abline(slope = 1, intercept = 0)+
+    coord_equal(xlim = c(0,0.5), ylim = c(0,0.5))+
+    theme_bw()}
 
 
 ## Example
