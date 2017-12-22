@@ -38,3 +38,4 @@ vignettes/*.pdf
 vgms.png
 tmp.png
 .RDataTmp
+.RDataTmp1

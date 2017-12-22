@@ -22,7 +22,7 @@ spView.delta <- function(elem,...) {
            filter(trait == elem),
          leg.name = elem,
          lonRange = lonRange, latRange = latRange) +
-    geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
+    geom_contour(aes(x = lon, y = lat,  z = value), col= "black",
                  show.legend = F, size = 0.8, breaks = 0, linetype = 2,
                  data = grid.value.tot %>% filter(trait == elem)) +
     geom_polygon(aes(x = long, y = lat, group = group), 
@@ -33,10 +33,17 @@ spView.delta <- function(elem,...) {
 }
 
 view.delta <- function(elem,...) {
-  dat <- dplyr::filter(grid.perm.tot, trait %in% elem) 
+  dat <- dplyr::filter(grid.perm.tot, trait %in% elem) %>%
+    dplyr::mutate(group = factor(as.numeric(var.samp > 1.10*var.site) - 
+                    as.numeric(var.samp < 0.90*var.site)))
   ggplot()+
-    geom_point(aes(x = var.site, y = var.samp),data = dat)+
-    geom_abline(slope = 1, intercept = 0)+
+    geom_abline(slope = 1, intercept = 0, linetype = 2)+
+    geom_point(aes(x = var.site, y = var.samp, col = group), 
+               alpha  = 0.2, data = dat)+
+    geom_smooth(aes(x = var.site, y = var.samp, col = group), 
+                method = "glm", 
+                data = dat)+
+    scale_color_manual(values = c("blue","grey50","red"))+
     coord_equal(xlim = c(0,0.5), ylim = c(0,0.5))+
     theme_bw()}
 
