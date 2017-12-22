@@ -32,6 +32,21 @@ spView.delta <- function(elem,...) {
           axis.ticks = element_blank())
 }
 
+view.delta <- function(elem,...) {
+  spView(dat = grid.value.tot %>% 
+           filter(trait == elem),
+         leg.name = elem,
+         lonRange = lonRange, latRange = latRange) +
+    geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
+                 show.legend = F, size = 0.8, breaks = 0, linetype = 2,
+                 data = grid.value.tot %>% filter(trait == elem)) +
+    geom_polygon(aes(x = long, y = lat, group = group), 
+                 colour = "black", fill = "grey80", 
+                 data = fortify(readShapePoly("data/bou2_4p.shp"))) +
+    theme(axis.text = element_blank(),
+          axis.ticks = element_blank())
+}
+
 
 ## Example
 set.seed(20171216.082111)
@@ -466,15 +481,15 @@ grid.value.tot <- grid.value.tot %>%
   mutate(value = 100*((exp(mean+var.samp)/exp(mean))/
                         (exp(mean+var.site)/exp(mean))-1))
 spView.grid.interval(dat = grid.value.tot, leg.name = "Vsamp vs Vsite(%)",
-                     grad.value = c(-20,-5,-1,1,5,20), 
+                     grad.value = c(-20,-10,-5,5,10,20), 
                      grad.col = c("#3A5FCD","#436EEE","#4876FF",
                                   "grey90",
                                   "#FF83FA","#EE7AE9","#CD69C9"),
                      lonRange = lonRange,
                    latRange = latRange, pncol = 3) + 
-  geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
-               show.legend = F, size = 0.8, breaks = 0, linetype = 2,
-               data = grid.value.tot) +
+  #geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
+  #             show.legend = F, size = 0.8, breaks = 0, linetype = 2,
+  #             data = grid.value.tot) +
   geom_polygon(aes(x = long, y = lat, group = group), 
                colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
   theme(axis.text = element_blank(),
