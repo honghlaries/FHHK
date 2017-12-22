@@ -39,7 +39,7 @@ set.seed(20171216.082111)
 dat <- datareadln() 
 
 grid.perm.tot = NULL
-nsamp = 30; nsite = 30
+nsamp = 99; nsite = 99
 
 grid.perm <- as.data.frame(doKrig.resamp(dat, dat.grid.resample, 
                                           krigFormula = log(Pb) ~ 1, tag = "Pb", 
@@ -107,34 +107,36 @@ grid.perm.tot <- rbind(grid.perm.tot,
 
 grid.value.tot <- NULL
 
-seldat <- grid.perm.tot %>% filter(trait == "Pb") %>% mutate(delta = var.samp-var.site)
+seldat <- grid.perm.tot %>% 
+  dplyr::filter(trait == "Pb") %>% 
+  dplyr::mutate(delta = var.samp-var.site)
 subdat <- as.data.frame(seldat)
 coordinates(seldat) <- ~lon+lat
 grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean", 
                                         cutoff = 1, 
                                         modsel = vgm(0.02,"Sph",0.5), 
                                         quietmode = T)) %>% 
-  select(lon, lat, mean = var1.pred)
+  dplyr::select(lon, lat, mean = var1.pred)
 grid.value.mod <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.mod", 
                                        cutoff = 1.5, 
                                        modsel = vgm(0.02,"Sph",0.5), 
                                        quietmode = T)) %>% 
-  select(lon, lat, var.mod = var1.pred)
+  dplyr::select(lon, lat, var.mod = var1.pred)
 grid.value.samp <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.samp", 
                                         cutoff = 0.7, 
                                         modsel = vgm(0.04,"Sph",0.4),
                                         quietmode = T)) %>% 
-  select(lon, lat, var.samp = var1.pred)
+  dplyr::select(lon, lat, var.samp = var1.pred)
 grid.value.site <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.site", 
                                         cutoff = 1, 
                                         modsel = vgm(0.04,"Sph",0.4), 
                                         quietmode = T)) %>% 
-  select(lon, lat, var.site = var1.pred)
+  dplyr::select(lon, lat, var.site = var1.pred)
 grid.value.delta <- as.data.frame(doKrig(seldat, dat.grid, tag = "delta", 
                                          cutoff = 0.8, 
                                          modsel = vgm(0.003,"Sph",0.4),
                                          quietmode = T)) %>% 
-  select(lon, lat, delta = var1.pred)
+  dplyr::select(lon, lat, delta = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, 
                         as.data.frame(cbind(grid.value.mean %>%
                                               inner_join(grid.value.mod) %>%
@@ -150,27 +152,27 @@ grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean",
                                         cutoff = 1.5, 
                                         modsel = vgm(0.04,"Sph",0.5), 
                                         quietmode = T)) %>% 
-  select(lon, lat, mean = var1.pred)
+  dplyr::select(lon, lat, mean = var1.pred)
 grid.value.mod <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.mod", 
                                        cutoff = 1.5, 
                                        modsel = vgm(0.02,"Sph",0.5), 
                                        quietmode = T)) %>% 
-  select(lon, lat, var.mod = var1.pred)
+  dplyr::select(lon, lat, var.mod = var1.pred)
 grid.value.samp <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.samp", 
                                         cutoff = 1.1, 
                                         modsel = vgm(0.0015,"Sph",1.0),
                                         quietmode = T)) %>% 
-  select(lon, lat, var.samp = var1.pred)
+  dplyr::select(lon, lat, var.samp = var1.pred)
 grid.value.site <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.site", 
                                         cutoff = 1.5, 
                                         modsel = vgm(0.0015,"Sph",1), 
                                         quietmode = T)) %>% 
-  select(lon, lat, var.site = var1.pred)
+  dplyr::select(lon, lat, var.site = var1.pred)
 grid.value.delta <- as.data.frame(doKrig(seldat, dat.grid, tag = "delta", 
                                          cutoff = 1.2, 
                                          modsel = vgm(0.0012,"Sph",0.8),
                                          quietmode = T)) %>% 
-  select(lon, lat, delta = var1.pred)
+  dplyr::select(lon, lat, delta = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, 
                         as.data.frame(cbind(grid.value.mean %>%
                                               inner_join(grid.value.mod) %>%
@@ -186,27 +188,27 @@ grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean",
                                         cutoff = 1.5, 
                                         modsel = vgm(0.05, "Mat", 1, kappa = 2), 
                                         quietmode = T)) %>% 
-  select(lon, lat, mean = var1.pred)
+  dplyr::select(lon, lat, mean = var1.pred)
 grid.value.mod <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.mod", 
                                        cutoff = 1.5, 
                                        modsel = vgm(0.0003,"Lin",0), 
                                        quietmode = T)) %>% 
-  select(lon, lat, var.mod = var1.pred)
+  dplyr::select(lon, lat, var.mod = var1.pred)
 grid.value.samp <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.samp", 
                                         cutoff = 0.8, 
                                         modsel = vgm(0.0006,"Sph",0.4),
                                         quietmode = T)) %>% 
-  select(lon, lat, var.samp = var1.pred)
+  dplyr::select(lon, lat, var.samp = var1.pred)
 grid.value.site <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.site", 
                                         cutoff = 1.5, 
                                         modsel = vgm(0.0005,"Sph",1.2), 
                                         quietmode = T)) %>% 
-  select(lon, lat, var.site = var1.pred)
+  dplyr::select(lon, lat, var.site = var1.pred)
 grid.value.delta <- as.data.frame(doKrig(seldat, dat.grid, tag = "delta", 
                                          cutoff = 1.7, 
                                          modsel = vgm(0.001,"Sph",1.2),
                                          quietmode = T)) %>% 
-  select(lon, lat, delta = var1.pred)
+  dplyr::select(lon, lat, delta = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, 
                         as.data.frame(cbind(grid.value.mean %>%
                                               inner_join(grid.value.mod) %>%
@@ -222,27 +224,27 @@ grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean",
                                         cutoff = 1, 
                                         modsel = vgm(0.15, "Mat", 0.6, kappa = 3), 
                                         quietmode = T)) %>% 
-  select(lon, lat, mean = var1.pred)
+  dplyr::select(lon, lat, mean = var1.pred)
 grid.value.mod <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.mod", 
                                        cutoff = 1.5, 
                                        modsel = vgm(0.006,"Lin",0), 
                                        quietmode = T)) %>% 
-  select(lon, lat, var.mod = var1.pred)
+  dplyr::select(lon, lat, var.mod = var1.pred)
 grid.value.samp <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.samp", 
                                         cutoff = 0.8, 
                                         modsel = vgm(0.006,"Mat",0.6,kappa = 3),
                                         quietmode = T)) %>% 
-  select(lon, lat, var.samp = var1.pred)
+  dplyr::select(lon, lat, var.samp = var1.pred)
 grid.value.site <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.site", 
                                         cutoff = 1, 
                                         modsel = vgm(0.0015,"Sph",0.8), 
                                         quietmode = T)) %>% 
-  select(lon, lat, var.site = var1.pred)
+  dplyr::select(lon, lat, var.site = var1.pred)
 grid.value.delta <- as.data.frame(doKrig(seldat, dat.grid, tag = "delta", 
                                          cutoff = 1, 
                                          modsel = vgm(0.003,"Sph",0.4),
                                          quietmode = T)) %>% 
-  select(lon, lat, delta = var1.pred)
+  dplyr::select(lon, lat, delta = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, 
                         as.data.frame(cbind(grid.value.mean %>%
                                               inner_join(grid.value.mod) %>%
@@ -258,27 +260,27 @@ grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean",
                                         cutoff = 0.7, 
                                         modsel = vgm(0.15, "Mat", 0.6, kappa = 3), 
                                         quietmode = T)) %>% 
-  select(lon, lat, mean = var1.pred)
+  dplyr::select(lon, lat, mean = var1.pred)
 grid.value.mod <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.mod", 
                                        cutoff = 1.5, 
                                        modsel = vgm(0.0008,"Sph",1), 
                                        quietmode = T)) %>% 
-  select(lon, lat, var.mod = var1.pred)
+  dplyr::select(lon, lat, var.mod = var1.pred)
 grid.value.samp <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.samp", 
                                         cutoff = 0.6, 
                                         modsel = vgm(0.02,"Mat",0.4,kappa = 3),
                                         quietmode = T)) %>% 
-  select(lon, lat, var.samp = var1.pred)
+  dplyr::select(lon, lat, var.samp = var1.pred)
 grid.value.site <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.site", 
                                         cutoff = 0.7, 
                                         modsel = vgm(0.004,"Mat",0.5, kappa = 3), 
                                         quietmode = T)) %>% 
-  select(lon, lat, var.site = var1.pred)
+  dplyr::select(lon, lat, var.site = var1.pred)
 grid.value.delta <- as.data.frame(doKrig(seldat, dat.grid, tag = "delta", 
                                          cutoff = 0.7, 
                                          modsel = vgm(0.004,"Mat",0.5, kappa = 3),
                                          quietmode = T)) %>% 
-  select(lon, lat, delta = var1.pred)
+  dplyr::select(lon, lat, delta = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, 
                         as.data.frame(cbind(grid.value.mean %>%
                                               inner_join(grid.value.mod) %>%
@@ -294,27 +296,27 @@ grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean",
                                         cutoff = 0.8, 
                                         modsel = vgm(0.25, "Mat", 0.6, kappa = 3.5), 
                                         quietmode = T)) %>% 
-  select(lon, lat, mean = var1.pred)
+  dplyr::select(lon, lat, mean = var1.pred)
 grid.value.mod <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.mod", 
                                        cutoff = 1.5, 
                                        modsel = vgm(0.0008,"Lin",0), 
                                        quietmode = T)) %>% 
-  select(lon, lat, var.mod = var1.pred)
+  dplyr::select(lon, lat, var.mod = var1.pred)
 grid.value.samp <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.samp", 
                                         cutoff = 0.6, 
                                         modsel = vgm(0.02,"Mat",0.4,kappa = 3),
                                         quietmode = T)) %>% 
-  select(lon, lat, var.samp = var1.pred)
+  dplyr::select(lon, lat, var.samp = var1.pred)
 grid.value.site <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.site", 
                                         cutoff = 0.7, 
                                         modsel = vgm(0.0012,"Mat",0.5, kappa = 3), 
                                         quietmode = T)) %>% 
-  select(lon, lat, var.site = var1.pred)
+  dplyr::select(lon, lat, var.site = var1.pred)
 grid.value.delta <- as.data.frame(doKrig(seldat, dat.grid, tag = "delta", 
                                          cutoff = 0.7, 
                                          modsel = vgm(0.004,"Mat",0.5, kappa = 3),
                                          quietmode = T)) %>% 
-  select(lon, lat, delta = var1.pred)
+  dplyr::select(lon, lat, delta = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, 
                         as.data.frame(cbind(grid.value.mean %>%
                                               inner_join(grid.value.mod) %>%
@@ -330,27 +332,27 @@ grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean",
                                         cutoff = 0.8, 
                                         modsel = vgm(0.15, "Mat", 0.6, kappa = 3.5), 
                                         quietmode = T)) %>% 
-  select(lon, lat, mean = var1.pred)
+  dplyr::select(lon, lat, mean = var1.pred)
 grid.value.mod <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.mod", 
                                        cutoff = 1.5, 
                                        modsel = vgm(0.0008,"Lin",0), 
                                        quietmode = T)) %>% 
-  select(lon, lat, var.mod = var1.pred)
+  dplyr::select(lon, lat, var.mod = var1.pred)
 grid.value.samp <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.samp", 
                                         cutoff = 0.6, 
                                         modsel = vgm(0.004,"Mat",0.4,kappa = 3),
                                         quietmode = T)) %>% 
-  select(lon, lat, var.samp = var1.pred)
+  dplyr::select(lon, lat, var.samp = var1.pred)
 grid.value.site <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.site", 
                                         cutoff = 0.7, 
                                         modsel = vgm(0.0015,"Mat",0.5, kappa = 3), 
                                         quietmode = T)) %>% 
-  select(lon, lat, var.site = var1.pred)
+  dplyr::select(lon, lat, var.site = var1.pred)
 grid.value.delta <- as.data.frame(doKrig(seldat, dat.grid, tag = "delta", 
                                          cutoff = 0.7, 
                                          modsel = vgm(0.0015,"Mat",0.5, kappa = 3),
                                          quietmode = T)) %>% 
-  select(lon, lat, delta = var1.pred)
+  dplyr::select(lon, lat, delta = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, 
                         as.data.frame(cbind(grid.value.mean %>%
                                               inner_join(grid.value.mod) %>%

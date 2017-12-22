@@ -16,10 +16,10 @@ dat <- as.data.frame(dat)
 coordinates(dat) <- ~lon+lat
 
 grid.value.tot <- NULL
-grid.value <- as.data.frame(doKrig(dat, dat.grid, krigFormula = depth~1, 
-                                   tag = "depth", cutoff = 1.2, 
+grid.value <- as.data.frame(doKrig(dat, dat.grid, tag = "depth", cutoff = 1.2,
+                                   krigFormula = depth~1, 
                                    modsel = vgm(80,"Lin",0,0.01), 
-                                   dir = "map/")) %>% 
+                                   quietmode = T)) %>% 
   select(lon, lat, value = var1.pred) 
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, 
                                                             trait = "depth")))
