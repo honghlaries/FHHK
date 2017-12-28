@@ -34,8 +34,10 @@ findInt.coord <- function(range) {
   seq(low,high,r/fac)
 }
 
-spView.grid <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = rainbow(15),
-                        grad.value = quantile(dat$value, probs = (1:bins)/(bins+1)), grad.tag = grad.value, pncol) {
+spView.grid <- function(dat, lonRange, latRange, leg.name, 
+                        bins = 7, grad.col = rainbow(15),
+                        grad.value = quantile(dat$value, probs = (1:bins)/(bins+1)), 
+                        grad.tag = grad.value, pncol) {
   pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("ggplot2");pkgLoad("maptools");
   pkgLoad("rgdal")
   
@@ -52,8 +54,10 @@ spView.grid <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = 
           strip.background = element_blank())
 }
 
-spView.grid.interval <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = rainbow(15),
-                        grad.value = quantile(dat$value, probs = (1:bins)/(bins+1)), grad.tag = grad.value, pncol) {
+spView.grid.interval <- function(dat, lonRange, latRange, leg.name, 
+                                 bins = 7, grad.col = rainbow(15),
+                                 grad.value = quantile(dat$value, probs = (1:bins)/(bins+1)),
+                                 grad.tag = grad.value, pncol) {
   pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("ggplot2");pkgLoad("maptools");
   pkgLoad("rgdal")
   
@@ -82,18 +86,21 @@ spView.grid.interval <- function(dat, lonRange, latRange, leg.name, bins = 7, gr
           strip.background = element_blank())
 }
 
-spView <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = rainbow(bins+1),
+spView <- function(dat, lonRange, latRange, leg.name, 
+                   bins = 7, grad.col = rainbow(bins+1),
                    grad.value = NULL, grad.tag = NULL) {
   pkgLoad("dplyr");pkgLoad("tidyr");pkgLoad("ggplot2");pkgLoad("maptools");
-  pkgLoad("rgdal");pkgLoad("directlabels")
+  pkgLoad("rgdal")
   
   if(is.null(grad.value)) grad.value <- (0:bins)*(max(dat$value) - min(dat$value))/bins + min(dat$value)
   if(is.null(grad.tag)) grad.tag <- format(grad.value,digit = 2)
   
   break.lon <- findInt.coord(lonRange)
-  label.lon <- conveySpCoord(break.lon,conveyFrom = "num.degree.nosuffix",conveyTo = "char.minute.suffix",type = "lon")
+  label.lon <- conveySpCoord(break.lon,conveyFrom = "num.degree.nosuffix",
+                             conveyTo = "char.minute.suffix",type = "lon")
   break.lat <- findInt.coord(latRange)
-  label.lat <- conveySpCoord(break.lat,conveyFrom = "num.degree.nosuffix",conveyTo = "char.minute.suffix",type = "lat")
+  label.lat <- conveySpCoord(break.lat,conveyFrom = "num.degree.nosuffix",
+                             conveyTo = "char.minute.suffix",type = "lat")
   
   ggplot() + 
     geom_raster(aes(x = lon, y = lat, fill = value), 
@@ -113,6 +120,49 @@ spView <- function(dat, lonRange, latRange, leg.name, bins = 7, grad.col = rainb
           legend.box.margin = margin(t = 2, r = 2, b = 2, l = 2),
           legend.box.spacing = unit(1,units = "pt"))
 }
+
+spView.interval <- function(dat, lonRange, latRange, leg.name, 
+                            bins = 7, grad.col = rainbow(bins+1),
+                            grad.value = NULL, grad.tag = NULL) {
+  pkgLoad("dplyr"); pkgLoad("tidyr"); pkgLoad("ggplot2"); pkgLoad("maptools");
+  pkgLoad("rgdal")
+  
+  dat$class <- "c0"
+  labels <- paste("<", grad.value[1])
+  
+  for(i in 1:(length(grad.value)-1)) {
+    dat[(dat$value - grad.value[i])> 0.0001,"class"] <- paste("c", i, sep = "")
+    labels <- c(labels, paste(grad.value[i], "~", grad.value[i+1]))
+  }
+  
+  dat[(dat$value - grad.value[length(grad.value)])> 0.0001,"class"] <- paste("c", length(grad.value), sep = "")
+  labels <- c(labels, paste(">", grad.value[length(grad.value)]))
+  
+  if(is.null(grad.value)) grad.value <- (0:bins)*(max(dat$value) - min(dat$value))/bins + min(dat$value)
+  if(is.null(grad.tag)) grad.tag <- format(grad.value,digit = 2)
+  
+  break.lon <- findInt.coord(lonRange)
+  label.lon <- conveySpCoord(break.lon,conveyFrom = "num.degree.nosuffix",
+                             conveyTo = "char.minute.suffix",type = "lon")
+  break.lat <- findInt.coord(latRange)
+  label.lat <- conveySpCoord(break.lat,conveyFrom = "num.degree.nosuffix",
+                             conveyTo = "char.minute.suffix",type = "lat")
+  
+  ggplot() + 
+    geom_raster(aes(x = lon, y = lat, fill = class), 
+                interpolate = T, show.legend = T, data = dat) +
+    scale_fill_manual(leg.name, labels = labels, 
+                      limits = paste("c",0:length(grad.value),sep = ""), values = grad.col) +
+    scale_x_continuous(name = "", breaks = break.lon, labels = label.lon, expand = c(0,0)) +
+    scale_y_continuous(name = "", breaks = break.lat, labels = label.lat, expand = c(0,0)) +
+    coord_quickmap(xlim = lonRange, ylim = latRange) +
+    theme_bw() + 
+    theme(aspect.ratio = (latiRange[2]-latiRange[1])/(longiRange[2]-longiRange[1]),
+          panel.grid = element_blank(),
+          legend.box.margin = margin(t = 2, r = 2, b = 2, l = 2),
+          legend.box.spacing = unit(1,units = "pt"))
+}
+
 
 doKrig <- function(dat, dat.grid, tag, cutoff, 
                    krigFormula = as.formula(paste(tag,"~1",sep="")), 
@@ -172,7 +222,8 @@ doKrig.resamp <- function(dat, dat.grid.resample, tag, cutoff,
     subdat <- as.data.frame(subdat)
     kirg.siteresamp.tot <- NULL
     for(j in 1:nsite) {
-      if ((i %in% c(1,ceiling(1:9*0.1*nsamp),nsamp)) && (j %in% c(1,ceiling(1:3*0.25*nsite),nsite))) print(paste("Site resampling:","(",j,"/",nsite,")"))
+      if ((i %in% c(1,ceiling(1:9*0.1*nsamp),nsamp)) && 
+          (j %in% c(1,ceiling(1:3*0.25*nsite),nsite))) print(paste("Site resampling:","(",j,"/",nsite,")"))
       subsubdat <- subdat %>% dplyr::filter(siteID %in% sample(levels(siteID), ceiling(0.75*length(levels(siteID)))))
       subsubdat <- as.data.frame(subsubdat)
       coordinates(subsubdat) <- ~lon+lat

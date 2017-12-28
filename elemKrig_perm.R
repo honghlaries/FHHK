@@ -1,7 +1,7 @@
 ## Initialization
 rm(list = ls())
 source("constant.R");source("anaTls_spatialView.R");source("uniTls_csv2latex.R")
-pkgInitialization(c("dplyr","tidyr","sp","gstat","ggplot2"))
+pkgInitialization(c("dplyr","tidyr","sp","gstat","ggplot2","RColorBrewer","gridExtra"))
 source("grid.R");source("grid_resamp.R")
 
 ## Functions 
@@ -18,34 +18,49 @@ spView.elem <- function(elem,...) {
 }
 
 spView.delta <- function(elem,...) {
-  spView(dat = grid.value.tot %>% 
-           filter(trait == elem),
-         leg.name = elem,
-         lonRange = lonRange, latRange = latRange) +
-    geom_contour(aes(x = lon, y = lat,  z = value), col= "black",
-                 show.legend = F, size = 0.8, breaks = 0, linetype = 2,
-                 data = grid.value.tot %>% filter(trait == elem)) +
+  spView.interval(dat = dplyr::filter(grid.value.tot, trait %in% elem) %>%
+                    dplyr::mutate(value = var.samp/var.site), 
+                       leg.name = "", grad.value = c(0.1, 0.3, 0.5, 0.7, 0.9,
+                                                     1.1, 1.3, 1.5, 2, 2.5), 
+                       grad.col = RColorBrewer::brewer.pal(11,"RdBu")[11:1],
+                       lonRange = lonRange,
+                       latRange = latRange) + 
     geom_polygon(aes(x = long, y = lat, group = group), 
                  colour = "black", fill = "grey80", 
                  data = fortify(readShapePoly("data/bou2_4p.shp"))) +
-    theme(axis.text = element_blank(),
+    theme(legend.position = "none",
+          axis.text = element_blank(),
           axis.ticks = element_blank())
 }
 
-view.delta <- function(elem,...) {
+view.delta <- function(elem,range,...) {
   dat <- dplyr::filter(grid.perm.tot, trait %in% elem) %>%
-    dplyr::mutate(group = factor(as.numeric(var.samp > 1.10*var.site) - 
-                    as.numeric(var.samp < 0.90*var.site)))
+    dplyr::mutate(group = factor((var.samp > 2.5*var.site) + 
+                                   (var.samp > 2*var.site) + 
+                                   (var.samp > 1.5*var.site) + 
+                                   (var.samp > 1.3*var.site) + 
+                                   (var.samp > 1.1*var.site) + 
+                                   (var.samp > 0.9*var.site) + 
+                                   (var.samp > 0.7*var.site) + 
+                                   (var.samp > 0.5*var.site) + 
+                                   (var.samp > 0.3*var.site) + 
+                                   (var.samp > 0.1*var.site)))
   ggplot()+
     geom_abline(slope = 1, intercept = 0, linetype = 2)+
-    geom_point(aes(x = var.site, y = var.samp, col = group), 
-               alpha  = 0.2, data = dat)+
-    geom_smooth(aes(x = var.site, y = var.samp, col = group), 
-                method = "glm", 
-                data = dat)+
-    scale_color_manual(values = c("blue","grey50","red"))+
-    coord_equal(xlim = c(0,0.5), ylim = c(0,0.5))+
-    theme_bw()}
+    geom_point(aes(x = abs(var.site/mean), y = abs(var.samp/mean), col =  group), 
+               alpha  = 1, data = dat)+
+    geom_text(aes(x = 0.05*range, y = range, label = elem), size = 10)+ 
+    scale_color_manual(breaks = c(0.1, 0.3, 0.5, 0.7, 0.9,
+                                  1.1, 1.3, 1.5, 2, 2.5),
+                       values = RColorBrewer::brewer.pal(11,"RdBu")[11:1])+
+    scale_x_continuous("Variation from missing sites",breaks = 0.05*0:8, labels = paste(5*0:8,"%",sep =""))+
+    scale_y_continuous("Variation from deficient subsample",breaks = 0.05*0:8, labels = paste(5*0:8,"%",sep =""))+
+    coord_equal(xlim = c(0,range), ylim = c(0,range))+
+    theme_bw()+
+    theme(legend.position = "none",
+          axis.title = element_text(size = 20),
+          axis.text = element_text(size = 16))
+}
 
 
 ## Example
@@ -54,12 +69,12 @@ set.seed(20171216.082111)
 dat <- datareadln() 
 
 grid.perm.tot = NULL
-nsamp = 99; nsite = 99
+nsamp = 999; nsite = 999
 
 grid.perm <- as.data.frame(doKrig.resamp(dat, dat.grid.resample, 
                                           krigFormula = log(Pb) ~ 1, tag = "Pb", 
                                           cutoff = 1.5,
-                                          modsel = vgm(0.35,"Sph",0.5), 
+                                          modsel = vgm(0.35,"Sph",0.5, kappa = 1), 
                                           nsamp = nsamp, nsite = nsite, 
                                           group = "siteID") )
 grid.perm.tot <- rbind(grid.perm.tot, 
@@ -477,26 +492,22 @@ p <- grid.arrange(plot.pb.site,plot.ni.site,plot.cu.site,plot.zn.site,
 ggsave(filename = "element/krig/gather_krig_perm_element_site.png", plot = p, 
        dpi = 600, width = 8, height = 8)
 
-grid.value.tot <- grid.value.tot %>% 
-  mutate(value = 100*((exp(mean+var.samp)/exp(mean))/
-                        (exp(mean+var.site)/exp(mean))-1))
-spView.grid.interval(dat = grid.value.tot, leg.name = "Vsamp vs Vsite(%)",
-                     grad.value = c(-20,-10,-5,5,10,20), 
-                     grad.col = c("#3A5FCD","#436EEE","#4876FF",
-                                  "grey90",
-                                  "#FF83FA","#EE7AE9","#CD69C9"),
-                     lonRange = lonRange,
-                   latRange = latRange, pncol = 3) + 
-  #geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
-  #             show.legend = F, size = 0.8, breaks = 0, linetype = 2,
-  #             data = grid.value.tot) +
-  geom_polygon(aes(x = long, y = lat, group = group), 
-               colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
-  theme(axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        legend.position = c(1,0),
-        legend.direction = "horizontal",
-        legend.justification = c(1.1,-1.15)) -> p
 
-ggsave(filename = "element/krig/gather_krig_perm_element_delta.png", plot = p, 
-       dpi = 600, width = 8, height = 6)
+nym <- function(elem,range){
+  p <- view.delta(elem,range)
+  ggsave(plot = p, height = 6, width = 6,
+         filename = paste("element/krig/",elem,"_delta.png", sep = ""))
+  p <- spView.delta(elem)
+  ggsave(plot = p, height = 5, width = 7.5,
+         filename = paste("element/krig/",elem,"_deltaSp.png", sep = ""))
+}
+
+nym("Pb",0.15)
+nym("Cr",0.1)
+nym("Ni",0.1)
+nym("Cu",0.2)
+nym("Zn",0.1)
+nym("As",0.4)
+nym("Cd",0.3)
+#view.delta("",0.5)
+
