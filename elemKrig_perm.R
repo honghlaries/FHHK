@@ -134,7 +134,7 @@ grid.perm <- as.data.frame(doKrig.resamp(dat, dat.grid.resample,
 grid.perm.tot <- rbind(grid.perm.tot, 
                         as.data.frame(cbind(grid.perm, trait = "Cd")))
 
-
+rm(grid.perm)
 grid.value.tot <- NULL
 
 seldat <- grid.perm.tot %>% 
@@ -392,6 +392,8 @@ grid.value.tot <- rbind(grid.value.tot,
                                             trait = "Cd")))
 
 grid.value.tot$value <- exp(grid.value.tot$mean)
+rm(grid.perm.tot);rm(grid.value.mean,grid.value.mod,grid.value.samp,grid.value.site,grid.value.delta)
+
 
 dat.site <- datareadln() %>%
   tidyr::gather(trait,value,depth,Pb:Cd) %>%

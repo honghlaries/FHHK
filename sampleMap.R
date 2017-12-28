@@ -3,7 +3,7 @@ rm(list = ls())
 source("constant.R");source("anaTls_spatialView.R");
 pkgInitialization(c("dplyr","tidyr","sp","gstat","ggplot2","directlabels","maptools"))
 source("grid.R")
-
+dirInitialization("map")
 
 # data
 dat <- datareadln() %>%
