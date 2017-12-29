@@ -3,6 +3,7 @@ rm(list = ls())
 source("constant.R");source("anaTls_spatialView.R");source("uniTls_csv2latex.R")
 pkgInitialization(c("dplyr","tidyr","sp","gstat","ggplot2","RColorBrewer","gridExtra"))
 source("grid.R");source("grid_resamp.R")
+dirInitialization(c("element","element/krig"))
 
 ## Functions 
 spView.elem <- function(elem,...) {

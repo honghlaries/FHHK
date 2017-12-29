@@ -3,6 +3,7 @@ rm(list = ls())
 source("constant.R");source("anaTls_spatialView.R");source("anaTls_multivariate.R");
 pkgInitialization(c("dplyr","tidyr","sp","gstat","gridExtra","ColorPalette"))
 source("grid.R")
+dirInitialization(c("rda","rda/krig"))
 
 # Functions 
 

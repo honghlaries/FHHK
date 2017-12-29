@@ -3,6 +3,7 @@ rm(list = ls())
 source("constant.R");source("anaTls_spatialView.R");
 pkgInitialization(c("dplyr","tidyr","sp","gstat","ggplot2","directlabels"))
 source("grid.R")
+dirInitialization(c("riskAssment","riskAssment/krig","riskAssment/krig/ef","riskAssment/krig/igeo"))
 
 # Functions 
 spView.igeo <- function(elem,...) {

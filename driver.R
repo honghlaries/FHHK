@@ -2,6 +2,7 @@
 rm(list = ls())
 source("constant.R");
 pkgInitialization(c("dplyr","tidyr","ggplot2","gridExtra","MASS"))
+dirInitialization(c("relation","relation/driver"))
 
 ## Functions 
 relationPlot <- function(dat, fact, resp, col, family) {
