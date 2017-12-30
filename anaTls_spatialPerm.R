@@ -1,7 +1,7 @@
 ## Initialization
 rm(list = ls())
 source("constant.R"); source("anaTls_spatialView.R"); source("grid_resamp.R")
-pkgInitialization(c("dplyr","tidyr","sp","gstat","ggplot2","RColorBrewer","gridExtra"))
+pkgInitialization(c("dplyr","tidyr","sp","gstat"))
 
 ## Functions 
 doPerm.array <- function(fitlist, processor, seed = 20171216.082111) {
@@ -30,7 +30,7 @@ doPerm.array <- function(fitlist, processor, seed = 20171216.082111) {
   grid.perm.tot
 }
 
-## Example
+## Readln fit list
 fitlist <- read.csv("data/meta_fitlist.csv")
 fitlist$tag <- as.character(fitlist$tag)
 fitlist$krigFormula <- as.character(fitlist$krigFormula)
