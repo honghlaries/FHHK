@@ -68,7 +68,7 @@ doPerm.array <- function(fitlist, processor, seed = 20171216.082111) {
                                              nsamp = nsamp[i], nsite = nsite[i], 
                                              group = group[i]) ) )
     grid.perm.tot <- rbind(grid.perm.tot, 
-                           as.data.frame(cbind(grid.perm, trait = fitlist$tag)))
+                           as.data.frame(cbind(grid.perm, trait = fitlist$tag[i])))
   }
   
   grid.perm.tot
@@ -184,7 +184,7 @@ siteImpor.array <- function(fitlist, processor, seed = 20171216.082111) {
                                                      nsamp = nsamp[i], nsite = nsite[i], 
                                                      group = group[i]) ) )
     grid.perm.tot <- rbind(grid.perm.tot, 
-                           as.data.frame(cbind(grid.perm, trait = fitlist$tag)))
+                           as.data.frame(cbind(grid.perm, trait = fitlist$tag[i])))
   }
   
   grid.perm.tot
