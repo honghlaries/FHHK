@@ -201,47 +201,5 @@ doKrig <- function(dat, dat.grid, tag, cutoff,
   krig
 }
 
-doKrig.resamp <- function(dat, dat.grid.resample, tag, cutoff, 
-                   krigFormula = as.formula(paste(tag,"~1",sep="")), 
-                   modsel, nsamp, nsite, group) {
-  pkgLoad("sp");pkgLoad("gstat");pkgLoad("gridExtra");pkgLoad("dplyr")
-  
-  dat <- dat %>% select_("lon","lat",tag,group)
-  krig.tot <- NULL
-  for(i in 1:nsamp) {
-    if (i %in% c(1,ceiling(1:9*0.1*nsamp),nsamp)) print(paste("Calculating on",tag,"(",i,"/",nsamp,")"))
-    subdat <- dat %>% dplyr::group_by_(group) %>% dplyr::sample_n(1)
-    subdat <- as.data.frame(subdat)
-    coordinates(subdat) <- ~lon+lat
-    mod <- variogram(krigFormula, subdat, cutoff = cutoff)
-    #fit <- fit.variogram(mod, model = modsel)
-    krig <- krige(krigFormula, subdat, dat.grid.resample, 
-                  model = modsel, debug.level = 0)
-    krig <- as.data.frame(krig) %>% dplyr::rename(value = var1.pred, var.mod =  var1.var)
-    
-    subdat <- as.data.frame(subdat)
-    kirg.siteresamp.tot <- NULL
-    for(j in 1:nsite) {
-      if ((i %in% c(1,ceiling(1:9*0.1*nsamp),nsamp)) && 
-          (j %in% c(1,ceiling(1:3*0.25*nsite),nsite))) print(paste("Site resampling:","(",j,"/",nsite,")"))
-      subsubdat <- subdat %>% dplyr::filter(siteID %in% sample(levels(siteID), ceiling(0.75*length(levels(siteID)))))
-      subsubdat <- as.data.frame(subsubdat)
-      coordinates(subsubdat) <- ~lon+lat
-      mod <- variogram(krigFormula, subsubdat, cutoff = cutoff)
-      #fit <- fit.variogram(mod, model = modsel)
-      kirg.siteresamp <- krige(krigFormula, subsubdat, dat.grid.resample, 
-                               model = modsel, debug.level = 0)
-      kirg.siteresamp <- as.data.frame(kirg.siteresamp) %>% dplyr::select(lon, lat, value = var1.pred) 
-      kirg.siteresamp.tot <- rbind(kirg.siteresamp.tot, kirg.siteresamp)
-    }
-    krig <- kirg.siteresamp.tot %>% dplyr::group_by(lon,lat) %>% 
-      dplyr::summarise(var.site = sd(value)) %>% dplyr::inner_join(krig)
-    
-    krig.tot <- rbind(krig.tot,krig)
-  }
-    
-  krig.tot %>% dplyr::group_by(lon,lat) %>% 
-    dplyr::summarise(mean = mean(value), var.mod = mean(var.mod), 
-              var.samp = sd(value), var.site = mean(var.site))
-}
+
 
