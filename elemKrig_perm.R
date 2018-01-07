@@ -65,77 +65,12 @@ view.delta <- function(elem,range,...) {
 
 
 ## Example
-set.seed(20171216.082111)
+grid.perm.tot <- read.csv("data/raw_perm_2.csv") %>%
+  rbind(read.csv("data/raw_perm_3.csv")) %>%
+  rbind(read.csv("data/raw_perm_4.csv")) %>%
+  rbind(read.csv("data/raw_perm_5.csv")) %>%
+  rbind(read.csv("data/raw_perm_6.csv")) 
 
-dat <- datareadln() 
-
-grid.perm.tot = NULL
-nsamp = 999; nsite = 999
-
-grid.perm <- as.data.frame(doKrig.resamp(dat, dat.grid.resample, 
-                                          krigFormula = log(Pb) ~ 1, tag = "Pb", 
-                                          cutoff = 1.5,
-                                          modsel = vgm(0.35,"Sph",0.5, kappa = 1), 
-                                          nsamp = nsamp, nsite = nsite, 
-                                          group = "siteID") )
-grid.perm.tot <- rbind(grid.perm.tot, 
-                        as.data.frame(cbind(grid.perm, trait = "Pb")))
-
-grid.perm <- as.data.frame(doKrig.resamp(dat, dat.grid.resample, 
-                                          krigFormula = log(Cr) ~ 1, tag = "Cr", 
-                                          cutoff = 1.5,
-                                          modsel = vgm(0.06,"Mat",0.7,kappa = 1), 
-                                          nsamp = nsamp, nsite = nsite, 
-                                          group = "siteID") )
-grid.perm.tot <- rbind(grid.perm.tot, 
-                        as.data.frame(cbind(grid.perm, trait = "Cr")))
-
-grid.perm <- as.data.frame(doKrig.resamp(dat, dat.grid.resample, 
-                                          krigFormula = log(Ni) ~ 1, tag = "Ni", 
-                                          cutoff = 1.5,
-                                          modsel = vgm(0.06,"Sph",1), 
-                                          nsamp = nsamp, nsite = nsite, 
-                                          group = "siteID") )
-grid.perm.tot <- rbind(grid.perm.tot, 
-                        as.data.frame(cbind(grid.perm, trait = "Ni")))
-
-grid.perm <- as.data.frame(doKrig.resamp(dat, dat.grid.resample, 
-                                          krigFormula = log(Cu) ~ 1, tag = "Cu", 
-                                          cutoff = 1.5,
-                                          modsel = vgm(0.25,"Sph",0.75), 
-                                          nsamp = nsamp, nsite = nsite, 
-                                          group = "siteID") )
-grid.perm.tot <- rbind(grid.perm.tot, 
-                        as.data.frame(cbind(grid.perm, trait = "Cu")))
-
-grid.perm <- as.data.frame(doKrig.resamp(dat, dat.grid.resample, 
-                                          krigFormula = log(Zn) ~ 1, tag = "Zn", 
-                                          cutoff = 1.5,
-                                          modsel = vgm(0.1,"Sph",0.5), 
-                                          nsamp = nsamp, nsite = nsite, 
-                                          group = "siteID") )
-grid.perm.tot <- rbind(grid.perm.tot, 
-                        as.data.frame(cbind(grid.perm, trait = "Zn")))
-
-grid.perm <- as.data.frame(doKrig.resamp(dat, dat.grid.resample, 
-                                          krigFormula = log(As) ~ 1, tag = "As", 
-                                          cutoff = 1.5,
-                                          modsel = vgm(0.3,"Sph",0.75), 
-                                          nsamp = nsamp, nsite = nsite, 
-                                          group = "siteID") )
-grid.perm.tot <- rbind(grid.perm.tot, 
-                        as.data.frame(cbind(grid.perm, trait = "As")))
-
-grid.perm <- as.data.frame(doKrig.resamp(dat, dat.grid.resample, 
-                                          krigFormula = log(Cd) ~ 1, tag = "Cd", 
-                                          cutoff = 1.5,
-                                          modsel = vgm(0.2,"Sph",0.7), 
-                                          nsamp = nsamp, nsite = nsite, 
-                                          group = "siteID") )
-grid.perm.tot <- rbind(grid.perm.tot, 
-                        as.data.frame(cbind(grid.perm, trait = "Cd")))
-
-rm(grid.perm)
 grid.value.tot <- NULL
 
 seldat <- grid.perm.tot %>% 
