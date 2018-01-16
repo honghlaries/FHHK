@@ -8,7 +8,8 @@ dirInitialization(c("element","element/krig"))
 ## Functions 
 spView.elem <- function(elem,...) {
   spView(dat = grid.value.tot %>% 
-           filter(trait == elem),
+           filter(trait == elem) %>% 
+           mutate(value = exp(mean)),
          leg.name = elem,
          lonRange = lonRange, latRange = latRange) +
     geom_polygon(aes(x = long, y = lat, group = group), 
@@ -64,51 +65,34 @@ view.delta <- function(elem,range,...) {
 }
 
 
-## Example
-grid.perm.tot <- read.csv("data/raw_perm_2.csv") %>%
-  rbind(read.csv("data/raw_perm_3.csv")) %>%
-  rbind(read.csv("data/raw_perm_4.csv")) %>%
-  rbind(read.csv("data/raw_perm_5.csv")) %>%
-  rbind(read.csv("data/raw_perm_6.csv")) 
-
+## submaple v.s. site
+grid.perm.tot <- read.csv("data/result_element_perm.csv") 
 grid.value.tot <- NULL
 
-seldat <- grid.perm.tot %>% 
-  dplyr::filter(trait == "Pb") %>% 
+seldat <- grid.perm.tot %>%
+  dplyr::filter(trait == "Pb") %>%
   dplyr::mutate(delta = var.samp-var.site)
 subdat <- as.data.frame(seldat)
 coordinates(seldat) <- ~lon+lat
-grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean", 
-                                        cutoff = 1, 
-                                        modsel = vgm(0.02,"Sph",0.5), 
-                                        quietmode = T)) %>% 
+grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean",
+                                        cutoff = 1,
+                                        modsel = vgm(0.02,"Sph",0.5),
+                                        quietmode = T)) %>%
   dplyr::select(lon, lat, mean = var1.pred)
-grid.value.mod <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.mod", 
-                                       cutoff = 1.5, 
-                                       modsel = vgm(0.02,"Sph",0.5), 
-                                       quietmode = T)) %>% 
-  dplyr::select(lon, lat, var.mod = var1.pred)
-grid.value.samp <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.samp", 
-                                        cutoff = 0.7, 
+grid.value.samp <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.samp",
+                                        cutoff = 0.7,
                                         modsel = vgm(0.04,"Sph",0.4),
-                                        quietmode = T)) %>% 
+                                        quietmode = T)) %>%
   dplyr::select(lon, lat, var.samp = var1.pred)
-grid.value.site <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.site", 
-                                        cutoff = 1, 
-                                        modsel = vgm(0.04,"Sph",0.4), 
-                                        quietmode = T)) %>% 
+grid.value.site <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.site",
+                                        cutoff = 1,
+                                        modsel = vgm(0.04,"Sph",0.4),
+                                        quietmode = T)) %>%
   dplyr::select(lon, lat, var.site = var1.pred)
-grid.value.delta <- as.data.frame(doKrig(seldat, dat.grid, tag = "delta", 
-                                         cutoff = 0.8, 
-                                         modsel = vgm(0.003,"Sph",0.4),
-                                         quietmode = T)) %>% 
-  dplyr::select(lon, lat, delta = var1.pred)
-grid.value.tot <- rbind(grid.value.tot, 
+grid.value.tot <- rbind(grid.value.tot,
                         as.data.frame(cbind(grid.value.mean %>%
-                                              inner_join(grid.value.mod) %>%
                                               inner_join(grid.value.samp) %>%
-                                              inner_join(grid.value.site) %>%
-                                              inner_join(grid.value.delta), 
+                                              inner_join(grid.value.site),
                                             trait = "Pb")))
 
 seldat <- grid.perm.tot %>% filter(trait == "Cr") %>% mutate(delta = var.samp-var.site)
@@ -119,11 +103,6 @@ grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean",
                                         modsel = vgm(0.04,"Sph",0.5), 
                                         quietmode = T)) %>% 
   dplyr::select(lon, lat, mean = var1.pred)
-grid.value.mod <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.mod", 
-                                       cutoff = 1.5, 
-                                       modsel = vgm(0.02,"Sph",0.5), 
-                                       quietmode = T)) %>% 
-  dplyr::select(lon, lat, var.mod = var1.pred)
 grid.value.samp <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.samp", 
                                         cutoff = 1.1, 
                                         modsel = vgm(0.0015,"Sph",1.0),
@@ -134,17 +113,10 @@ grid.value.site <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.site",
                                         modsel = vgm(0.0015,"Sph",1), 
                                         quietmode = T)) %>% 
   dplyr::select(lon, lat, var.site = var1.pred)
-grid.value.delta <- as.data.frame(doKrig(seldat, dat.grid, tag = "delta", 
-                                         cutoff = 1.2, 
-                                         modsel = vgm(0.0012,"Sph",0.8),
-                                         quietmode = T)) %>% 
-  dplyr::select(lon, lat, delta = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, 
                         as.data.frame(cbind(grid.value.mean %>%
-                                              inner_join(grid.value.mod) %>%
                                               inner_join(grid.value.samp) %>%
-                                              inner_join(grid.value.site) %>%
-                                              inner_join(grid.value.delta), 
+                                              inner_join(grid.value.site), 
                                             trait = "Cr")))
 
 seldat <- grid.perm.tot %>% filter(trait == "Ni") %>% mutate(delta = var.samp-var.site)
@@ -155,11 +127,6 @@ grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean",
                                         modsel = vgm(0.05, "Mat", 1, kappa = 2), 
                                         quietmode = T)) %>% 
   dplyr::select(lon, lat, mean = var1.pred)
-grid.value.mod <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.mod", 
-                                       cutoff = 1.5, 
-                                       modsel = vgm(0.0003,"Lin",0), 
-                                       quietmode = T)) %>% 
-  dplyr::select(lon, lat, var.mod = var1.pred)
 grid.value.samp <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.samp", 
                                         cutoff = 0.8, 
                                         modsel = vgm(0.0006,"Sph",0.4),
@@ -170,17 +137,10 @@ grid.value.site <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.site",
                                         modsel = vgm(0.0005,"Sph",1.2), 
                                         quietmode = T)) %>% 
   dplyr::select(lon, lat, var.site = var1.pred)
-grid.value.delta <- as.data.frame(doKrig(seldat, dat.grid, tag = "delta", 
-                                         cutoff = 1.7, 
-                                         modsel = vgm(0.001,"Sph",1.2),
-                                         quietmode = T)) %>% 
-  dplyr::select(lon, lat, delta = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, 
                         as.data.frame(cbind(grid.value.mean %>%
-                                              inner_join(grid.value.mod) %>%
                                               inner_join(grid.value.samp) %>%
-                                              inner_join(grid.value.site) %>%
-                                              inner_join(grid.value.delta), 
+                                              inner_join(grid.value.site),
                                             trait = "Ni")))
 
 seldat <- grid.perm.tot %>% filter(trait == "Cu") %>% mutate(delta = var.samp-var.site)
@@ -191,11 +151,6 @@ grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean",
                                         modsel = vgm(0.15, "Mat", 0.6, kappa = 3), 
                                         quietmode = T)) %>% 
   dplyr::select(lon, lat, mean = var1.pred)
-grid.value.mod <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.mod", 
-                                       cutoff = 1.5, 
-                                       modsel = vgm(0.006,"Lin",0), 
-                                       quietmode = T)) %>% 
-  dplyr::select(lon, lat, var.mod = var1.pred)
 grid.value.samp <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.samp", 
                                         cutoff = 0.8, 
                                         modsel = vgm(0.006,"Mat",0.6,kappa = 3),
@@ -206,17 +161,10 @@ grid.value.site <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.site",
                                         modsel = vgm(0.0015,"Sph",0.8), 
                                         quietmode = T)) %>% 
   dplyr::select(lon, lat, var.site = var1.pred)
-grid.value.delta <- as.data.frame(doKrig(seldat, dat.grid, tag = "delta", 
-                                         cutoff = 1, 
-                                         modsel = vgm(0.003,"Sph",0.4),
-                                         quietmode = T)) %>% 
-  dplyr::select(lon, lat, delta = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, 
                         as.data.frame(cbind(grid.value.mean %>%
-                                              inner_join(grid.value.mod) %>%
                                               inner_join(grid.value.samp) %>%
-                                              inner_join(grid.value.site) %>%
-                                              inner_join(grid.value.delta), 
+                                              inner_join(grid.value.site),
                                             trait = "Cu")))
 
 seldat <- grid.perm.tot %>% filter(trait == "Zn") %>% mutate(delta = var.samp-var.site)
@@ -227,11 +175,6 @@ grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean",
                                         modsel = vgm(0.15, "Mat", 0.6, kappa = 3), 
                                         quietmode = T)) %>% 
   dplyr::select(lon, lat, mean = var1.pred)
-grid.value.mod <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.mod", 
-                                       cutoff = 1.5, 
-                                       modsel = vgm(0.0008,"Sph",1), 
-                                       quietmode = T)) %>% 
-  dplyr::select(lon, lat, var.mod = var1.pred)
 grid.value.samp <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.samp", 
                                         cutoff = 0.6, 
                                         modsel = vgm(0.02,"Mat",0.4,kappa = 3),
@@ -242,17 +185,10 @@ grid.value.site <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.site",
                                         modsel = vgm(0.004,"Mat",0.5, kappa = 3), 
                                         quietmode = T)) %>% 
   dplyr::select(lon, lat, var.site = var1.pred)
-grid.value.delta <- as.data.frame(doKrig(seldat, dat.grid, tag = "delta", 
-                                         cutoff = 0.7, 
-                                         modsel = vgm(0.004,"Mat",0.5, kappa = 3),
-                                         quietmode = T)) %>% 
-  dplyr::select(lon, lat, delta = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, 
                         as.data.frame(cbind(grid.value.mean %>%
-                                              inner_join(grid.value.mod) %>%
                                               inner_join(grid.value.samp) %>%
-                                              inner_join(grid.value.site) %>%
-                                              inner_join(grid.value.delta), 
+                                              inner_join(grid.value.site), 
                                             trait = "Zn")))
 
 seldat <- grid.perm.tot %>% filter(trait == "As") %>% mutate(delta = var.samp-var.site)
@@ -263,11 +199,6 @@ grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean",
                                         modsel = vgm(0.25, "Mat", 0.6, kappa = 3.5), 
                                         quietmode = T)) %>% 
   dplyr::select(lon, lat, mean = var1.pred)
-grid.value.mod <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.mod", 
-                                       cutoff = 1.5, 
-                                       modsel = vgm(0.0008,"Lin",0), 
-                                       quietmode = T)) %>% 
-  dplyr::select(lon, lat, var.mod = var1.pred)
 grid.value.samp <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.samp", 
                                         cutoff = 0.6, 
                                         modsel = vgm(0.02,"Mat",0.4,kappa = 3),
@@ -278,58 +209,37 @@ grid.value.site <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.site",
                                         modsel = vgm(0.0012,"Mat",0.5, kappa = 3), 
                                         quietmode = T)) %>% 
   dplyr::select(lon, lat, var.site = var1.pred)
-grid.value.delta <- as.data.frame(doKrig(seldat, dat.grid, tag = "delta", 
-                                         cutoff = 0.7, 
-                                         modsel = vgm(0.004,"Mat",0.5, kappa = 3),
-                                         quietmode = T)) %>% 
-  dplyr::select(lon, lat, delta = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, 
                         as.data.frame(cbind(grid.value.mean %>%
-                                              inner_join(grid.value.mod) %>%
                                               inner_join(grid.value.samp) %>%
-                                              inner_join(grid.value.site) %>%
-                                              inner_join(grid.value.delta), 
+                                              inner_join(grid.value.site),
                                             trait = "As")))
 
 seldat <- grid.perm.tot %>% filter(trait == "Cd") %>% mutate(delta = var.samp-var.site)
 subdat <- as.data.frame(seldat)
 coordinates(seldat) <- ~lon+lat
-grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean", 
-                                        cutoff = 0.8, 
-                                        modsel = vgm(0.15, "Mat", 0.6, kappa = 3.5), 
-                                        quietmode = T)) %>% 
+grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean",
+                                        cutoff = 0.8,
+                                        modsel = vgm(0.15, "Mat", 0.6, kappa = 3.5),
+                                        quietmode = T)) %>%
   dplyr::select(lon, lat, mean = var1.pred)
-grid.value.mod <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.mod", 
-                                       cutoff = 1.5, 
-                                       modsel = vgm(0.0008,"Lin",0), 
-                                       quietmode = T)) %>% 
-  dplyr::select(lon, lat, var.mod = var1.pred)
-grid.value.samp <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.samp", 
-                                        cutoff = 0.6, 
+grid.value.samp <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.samp",
+                                        cutoff = 0.6,
                                         modsel = vgm(0.004,"Mat",0.4,kappa = 3),
-                                        quietmode = T)) %>% 
+                                        quietmode = T)) %>%
   dplyr::select(lon, lat, var.samp = var1.pred)
-grid.value.site <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.site", 
-                                        cutoff = 0.7, 
-                                        modsel = vgm(0.0015,"Mat",0.5, kappa = 3), 
-                                        quietmode = T)) %>% 
+grid.value.site <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.site",
+                                        cutoff = 0.7,
+                                        modsel = vgm(0.0015,"Mat",0.5, kappa = 3),
+                                        quietmode = T)) %>%
   dplyr::select(lon, lat, var.site = var1.pred)
-grid.value.delta <- as.data.frame(doKrig(seldat, dat.grid, tag = "delta", 
-                                         cutoff = 0.7, 
-                                         modsel = vgm(0.0015,"Mat",0.5, kappa = 3),
-                                         quietmode = T)) %>% 
-  dplyr::select(lon, lat, delta = var1.pred)
-grid.value.tot <- rbind(grid.value.tot, 
+grid.value.tot <- rbind(grid.value.tot,
                         as.data.frame(cbind(grid.value.mean %>%
-                                              inner_join(grid.value.mod) %>%
-                                              inner_join(grid.value.samp) %>%
-                                              inner_join(grid.value.site) %>%
-                                              inner_join(grid.value.delta), 
+                                               inner_join(grid.value.samp) %>%
+                                               inner_join(grid.value.site),
                                             trait = "Cd")))
 
 grid.value.tot$value <- exp(grid.value.tot$mean)
-rm(grid.perm.tot);rm(grid.value.mean,grid.value.mod,grid.value.samp,grid.value.site,grid.value.delta)
-
 
 dat.site <- datareadln() %>%
   tidyr::gather(trait,value,depth,Pb:Cd) %>%
@@ -351,7 +261,7 @@ plot.zn <- spView.elem("Zn") + guides.elem +
 
 plot.pb <- spView.elem("Pb") + guides.elem +
   geom_point(aes(x = lon, y = lat), color = "white", size = 2,
-             data = as.data.frame(dat.site[dat.site$Pb >= quantile(read.csv("data/result_element.csv")$Pb, 
+             data = as.data.frame(dat.site[dat.site$Pb >= quantile(read.csv("data/result_element.csv")$Pb,
                                                          probs = 0.75),]))
 
 plot.cr <- spView.elem("Cr") + guides.elem +
@@ -371,7 +281,7 @@ plot.as <- spView.elem("As") + guides.elem +
 
 plot.cd <- spView.elem("Cd") + guides.elem +
   geom_point(aes(x = lon, y = lat), color = "white", size = 2,
-             data = as.data.frame(dat.site[dat.site$Cd >= quantile(read.csv("data/result_element.csv")$Cd, 
+             data = as.data.frame(dat.site[dat.site$Cd >= quantile(read.csv("data/result_element.csv")$Cd,
                                                          probs = 0.75),]))
 
 p <- grid.arrange(plot.pb,plot.ni,plot.cu,plot.zn,plot.cr,plot.as,plot.cd,
@@ -380,58 +290,8 @@ p <- grid.arrange(plot.pb,plot.ni,plot.cu,plot.zn,plot.cr,plot.as,plot.cd,
 ggsave(filename = "element/krig/gather_krig_perm_element.png", plot = p, 
        dpi = 600, width = 8, height = 8)
 
-grid.value.tot <- grid.value.tot %>% 
-  mutate(value = 100*(exp(mean+var.mod)/exp(mean)-1))
-plot.pb.mod <- spView.elem("Pb") + guides.elem
-plot.cr.mod <- spView.elem("Cr") + guides.elem
-plot.ni.mod <- spView.elem("Ni") + guides.elem
-plot.cu.mod <- spView.elem("Cu") + guides.elem
-plot.zn.mod <- spView.elem("Zn") + guides.elem
-plot.as.mod <- spView.elem("As") + guides.elem
-plot.cd.mod <- spView.elem("Cd") + guides.elem
 
-p <- grid.arrange(plot.pb.mod,plot.ni.mod,plot.cu.mod,plot.zn.mod,
-                  plot.cr.mod,plot.as.mod,plot.cd.mod,
-                  ncol = 2, widths = c(11,11))
-
-ggsave(filename = "element/krig/gather_krig_perm_element_mod.png", plot = p, 
-       dpi = 600, width = 8, height = 8)
-
-grid.value.tot <- grid.value.tot %>% 
-  mutate(value = 100*(exp(mean+var.samp)/exp(mean)-1))
-plot.pb.samp <- spView.elem("Pb") + guides.elem
-plot.cr.samp <- spView.elem("Cr") + guides.elem
-plot.ni.samp <- spView.elem("Ni") + guides.elem
-plot.cu.samp <- spView.elem("Cu") + guides.elem
-plot.zn.samp <- spView.elem("Zn") + guides.elem
-plot.as.samp <- spView.elem("As") + guides.elem
-plot.cd.samp <- spView.elem("Cd") + guides.elem
-
-p <- grid.arrange(plot.pb.samp,plot.ni.samp,plot.cu.samp,plot.zn.samp,
-                  plot.cr.samp,plot.as.samp,plot.cd.samp,
-                  ncol = 2, widths = c(11,11))
-
-ggsave(filename = "element/krig/gather_krig_perm_element_samp.png", plot = p, 
-       dpi = 600, width = 8, height = 8)
-
-grid.value.tot <- grid.value.tot %>% 
-  mutate(value = 100*(exp(mean+var.site)/exp(mean)-1))
-plot.pb.site <- spView.elem("Pb") + guides.elem
-plot.cr.site <- spView.elem("Cr") + guides.elem
-plot.ni.site <- spView.elem("Ni") + guides.elem
-plot.cu.site <- spView.elem("Cu") + guides.elem
-plot.zn.site <- spView.elem("Zn") + guides.elem
-plot.as.site <- spView.elem("As") + guides.elem
-plot.cd.site <- spView.elem("Cd") + guides.elem
-
-p <- grid.arrange(plot.pb.site,plot.ni.site,plot.cu.site,plot.zn.site,
-                  plot.cr.site,plot.as.site,plot.cd.site,
-                  ncol = 2, widths = c(11,11))
-ggsave(filename = "element/krig/gather_krig_perm_element_site.png", plot = p, 
-       dpi = 600, width = 8, height = 8)
-
-
-nym <- function(elem,range){
+nym <- function(elem,range) {
   p <- view.delta(elem,range)
   ggsave(plot = p, height = 6, width = 6,
          filename = paste("element/krig/",elem,"_delta.png", sep = ""))
@@ -439,7 +299,7 @@ nym <- function(elem,range){
   ggsave(plot = p, height = 5, width = 7.5,
          filename = paste("element/krig/",elem,"_deltaSp.png", sep = ""))
 }
-
+  
 nym("Pb",0.15)
 nym("Cr",0.1)
 nym("Ni",0.1)
@@ -447,5 +307,41 @@ nym("Cu",0.2)
 nym("Zn",0.1)
 nym("As",0.4)
 nym("Cd",0.3)
-#view.delta("",0.5)
+# view.delta("",0.5)
 
+## 
+rm(list = ls())
+grid.perm.tot <- read.csv("data/result_element_perm_siteImp.csv") 
+
+ggplot() +
+  # geom_path(aes(x = factor(sitelv), y = var, group = 1), size = 1.5,
+  #           data = grid.perm.tot%>%
+  #             dplyr::select(var.site1:var.site5,trait)%>%
+  #             tidyr::gather(sitelv,var,var.site1:var.site5)%>%
+  #             dplyr::group_by(sitelv,trait)%>%
+  #             dplyr::summarise(var = mean(var)))+
+  geom_hline(aes(yintercept = var,col = sitelv), linetype = 2, size =1,
+             data = grid.perm.tot%>%
+               dplyr::select(var.site1:var.site5,trait)%>%
+               tidyr::gather(sitelv,var,var.site1:var.site5)%>%
+               dplyr::group_by(sitelv,trait)%>%
+               dplyr::summarise(var = mean(var)))+
+  geom_hline(aes(yintercept = var), linetype = 1, size =1.5, col = "red",
+             data = grid.perm.tot%>%
+               dplyr::select(var.samp,trait)%>%
+               dplyr::group_by(trait)%>%
+               dplyr::summarise(var = mean(var.samp)))+
+  geom_boxplot(aes(x = sitelv, y = var, col = sitelv),
+               data = grid.perm.tot%>%
+                 dplyr::select(var.samp:var.site5,trait)%>%
+                 tidyr::gather(sitelv,var,var.samp:var.site5))+
+  scale_y_continuous(limits = c(0,0.5), breaks = 0.1*0:5, 
+                     labels = paste(10*0:5,"%",sep = ""))+
+  scale_color_manual(values = c("red","grey50","grey40","grey30","grey20","black"))+
+  facet_wrap(~trait, ncol = 4)+
+  theme_bw()+
+  theme(axis.title = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank())
+ggsave("element/krig/Imp.png")
+  
