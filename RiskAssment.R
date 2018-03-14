@@ -146,13 +146,17 @@ grid.arrange(plot.igeo.box, plot.igeo.sp.sel, ncol = 2, widths = c(5,7), heights
 
 ## for enrichment factor
 dat <- datareadln() %>% 
-  gather(trait, value, As,Cd,Cr,Cu,Ni,Pb,Zn,Fe) %>% 
+  data.frame(n=1:108) %>%
+  gather(trait, value, As,Cd,Cr,Cu,Ni,Pb,Zn) %>% 
+  select(trait,value,orgC,siteID,n) %>%
   inner_join(datareadln() %>%
-               select(siteID, Fe), by = c("siteID" = "siteID")) %>%
+               data.frame(n=1:108) %>%
+               select(n, Fe),  by = c("n" = "n")) %>%
   mutate(value = value / Fe) %>%
   inner_join(background, by = c("trait" = "trait")) %>%
   mutate(value = value / bk2) %>%
-  select(siteID, trait, value) 
+  select(siteID, trait, value, orgC) %>%
+  mutate(outlier = F)
 
 ggplot(data = dat %>% filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","As","Cd")) %>% 
          mutate(trait = factor(trait, levels = c("Pb","Cr","Ni","Cu","Zn","As","Cd")))) + 
@@ -165,6 +169,39 @@ ggplot(data = dat %>% filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","As","Cd")) %
   theme_bw() + 
   theme(aspect.ratio = 1,
         panel.grid = element_blank()) -> plot.ef.box
+
+outlierTest <- function(dat) {
+  dat.sel <- dat[dat$outlier == F,]
+  mod <- lm(value~orgC, data = dat.sel)
+  cooksd <- cooks.distance(mod)
+  dat.sel$outlier <- (cooksd > 4* mean(cooksd))
+  dat <- rbind(dat.sel, dat[dat$outlier == T,])
+  if (sum(dat.sel$outlier)) {outlierTest(dat)} else dat
+}
+
+dat.tmp <- NULL
+for(i in unique(dat$trait)) {dat.tmp <- rbind(dat.tmp,outlierTest(dat[dat$trait == i,]))}
+dat.tmp <- rbind(dat.tmp %>% mutate(tag = "Combined"),dat.tmp %>% mutate(tag = trait))
+dat.tmp$tag <- factor(dat.tmp$tag, levels = c("As","Cd","Cr","Cu","Ni","Pb","Zn","Combined" ))
+
+ggplot()+ 
+  geom_hline(yintercept = 1,col = "red", linetype = 2) + 
+  geom_vline(xintercept = 3250,col = "red", linetype = 2) + 
+  geom_point(aes(x = orgC, y = value, shape = outlier, alpha = tag), 
+             col = "black", show.legend = F, data = dat.tmp)+
+  geom_smooth(aes(x = orgC, y = value, col = trait, alpha = tag), 
+              method = "lm", se = T, fill = "grey30", show.legend = F,
+              data = dat.tmp%>% filter(outlier == F))+ 
+  scale_x_continuous("orgC (mg/kg)") +
+  scale_y_continuous("Enrichment Factor",labels = c("0.5","1.0","1.5","2.0","3.0","4.0"),
+                     breaks = c(0.667,1,1.5,2,3,4)) +
+  scale_shape_manual(values = c(2,3))+
+  scale_alpha_manual(values = c(rep(1,7),0)) +
+  coord_cartesian(xlim = c(500,5500)) +
+  facet_wrap(~tag, nrow = 2)+
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 30),
+        panel.grid = element_blank())
 
 dat <- dat %>%
   group_by(siteID, trait) %>%
