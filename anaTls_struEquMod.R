@@ -18,6 +18,10 @@ Klein.eqn3 <- tsls(Wp ~ X + X.lag + I(Year - 1931),
                    data=Klein)
 
 
-library(lavaan)
 
+library(semPlot)
+
+library(lavaan)
+example(cfa)
 semPaths(fit, "model", "hide", style = "lisrel", rotation = 2)
+semPaths(fit,"std", "hide", intAtSide=TRUE)
