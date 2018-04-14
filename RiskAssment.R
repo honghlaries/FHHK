@@ -118,7 +118,7 @@ spView.grid.interval(dat = grid.value.tot, leg.name = "Igeo",
                      lonRange = lonRange,
                      latRange = latRange, pncol = 3) + 
   geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
-               show.legend = F, size = 0.8, breaks = 0, linetype = 2,
+               show.legend = F, size = 0.8, breaks = 0, linetype = 1,
                data = grid.value.tot) +
   geom_polygon(aes(x = long, y = lat, group = group), 
                colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
@@ -168,7 +168,7 @@ ggplot(data = dat %>% filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","As","Cd")) %
   coord_flip() +
   theme_bw() + 
   theme(aspect.ratio = 1,
-        panel.grid = element_blank()) -> plot.ef.box
+        panel.grid = element_blank()) -> plot.ef.box.raw
 
 outlierTest <- function(dat) {
   dat.sel <- dat[dat$outlier == F,]
@@ -190,7 +190,7 @@ ggplot()+
   geom_point(aes(x = orgC, y = value, shape = outlier, alpha = tag), 
              col = "black", show.legend = F, data = dat.tmp)+
   geom_smooth(aes(x = orgC, y = value, col = trait, alpha = tag), 
-              method = "lm", se = T, fill = "grey30", show.legend = F,
+              method = "lm", se = T, fill = "grey70", show.legend = F,
               data = dat.tmp%>% filter(outlier == F))+ 
   scale_x_continuous("orgC (mg/kg)") +
   scale_y_continuous("Enrichment Factor",labels = c("0.5","1.0","1.5","2.0","3.0","4.0"),
@@ -201,7 +201,7 @@ ggplot()+
   facet_wrap(~tag, nrow = 2)+
   theme_bw() +
   theme(axis.text.x = element_text(angle = 30),
-        panel.grid = element_blank())
+        panel.grid = element_blank()) -> plot.ef.orgc
 
 dat <- dat %>%
   group_by(siteID, trait) %>%
@@ -263,44 +263,52 @@ plot.as <- spView.ef("As");ggsave(filename = "riskAssment/krig/EF/As_EF.png")
 plot.cd <- spView.ef("Cd");ggsave(filename = "riskAssment/krig/EF/Cd_EF.png")
 
 spView.grid.interval(dat = grid.value.tot, leg.name = "EF",
-                     grad.value = c(0.5,1,1.5,2,3), 
+                     grad.value = c(0.66,1,1.5,2,3), 
                      grad.col = blues9[3:8],
                      lonRange = lonRange,
                      latRange = latRange, pncol = 3) + 
   geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
-               show.legend = F, size = 0.8, breaks = 1.5, linetype = 2,
+               show.legend = F, size = 0.8, breaks = 1.5, linetype = 1,
+               data = grid.value.tot) +
+  geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
+               show.legend = F, size = 0.8, breaks = 0.66, linetype = 2,
                data = grid.value.tot) +
   geom_polygon(aes(x = long, y = lat, group = group), 
                colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
   theme(axis.text = element_blank(),
-        axis.ticks = element_blank()) -> plot.ef.sp.all
+        axis.ticks = element_blank()) -> plot.ef.sp.all.raw
 
 spView.grid.interval(dat = grid.value.tot%>% 
-                       filter(trait %in% c("Zn", "As", "Cd")), 
+                       filter(trait %in% c("Zn", "As", "Cd", "Cu")), 
                      leg.name = "EF",
-                     grad.value = c(0.5,1,1.5,2,3),  
+                     grad.value = c(0.66,1,1.5,2,3),  
                      grad.col = blues9[3:8],
                      lonRange = lonRange,
                      latRange = latRange, pncol = 2) + 
   geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
-               show.legend = F, size = 0.8, breaks = 1.5, linetype = 2,
+               show.legend = F, size = 0.8, breaks = 1.5, linetype = 1,
                data = grid.value.tot %>% 
-                 filter(trait %in% c("Zn", "As", "Cd"))) +
+                 filter(trait %in% c("Zn", "As", "Cd", "Cu"))) +
+  geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
+               show.legend = F, size = 0.8, breaks = 0.66, linetype = 2,
+               data = grid.value.tot %>% 
+                 filter(trait %in% c("Zn", "As", "Cd", "Cu"))) +
   geom_polygon(aes(x = long, y = lat, group = group), 
                colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
   theme(axis.text = element_blank(),
-        axis.ticks = element_blank()) -> plot.ef.sp.sel
+        axis.ticks = element_blank()) -> plot.ef.sp.sel.raw
 
-grid.arrange(plot.ef.box, plot.ef.sp.sel, ncol = 2, widths = c(5,7), heights = 5) -> plot.ef.gather
+grid.arrange(plot.ef.box.raw, plot.ef.sp.sel.raw, ncol = 2, widths = c(5,7), heights = 5) -> plot.ef.gather.raw
 
 # saving plot 
 ggsave(plot = plot.igeo.box, filename = "riskAssment/box_igeo.png", dpi = 600)
 ggsave(plot = plot.igeo.sp.all, filename = "riskAssment/map_igeo_all.png", dpi = 600)
 ggsave(plot = plot.igeo.sp.sel, filename = "riskAssment/map_igeo_sel.png", dpi = 600)
 
-ggsave(plot = plot.ef.box, filename = "riskAssment/box_Ef.png", dpi = 600)
-ggsave(plot = plot.ef.sp.all, filename = "riskAssment/map_Ef_all.png", dpi = 600)
-ggsave(plot = plot.ef.sp.sel, filename = "riskAssment/map_Ef_sel.png", dpi = 600)
+ggsave(plot = plot.ef.box.raw, filename = "riskAssment/box_Ef_raw.png", dpi = 600)
+ggsave(plot = plot.ef.sp.all.raw, filename = "riskAssment/map_Ef_all_raw.png", dpi = 600)
+ggsave(plot = plot.ef.sp.sel.raw, filename = "riskAssment/map_Ef_sel_raw.png", dpi = 600)
+ggsave(plot = plot.ef.orgc, filename = "riskAssment/scatter_Ef_orgC.png", dpi = 600)
 
 grid.arrange(plot.igeo.box, plot.igeo.sp.sel,plot.ef.box, plot.ef.sp.sel, 
              ncol = 2, widths = c(5,7), heights = c(5,5)) -> plot.risk.gather
