@@ -24,4 +24,9 @@ library(semPlot)
 library(lavaan)
 example(cfa)
 semPaths(fit, "model", "hide", style = "lisrel", rotation = 2)
-semPaths(fit,"std", "hide", intAtSide=TRUE)
+semPaths(fit, "std", "hide", intAtSide=TRUE)
+
+semPaths(fit, "std", "hide", style = "lisrel", rotation = 2)
+
+semPaths(fit,"std",  style = "lisrel",
+         edge.label.cex = 0.5, exoVar = FALSE, exoCov = FALSE)
