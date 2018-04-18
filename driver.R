@@ -78,67 +78,69 @@ for(i in 1:length(taglist)) {
   p
 }
 
-plot.avs.Cr <- relationPlot(dat, "AVS", "Cr", "green", "poisson")
+# factor reg
+plot.orgC.Cr <- relationPlot(dat, "orgC", "Cr", "green", "poisson")
 plot.clay.Cr <- relationPlot(dat, "clay", "Cr", "black", "poisson")
 plot.dep.Cr <- relationPlot(dat, "depth", "Cr", "blue", "poisson")
 plot.fe.Cr <- relationPlot(dat, "Fe", "Cr", "purple", "poisson")
 plot.h.Cr <- relationPlot(dat, "pH", "Cr", "orange", "poisson")
-plot.sal.Cr <- relationPlot(dat, "salinity", "Cr", "brown", "poisson")
+plot.dist.Cr <- relationPlot(dat, "distance", "Cr", "brown", "poisson")
 
-plot.avs.As <- relationPlot(dat, "AVS", "As", "green", "poisson")
+plot.orgC.As <- relationPlot(dat, "orgC", "As", "green", "poisson")
 plot.clay.As <- relationPlot(dat, "clay", "As", "black", "poisson")
 plot.dep.As <- relationPlot(dat, "depth", "As", "blue", "poisson")
 plot.fe.As <- relationPlot(dat, "Fe", "As", "purple", "poisson")
 plot.h.As <- relationPlot(dat, "pH", "As", "orange", "poisson")
-plot.sal.As <- relationPlot(dat, "salinity", "As", "brown", "poisson")
+plot.dist.As <- relationPlot(dat, "distance", "As", "brown", "poisson")
 
-plot.avs.Ni <- relationPlot(dat, "AVS", "Ni", "green", "poisson")
+plot.orgC.Ni <- relationPlot(dat, "orgC", "Ni", "green", "poisson")
 plot.clay.Ni <- relationPlot(dat, "clay", "Ni", "black", "poisson")
 plot.dep.Ni <- relationPlot(dat, "depth", "Ni", "blue", "poisson")
 plot.fe.Ni <- relationPlot(dat, "Fe", "Ni", "purple", "poisson")
 plot.h.Ni <- relationPlot(dat, "pH", "Ni", "orange", "poisson")
-plot.sal.Ni <- relationPlot(dat, "salinity", "Ni", "brown", "poisson")
+plot.dist.Ni <- relationPlot(dat, "distance", "Ni", "brown", "poisson")
 
-plot.avs.Cu <- relationPlot(dat, "AVS", "Cu", "green", "poisson")
+plot.orgC.Cu <- relationPlot(dat, "orgC", "Cu", "green", "poisson")
 plot.clay.Cu <- relationPlot(dat, "clay", "Cu", "black", "poisson")
 plot.dep.Cu <- relationPlot(dat, "depth", "Cu", "blue", "poisson")
 plot.fe.Cu <- relationPlot(dat, "Fe", "Cu", "purple", "poisson")
 plot.h.Cu <- relationPlot(dat, "pH", "Cu", "orange", "poisson")
-plot.sal.Cu <- relationPlot(dat, "salinity", "Cu", "brown", "poisson")
+plot.dist.Cu <- relationPlot(dat, "distance", "Cu", "brown", "poisson")
 
-plot.avs.Pb <- relationPlot(dat, "AVS", "Pb", "green", "poisson")
+plot.orgC.Pb <- relationPlot(dat, "orgC", "Pb", "green", "poisson")
 plot.clay.Pb <- relationPlot(dat, "clay", "Pb", "black", "poisson")
 plot.dep.Pb <- relationPlot(dat, "depth", "Pb", "blue", "poisson")
 plot.fe.Pb <- relationPlot(dat, "Fe", "Pb", "purple", "poisson")
 plot.h.Pb <- relationPlot(dat, "pH", "Pb", "orange", "poisson")
-plot.sal.Pb <- relationPlot(dat, "salinity", "Pb", "brown", "poisson")
+plot.dist.Pb <- relationPlot(dat, "distance", "Pb", "brown", "poisson")
 
-plot.avs.Zn <- relationPlot(dat, "AVS", "Zn", "green", "poisson")
+plot.orgC.Zn <- relationPlot(dat, "orgC", "Zn", "green", "poisson")
 plot.clay.Zn <- relationPlot(dat, "clay", "Zn", "black", "poisson")
 plot.dep.Zn <- relationPlot(dat, "depth", "Zn", "blue", "poisson")
 plot.fe.Zn <- relationPlot(dat, "Fe", "Zn", "purple", "poisson")
 plot.h.Zn <- relationPlot(dat, "pH", "Zn", "orange", "poisson")
-plot.sal.Zn <- relationPlot(dat, "salinity", "Zn", "brown", "poisson")
+plot.dist.Zn <- relationPlot(dat, "distance", "Zn", "brown", "poisson")
 
-plot.avs.Cd <- relationPlot(dat, "AVS", "Cd", "green", "poisson")
+plot.orgC.Cd <- relationPlot(dat, "orgC", "Cd", "green", "poisson")
 plot.clay.Cd <- relationPlot(dat, "clay", "Cd", "black", "poisson")
 plot.dep.Cd <- relationPlot(dat, "depth", "Cd", "blue", "poisson")
 plot.fe.Cd <- relationPlot(dat, "Fe", "Cd", "purple", "poisson")
 plot.h.Cd <- relationPlot(dat, "pH", "Cd", "orange", "poisson")
-plot.sal.Cd <- relationPlot(dat, "salinity", "Cd", "brown", "poisson")
+plot.dist.Cd <- relationPlot(dat, "distance", "Cd", "brown", "poisson")
 
-p.gather <- grid.arrange(plot.clay.Pb, plot.dep.Pb, plot.h.Pb, plot.fe.Pb, plot.sal.Pb, plot.avs.Pb, 
-                         plot.clay.Cr, plot.dep.Cr, plot.h.Cr, plot.fe.Cr, plot.sal.Cr, plot.avs.Cr, 
-                         plot.clay.Ni, plot.dep.Ni, plot.h.Ni, plot.fe.Ni, plot.sal.Ni, plot.avs.Ni, 
-                         plot.clay.Cu, plot.dep.Cu, plot.h.Cu, plot.fe.Cu, plot.sal.Cu, plot.avs.Cu, 
-                         plot.clay.Zn, plot.dep.Zn, plot.h.Zn, plot.fe.Zn, plot.sal.Zn, plot.avs.Zn, 
-                         plot.clay.As, plot.dep.As, plot.h.As, plot.fe.As, plot.sal.As, plot.avs.As, 
-                         plot.clay.Cd, plot.dep.Cd, plot.h.Cd, plot.fe.Cd, plot.sal.Cd, plot.avs.Cd,
+p.gather <- grid.arrange(plot.clay.Pb, plot.dep.Pb, plot.h.Pb, plot.fe.Pb, plot.dist.Pb, plot.orgC.Pb, 
+                         plot.clay.Cr, plot.dep.Cr, plot.h.Cr, plot.fe.Cr, plot.dist.Cr, plot.orgC.Cr, 
+                         plot.clay.Ni, plot.dep.Ni, plot.h.Ni, plot.fe.Ni, plot.dist.Ni, plot.orgC.Ni, 
+                         plot.clay.Cu, plot.dep.Cu, plot.h.Cu, plot.fe.Cu, plot.dist.Cu, plot.orgC.Cu, 
+                         plot.clay.Zn, plot.dep.Zn, plot.h.Zn, plot.fe.Zn, plot.dist.Zn, plot.orgC.Zn, 
+                         plot.clay.As, plot.dep.As, plot.h.As, plot.fe.As, plot.dist.As, plot.orgC.As, 
+                         plot.clay.Cd, plot.dep.Cd, plot.h.Cd, plot.fe.Cd, plot.dist.Cd, plot.orgC.Cd,
                          nrow=7, ncol=6)
 ggsave(plot = p.gather,
        filename = paste(dirPreset("relation/driver"),"/gather_relation.png",sep = ""),
        dpi = 300, width = 12, height = 14)
 
+# factor reg
 taglist <- c("Cr","As","Ni","Cu","Pb","Zn","Cd")
 
 for(i in 1:length(taglist)) {
@@ -172,3 +174,37 @@ for(i in 1:length(taglist)) {
               row.names = F)
     }
 }
+
+# sem
+pkgLoad("sem");pkgLoad("semPlot");pkgLoad("lavaan");
+
+dat <- datareadln()%>% 
+  dplyr::select(depth:sand) %>% 
+  dplyr::mutate(acc_depth = 1/depth,
+                acc_dist = 1/distance,
+                ad_pH = (pH-8.2)^2)
+
+model <- ' 
+            # latent variable definitions
+              accessibility =~ acc_depth + acc_dist
+              adsorbability =~ orgC + AVS + Fe + clay + ad_pH
+
+            # regressions
+              Pb ~ accessibility +  adsorbability
+              Zn ~ accessibility +  adsorbability
+              Cd ~ accessibility +  adsorbability
+              Cu ~ accessibility +  adsorbability
+              Ni ~ accessibility +  adsorbability
+              As ~ accessibility +  adsorbability
+              Cr ~ accessibility +  adsorbability         
+
+           # residual correlations
+
+        '
+
+fit <- lavaan::sem(model, data = scale(dat))
+
+png("relation/driver/SEM.png",width = 1400, height = 800)
+semPaths(fit,"std",  style = "lisrel",
+         edge.label.cex = 0.5, exoVar = FALSE, exoCov = FALSE)
+dev.off()
