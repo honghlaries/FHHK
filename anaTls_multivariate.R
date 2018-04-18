@@ -121,7 +121,9 @@ rdaLoadingCal <- function(env, trait, samptag, nfact = 2, dir, log = T) {
   }
   list(traitload = traitload,
        envload = envload,
-       sampload = sampload) -> dat
+       sampload = sampload,
+       aov = aov,
+       mod = mod)
 }
 
 rdaLoadingPlot <- function(dat,nfact = 2) {
