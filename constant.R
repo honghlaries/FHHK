@@ -9,6 +9,9 @@ alphalevel = 0.05
 
 sites <- read.csv("data/meta_sites.csv")
 
+background <- read.csv("data/meta_baseline.csv") %>%
+  mutate(bk2 = bk / 27786)
+
 #rivers <- readShapeLines("data/item_rivers.shp")
 #proj4string(rivers) <- CRS("+init=epsg:4030")
 #rivers <- spTransform(rivers, 

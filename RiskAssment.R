@@ -32,9 +32,6 @@ spView.ef <- function(elem,...) {
 }
 # Example
 
-background <- read.csv("data/meta_baseline.csv") %>%
-  mutate(bk2 = bk / 27786)
-
 ## for Igeo
 dat <- datareadln() %>% 
   gather(trait, value, Fe:Cd) %>% 
