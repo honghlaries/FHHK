@@ -69,7 +69,7 @@ dat <- datareadln() %>%
   dplyr::select(depth,distance,salinity:sand) %>%
   dplyr::mutate(Fe = Fe/10000)
 
-taglist <- c("Cr","As","Ni","Cu","Pb","Zn","Cd")
+taglist <- c("Cr","Ni","Cu","Pb","Zn","Cd")
 
 for(i in 1:length(taglist)) {
   relationPlot.gather(dat,taglist[i]) -> p
@@ -85,13 +85,6 @@ plot.dep.Cr <- relationPlot(dat, "depth", "Cr", "blue", "poisson")
 plot.fe.Cr <- relationPlot(dat, "Fe", "Cr", "purple", "poisson")
 plot.h.Cr <- relationPlot(dat, "pH", "Cr", "orange", "poisson")
 plot.dist.Cr <- relationPlot(dat, "distance", "Cr", "brown", "poisson")
-
-plot.orgC.As <- relationPlot(dat, "orgC", "As", "green", "poisson")
-plot.clay.As <- relationPlot(dat, "clay", "As", "black", "poisson")
-plot.dep.As <- relationPlot(dat, "depth", "As", "blue", "poisson")
-plot.fe.As <- relationPlot(dat, "Fe", "As", "purple", "poisson")
-plot.h.As <- relationPlot(dat, "pH", "As", "orange", "poisson")
-plot.dist.As <- relationPlot(dat, "distance", "As", "brown", "poisson")
 
 plot.orgC.Ni <- relationPlot(dat, "orgC", "Ni", "green", "poisson")
 plot.clay.Ni <- relationPlot(dat, "clay", "Ni", "black", "poisson")
@@ -133,7 +126,6 @@ p.gather <- grid.arrange(plot.clay.Pb, plot.dep.Pb, plot.h.Pb, plot.fe.Pb, plot.
                          plot.clay.Ni, plot.dep.Ni, plot.h.Ni, plot.fe.Ni, plot.dist.Ni, plot.orgC.Ni, 
                          plot.clay.Cu, plot.dep.Cu, plot.h.Cu, plot.fe.Cu, plot.dist.Cu, plot.orgC.Cu, 
                          plot.clay.Zn, plot.dep.Zn, plot.h.Zn, plot.fe.Zn, plot.dist.Zn, plot.orgC.Zn, 
-                         plot.clay.As, plot.dep.As, plot.h.As, plot.fe.As, plot.dist.As, plot.orgC.As, 
                          plot.clay.Cd, plot.dep.Cd, plot.h.Cd, plot.fe.Cd, plot.dist.Cd, plot.orgC.Cd,
                          nrow=7, ncol=6)
 ggsave(plot = p.gather,
@@ -141,7 +133,7 @@ ggsave(plot = p.gather,
        dpi = 300, width = 12, height = 14)
 
 # factor reg
-taglist <- c("Cr","As","Ni","Cu","Pb","Zn","Cd")
+taglist <- c("Cr","Ni","Cu","Pb","Zn","Cd")
 
 for(i in 1:length(taglist)) {
   mod <- stepFitting(dat, taglist[i])
@@ -195,7 +187,6 @@ model <- '
               Cd ~ accessibility +  adsorbability
               Cu ~ accessibility +  adsorbability
               Ni ~ accessibility +  adsorbability
-              As ~ accessibility +  adsorbability
               Cr ~ accessibility +  adsorbability         
 
            # residual correlations

@@ -87,11 +87,6 @@ grid.value <- as.data.frame(doKrig(dat, dat.grid, krigFormula = log(Zn) ~ 1, tag
   select(lon, lat, value = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "Zn")))
 
-grid.value <- as.data.frame(doKrig(dat, dat.grid, krigFormula = log(As) ~ 1, tag = "As", cutoff = 1.5,
-                                   modsel = vgm(0.3,"Sph",0.75), quietmode = T)) %>% 
-  select(lon, lat, value = var1.pred)
-grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "As")))
-
 grid.value <- as.data.frame(doKrig(dat, dat.grid, krigFormula = log(Cd) ~ 1, tag = "Cd", cutoff = 1.5,
                                    modsel = vgm(0.2,"Sph",0.7), quietmode = T)) %>% 
   select(lon, lat, value = var1.pred)
@@ -128,11 +123,6 @@ plot.ni <- spView.elem("Ni") + guides.elem +
              data = as.data.frame(dat[dat$Ni >= quantile(read.csv("data/result_element.csv")$Ni, 
                                                          probs = 0.75),]))
 
-plot.as <- spView.elem("As") + guides.elem +
-  geom_point(aes(x = lon, y = lat), color = "white", size = 2,
-             data = as.data.frame(dat[dat$As >= quantile(read.csv("data/result_element.csv")$As, 
-                                                         probs = 0.75),]))
-
 plot.cd <- spView.elem("Cd") + guides.elem +
   geom_point(aes(x = lon, y = lat), color = "white", size = 2,
              data = as.data.frame(dat[dat$Cd >= quantile(read.csv("data/result_element.csv")$Cd, 
@@ -156,7 +146,6 @@ compare_lv(dat,"Pb") %>%
   rbind(compare_lv(dat,"Ni")) %>%
   rbind(compare_lv(dat,"Cu")) %>%
   rbind(compare_lv(dat,"Zn")) %>%
-  rbind(compare_lv(dat,"As")) %>%
   rbind(compare_lv(dat,"Cd")) 
 
 ## latex table for basic info
@@ -167,12 +156,11 @@ compare_lv(dat,"Pb") %>%
   cbind(summary.tab(dat,"Cu")) %>%
   cbind(summary.tab(dat,"Zn")) %>%
   cbind(summary.tab(dat,"Cr")) %>%
-  cbind(summary.tab(dat,"As")) %>%
   cbind(summary.tab(dat,"Cd")) %>%
   cbind("This study") %>%
   as.data.frame()-> tab.sum
 
-colnames(tab.sum) <- c("Location","Sample size","Pb","Ni","Cu","Zn","Cr","As","Cd","Source") 
+colnames(tab.sum) <- c("Location","Sample size","Pb","Ni","Cu","Zn","Cr","Cd","Source") 
 
 for(i in 1:10) {
   tab.sum[,i]<- as.character(tab.sum[,i])

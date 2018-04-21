@@ -49,24 +49,26 @@ dat <- datareadln() %>%
   mutate(value = log2(value / bk /1.5)) %>%
   select(siteID, trait, value) 
 
-ggplot(data = dat %>% filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","As","Cd")) %>%
-         mutate(trait = factor(trait, levels = c("Pb","Cr","Ni","Cu","Zn","As","Cd")))) + 
+plot.igeo.box <- 
+  ggplot(data = dat %>% filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","Cd")) %>%
+           mutate(trait = factor(trait, levels = c("Pb","Cr","Ni","Cu","Zn","Cd")))) + 
   geom_hline(yintercept = c(0:2), col = "red", linetype = 2) +
   geom_boxplot(aes(x = trait, y = value), fill = "grey80") +
-  scale_x_discrete("Element") +
-  scale_y_continuous("Geo-accumulation Index",
-                     breaks = c(0:2)) +
+  labs(title = "Geo-accumulation Index")+
+  scale_x_discrete("") +
+  scale_y_continuous("",breaks = c(0:2)) +
   coord_flip() +
   theme_bw() + 
   theme(aspect.ratio = 1,
-        panel.grid = element_blank())  -> plot.igeo.box
+        panel.grid = element_blank()) 
+
 
 dat <- dat %>%
   group_by(siteID, trait) %>%
   summarise(value = mean(value)) %>%
   spread(trait, value) %>%
   dplyr::inner_join(read.csv("data/meta_sites.csv"), by = c("siteID" = "siteID")) %>%
-  dplyr::select(siteID:depth,Pb,Cr,Ni,Cu,Zn,As,Cd) 
+  dplyr::select(siteID:depth,Pb,Cr,Ni,Cu,Zn,Cd) 
 
 dat <- as.data.frame(dat)
 coordinates(dat) <- ~lon+lat
@@ -98,26 +100,20 @@ grid.value <- as.data.frame(doKrig(dat, dat.grid, tag = "Zn", cutoff = 1.5,
   select(lon, lat, value = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "Zn")))
 
-grid.value <- as.data.frame(doKrig(dat, dat.grid, tag = "As", cutoff = 1.5, 
-                                   modsel = vgm(0.5,"Sph",0.5), quietmode = T)) %>%  
-  select(lon, lat, value = var1.pred)
-grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "As")))
-
 grid.value <- as.data.frame(doKrig(dat, dat.grid, tag = "Cd", cutoff = 1.5, 
                                    modsel = vgm(0.4,"Sph",0.5), quietmode = T)) %>%  
   select(lon, lat, value = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "Cd")))
 
 grid.value.tot <- grid.value.tot %>%
-  mutate(trait = factor(trait, levels = c("Pb","Cr","Ni","Cu","Zn","As","Cd")))
+  mutate(trait = factor(trait, levels = c("Pb","Cr","Ni","Cu","Zn","Cd")))
 
-plot.cu <- spView.igeo("Cu");ggsave(filename = "riskAssment/krig/igeo/Cu_Igeo.png")
-plot.zn <- spView.igeo("Zn");ggsave(filename = "riskAssment/krig/igeo/Zn_Igeo.png")
-plot.pb <- spView.igeo("Pb");ggsave(filename = "riskAssment/krig/igeo/Pb_Igeo.png")
-plot.cr <- spView.igeo("Cr");ggsave(filename = "riskAssment/krig/igeo/Cr_Igeo.png")
-plot.ni <- spView.igeo("Ni");ggsave(filename = "riskAssment/krig/igeo/Ni_Igeo.png")
-plot.as <- spView.igeo("As");ggsave(filename = "riskAssment/krig/igeo/As_Igeo.png")
-plot.cd <- spView.igeo("Cd");ggsave(filename = "riskAssment/krig/igeo/Cd_Igeo.png")
+plot.cu <- spView.igeo("Cu");ggsave(filename = "riskAssment/krig/Cu_Igeo.png")
+plot.zn <- spView.igeo("Zn");ggsave(filename = "riskAssment/krig/Zn_Igeo.png")
+plot.pb <- spView.igeo("Pb");ggsave(filename = "riskAssment/krig/Pb_Igeo.png")
+plot.cr <- spView.igeo("Cr");ggsave(filename = "riskAssment/krig/Cr_Igeo.png")
+plot.ni <- spView.igeo("Ni");ggsave(filename = "riskAssment/krig/Ni_Igeo.png")
+plot.cd <- spView.igeo("Cd");ggsave(filename = "riskAssment/krig/Cd_Igeo.png")
 
 plot.igeo.sp <- 
   spView.grid.interval(dat = grid.value.tot, leg.name = "Igeo",
@@ -135,13 +131,13 @@ plot.igeo.sp <-
 
 plot.igeo.gather <- 
   grid.arrange(plot.igeo.box, plot.igeo.sp, 
-               ncol = 2, widths = c(5,7), heights = 5) 
+               ncol = 2, widths = c(5,10), heights = 5) 
 
 ## for enrichment factor
 ### original
 dat <- datareadln() %>% 
   data.frame(n=1:108) %>%
-  gather(trait, value, As,Cd,Cr,Cu,Ni,Pb,Zn) %>% 
+  gather(trait, value,Cd,Cr,Cu,Ni,Pb,Zn) %>% 
   select(trait,value,orgC,siteID,n) %>%
   inner_join(datareadln() %>%
                data.frame(n=1:108) %>%
@@ -151,24 +147,26 @@ dat <- datareadln() %>%
   mutate(value = value / bk2) %>%
   select(siteID, trait, value, orgC) 
 
-ggplot(data = dat %>% filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","As","Cd")) %>% 
-         mutate(trait = factor(trait, levels = c("Pb","Cr","Ni","Cu","Zn","As","Cd")))) + 
+plot.ef.box <-
+  ggplot(data = dat %>% filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","Cd")) %>% 
+         mutate(trait = factor(trait, levels = c("Pb","Cr","Ni","Cu","Zn","Cd")))) + 
   geom_hline(yintercept = c(0.5,1,1.5,2,3,4), col = "red", linetype = 2) +
   geom_boxplot(aes(x = trait, y = value),fill = "grey80") +
-  scale_x_discrete("Element") +
-  scale_y_continuous("Enrichment Factor",labels = c("0.5","1.0","1.5","2.0","3.0","4.0"),
+  labs(title = "Enrichment Factor") +
+  scale_x_discrete("") +
+  scale_y_continuous("",labels = c("0.5","1.0","1.5","2.0","3.0","4.0"),
                      breaks = c(0.667,1,1.5,2,3,4)) +
   coord_flip() +
   theme_bw() + 
   theme(aspect.ratio = 1,
-        panel.grid = element_blank()) -> plot.ef.box
+        panel.grid = element_blank()) 
 
 dat <- dat %>%
   group_by(siteID, trait) %>%
   summarise(value = mean(value)) %>%
   spread(trait, value) %>%
   dplyr::inner_join(read.csv("data/meta_sites.csv"), by = c("siteID" = "siteID")) %>%
-  dplyr::select(siteID:depth,Pb,Cr,Ni,Cu,Zn,As,Cd) 
+  dplyr::select(siteID:depth,Pb,Cr,Ni,Cu,Zn,Cd) 
 
 dat <- as.data.frame(dat)
 coordinates(dat) <- ~lon+lat
@@ -200,18 +198,13 @@ grid.value <- as.data.frame(doKrig(dat, dat.grid, tag = "Zn", cutoff = 1.5,
   select(lon, lat, value = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "Zn")))
 
-grid.value <- as.data.frame(doKrig(dat, dat.grid, tag = "As", cutoff = 1.5, 
-                                   modsel = vgm(0.6,"Sph",0.5), quietmode = T)) %>%  
-  select(lon, lat, value = var1.pred)
-grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "As")))
-
 grid.value <- as.data.frame(doKrig(dat, dat.grid, tag = "Cd", cutoff = 1.5, 
                                    modsel = vgm(0.15,"Sph",0.5), quietmode = T)) %>%  
   select(lon, lat, value = var1.pred)
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = "Cd")))
 
 grid.value.tot <- grid.value.tot %>%
-  mutate(trait = factor(trait, levels = c("Pb","Cr","Ni","Cu","Zn","As","Cd")))
+  mutate(trait = factor(trait, levels = c("Pb","Cr","Ni","Cu","Zn","Cd")))
 
 
 plot.cu <- spView.ef("Cu");ggsave(filename = "riskAssment/krig/Cu_EF.png")
@@ -219,14 +212,14 @@ plot.zn <- spView.ef("Zn");ggsave(filename = "riskAssment/krig/Zn_EF.png")
 plot.pb <- spView.ef("Pb");ggsave(filename = "riskAssment/krig/Pb_EF.png")
 plot.cr <- spView.ef("Cr");ggsave(filename = "riskAssment/krig/Cr_EF.png")
 plot.ni <- spView.ef("Ni");ggsave(filename = "riskAssment/krig/Ni_EF.png")
-plot.as <- spView.ef("As");ggsave(filename = "riskAssment/krig/As_EF.png")
 plot.cd <- spView.ef("Cd");ggsave(filename = "riskAssment/krig/Cd_EF.png")
 
-spView.grid.interval(dat = grid.value.tot, leg.name = "EF",
-                     grad.value = c(0.66,1,1.5,2,3), 
-                     grad.col = blues9[3:8],
-                     lonRange = lonRange,
-                     latRange = latRange, pncol = 3) + 
+plot.ef.sp <- 
+  spView.grid.interval(dat = grid.value.tot, leg.name = "EF",
+                       grad.value = c(0.66,1,1.5,2,3), 
+                       grad.col = blues9[3:8],
+                       lonRange = lonRange,
+                       latRange = latRange, pncol = 3) + 
   geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
                show.legend = F, size = 0.8, breaks = 1.5, linetype = 1,
                data = grid.value.tot) +
@@ -236,34 +229,16 @@ spView.grid.interval(dat = grid.value.tot, leg.name = "EF",
   geom_polygon(aes(x = long, y = lat, group = group), 
                colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
   theme(axis.text = element_blank(),
-        axis.ticks = element_blank()) -> plot.ef.sp.all
+        axis.ticks = element_blank())
 
-spView.grid.interval(dat = grid.value.tot%>% 
-                       filter(trait %in% c("Zn", "As", "Cd", "Cu")), 
-                     leg.name = "EF",
-                     grad.value = c(0.66,1,1.5,2,3),  
-                     grad.col = blues9[3:8],
-                     lonRange = lonRange,
-                     latRange = latRange, pncol = 2) + 
-  geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
-               show.legend = F, size = 0.8, breaks = 1.5, linetype = 1,
-               data = grid.value.tot %>% 
-                 filter(trait %in% c("Zn", "As", "Cd", "Cu"))) +
-  geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
-               show.legend = F, size = 0.8, breaks = 0.66, linetype = 2,
-               data = grid.value.tot %>% 
-                 filter(trait %in% c("Zn", "As", "Cd", "Cu"))) +
-  geom_polygon(aes(x = long, y = lat, group = group), 
-               colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
-  theme(axis.text = element_blank(),
-        axis.ticks = element_blank()) -> plot.ef.sp.sel
-
-grid.arrange(plot.ef.box, plot.ef.sp.sel, ncol = 2, widths = c(5,7), heights = 5) -> plot.ef.gather
+plot.ef.gather <- 
+  grid.arrange(plot.ef.box, plot.ef.sp, 
+               ncol = 2, widths = c(5,10), heights = 5)
 
 ### organic-carbon-adjusted Enrichment factor
 dat <- datareadln() %>% 
   data.frame(n=1:108) %>%
-  gather(trait, value, As,Cd,Cr,Cu,Ni,Pb,Zn) %>% 
+  gather(trait, value, Cd,Cr,Cu,Ni,Pb,Zn) %>% 
   select(trait,value,orgC,siteID,n) %>%
   inner_join(datareadln() %>%
                data.frame(n=1:108) %>%
@@ -364,12 +339,10 @@ plot.ef.orgc.effresid <-
 
 # saving plot 
 ggsave(plot = plot.igeo.box, filename = "riskAssment/box_igeo.png", dpi = 600)
-ggsave(plot = plot.igeo.sp.all, filename = "riskAssment/map_igeo_all.png", dpi = 600)
-ggsave(plot = plot.igeo.sp.sel, filename = "riskAssment/map_igeo_sel.png", dpi = 600)
+ggsave(plot = plot.igeo.sp, filename = "riskAssment/map_igeo_all.png", dpi = 600)
 
 ggsave(plot = plot.ef.box, filename = "riskAssment/box_Ef.png", dpi = 600)
-ggsave(plot = plot.ef.sp.all, filename = "riskAssment/map_Ef_all.png", dpi = 600)
-ggsave(plot = plot.ef.sp.sel, filename = "riskAssment/map_Ef_sel.png", dpi = 600)
+ggsave(plot = plot.ef.sp, filename = "riskAssment/map_Ef_all.png", dpi = 600)
 
 ggsave(plot = plot.ef.orgc, 
        filename = "riskAssment/scatter_Ef_orgC.png", 

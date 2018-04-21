@@ -191,29 +191,6 @@ grid.value.tot <- rbind(grid.value.tot,
                                               inner_join(grid.value.site), 
                                             trait = "Zn")))
 
-seldat <- grid.perm.tot %>% filter(trait == "As") %>% mutate(delta = var.samp-var.site)
-subdat <- as.data.frame(seldat)
-coordinates(seldat) <- ~lon+lat
-grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean", 
-                                        cutoff = 0.8, 
-                                        modsel = vgm(0.25, "Mat", 0.6, kappa = 3.5), 
-                                        quietmode = T)) %>% 
-  dplyr::select(lon, lat, mean = var1.pred)
-grid.value.samp <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.samp", 
-                                        cutoff = 0.6, 
-                                        modsel = vgm(0.02,"Mat",0.4,kappa = 3),
-                                        quietmode = T)) %>% 
-  dplyr::select(lon, lat, var.samp = var1.pred)
-grid.value.site <- as.data.frame(doKrig(seldat, dat.grid, tag = "var.site", 
-                                        cutoff = 0.7, 
-                                        modsel = vgm(0.0012,"Mat",0.5, kappa = 3), 
-                                        quietmode = T)) %>% 
-  dplyr::select(lon, lat, var.site = var1.pred)
-grid.value.tot <- rbind(grid.value.tot, 
-                        as.data.frame(cbind(grid.value.mean %>%
-                                              inner_join(grid.value.samp) %>%
-                                              inner_join(grid.value.site),
-                                            trait = "As")))
 
 seldat <- grid.perm.tot %>% filter(trait == "Cd") %>% mutate(delta = var.samp-var.site)
 subdat <- as.data.frame(seldat)
@@ -274,11 +251,6 @@ plot.ni <- spView.elem("Ni") + guides.elem +
              data = as.data.frame(dat.site[dat.site$Ni >= quantile(read.csv("data/result_element.csv")$Ni, 
                                                          probs = 0.75),]))
 
-plot.as <- spView.elem("As") + guides.elem +
-  geom_point(aes(x = lon, y = lat), color = "white", size = 2,
-             data = as.data.frame(dat.site[dat.site$As >= quantile(read.csv("data/result_element.csv")$As, 
-                                                         probs = 0.75),]))
-
 plot.cd <- spView.elem("Cd") + guides.elem +
   geom_point(aes(x = lon, y = lat), color = "white", size = 2,
              data = as.data.frame(dat.site[dat.site$Cd >= quantile(read.csv("data/result_element.csv")$Cd,
@@ -305,7 +277,6 @@ nym("Cr",0.1)
 nym("Ni",0.1)
 nym("Cu",0.2)
 nym("Zn",0.1)
-nym("As",0.4)
 nym("Cd",0.3)
 # view.delta("",0.5)
 

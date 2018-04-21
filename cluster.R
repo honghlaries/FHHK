@@ -19,7 +19,6 @@ dat <- datareadln() %>%
             Ni = mean(Ni),
             Cu = mean(Cu),
             Zn = mean(Zn),
-            As = mean(As),
             Cd = mean(Cd),
             orgC = mean(orgC),
             AVS = mean(AVS),
@@ -101,7 +100,7 @@ dat2 <- data.frame(dat,class = cutree(cluster.site,3)) %>%
 
 dat2 <-dat2 %>%  
   group_by() %>%
-  mutate(trait = factor(trait,levels = c("sand","silt","clay","depth","Fe","Mn","orgC","AVS","Pb","Cr","Ni","Cu","Zn","As","Cd")),
+  mutate(trait = factor(trait,levels = c("sand","silt","clay","depth","Fe","Mn","orgC","AVS","Pb","Cr","Ni","Cu","Zn","Cd")),
          class = factor(class))%>%
   arrange(trait)
 
@@ -110,7 +109,7 @@ tmp <- c("sand","silt","clay","depth","Fe","Mn","orgC","AVS")
 for(i in 1:length(tmp)) {
   cache[dat2$trait == tmp[i]] <- "Environment Factor" 
 }
-tmp <- c("Pb","Cr","Ni","Cu","Zn","As","Cd")
+tmp <- c("Pb","Cr","Ni","Cu","Zn","Cd")
 for(i in 1:length(tmp)) {
   cache[dat2$trait == tmp[i]] <- "Trageted Heavy Metal" 
 }
@@ -219,7 +218,7 @@ dat1 <-data.frame(dat,class = cutree(cluster.samp,4)) %>%
   group_by()%>%
   mutate(trait = factor(trait,levels = c("sand","silt","clay","depth","Fe",
                                          "Mn","orgC","AVS","Pb","Cr","Ni","Cu",
-                                         "Zn","As","Cd")),
+                                         "Zn","Cd")),
          class = factor(class))%>%
   arrange(trait)
 
@@ -228,7 +227,7 @@ tmp <- c("sand","silt","clay","depth","Fe","Mn","orgC","AVS")
 for(i in 1:length(tmp)) {
   cache[dat1$trait == tmp[i]] <- "Environment Factor" 
 }
-tmp <- c("Pb","Cr","Ni","Cu","Zn","As","Cd")
+tmp <- c("Pb","Cr","Ni","Cu","Zn","Cd")
 for(i in 1:length(tmp)) {
   cache[dat1$trait == tmp[i]] <- "Trageted Heavy Metal" 
 }
