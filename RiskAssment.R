@@ -30,6 +30,16 @@ spView.ef <- function(elem,...) {
           axis.ticks = element_blank(),
           plot.margin = margin(0,0,0,0))
 }
+
+outlierTest <- function(dat) {
+  dat.sel <- dat[dat$outlier == F,]
+  mod <- lm(value~orgC, data = dat.sel)
+  cooksd <- cooks.distance(mod)
+  dat.sel$outlier <- (cooksd > 4* mean(cooksd))
+  dat <- rbind(dat.sel, dat[dat$outlier == T,])
+  if (sum(dat.sel$outlier)) {outlierTest(dat)} else dat
+}
+
 # Example
 
 ## for Igeo
@@ -109,39 +119,26 @@ plot.ni <- spView.igeo("Ni");ggsave(filename = "riskAssment/krig/igeo/Ni_Igeo.pn
 plot.as <- spView.igeo("As");ggsave(filename = "riskAssment/krig/igeo/As_Igeo.png")
 plot.cd <- spView.igeo("Cd");ggsave(filename = "riskAssment/krig/igeo/Cd_Igeo.png")
 
-spView.grid.interval(dat = grid.value.tot, leg.name = "Igeo",
-                     grad.value = c(-2,-1,0,1), 
-                     grad.col = blues9[3:7],
-                     lonRange = lonRange,
-                     latRange = latRange, pncol = 3) + 
+plot.igeo.sp <- 
+  spView.grid.interval(dat = grid.value.tot, leg.name = "Igeo",
+                       grad.value = c(-2,-1,0,1), 
+                       grad.col = blues9[3:7],
+                       lonRange = lonRange,
+                       latRange = latRange, pncol = 3) + 
   geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
                show.legend = F, size = 0.8, breaks = 0, linetype = 1,
                data = grid.value.tot) +
   geom_polygon(aes(x = long, y = lat, group = group), 
                colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
   theme(axis.text = element_blank(),
-        axis.ticks = element_blank()) -> plot.igeo.sp.all
+        axis.ticks = element_blank()) 
 
-spView.grid.interval(dat = grid.value.tot%>% 
-                       filter(trait %in% c("Zn", "As", "Cd")), 
-                     leg.name = "Igeo",
-                     grad.value = c(-2,-1,0,1), 
-                     grad.col = blues9[3:7],
-                     lonRange = lonRange,
-                     latRange = latRange, pncol = 2) + 
-  geom_contour(aes(x = lon, y = lat,  z = value), col= "black",
-               show.legend = F, size = 0.8, breaks = 0, linetype = 2,
-               data = grid.value.tot %>% 
-                 filter(trait %in% c("Zn", "As", "Cd"))) +
-  geom_polygon(aes(x = long, y = lat, group = group), 
-               colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
-  theme(axis.text = element_blank(),
-        axis.ticks = element_blank()) -> plot.igeo.sp.sel
-
-
-grid.arrange(plot.igeo.box, plot.igeo.sp.sel, ncol = 2, widths = c(5,7), heights = 5) -> plot.igeo.gather
+plot.igeo.gather <- 
+  grid.arrange(plot.igeo.box, plot.igeo.sp, 
+               ncol = 2, widths = c(5,7), heights = 5) 
 
 ## for enrichment factor
+### original
 dat <- datareadln() %>% 
   data.frame(n=1:108) %>%
   gather(trait, value, As,Cd,Cr,Cu,Ni,Pb,Zn) %>% 
@@ -152,8 +149,7 @@ dat <- datareadln() %>%
   mutate(value = value / Fe) %>%
   inner_join(background, by = c("trait" = "trait")) %>%
   mutate(value = value / bk2) %>%
-  select(siteID, trait, value, orgC) %>%
-  mutate(outlier = F)
+  select(siteID, trait, value, orgC) 
 
 ggplot(data = dat %>% filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","As","Cd")) %>% 
          mutate(trait = factor(trait, levels = c("Pb","Cr","Ni","Cu","Zn","As","Cd")))) + 
@@ -165,40 +161,7 @@ ggplot(data = dat %>% filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","As","Cd")) %
   coord_flip() +
   theme_bw() + 
   theme(aspect.ratio = 1,
-        panel.grid = element_blank()) -> plot.ef.box.raw
-
-outlierTest <- function(dat) {
-  dat.sel <- dat[dat$outlier == F,]
-  mod <- lm(value~orgC, data = dat.sel)
-  cooksd <- cooks.distance(mod)
-  dat.sel$outlier <- (cooksd > 4* mean(cooksd))
-  dat <- rbind(dat.sel, dat[dat$outlier == T,])
-  if (sum(dat.sel$outlier)) {outlierTest(dat)} else dat
-}
-
-dat.tmp <- NULL
-for(i in unique(dat$trait)) {dat.tmp <- rbind(dat.tmp,outlierTest(dat[dat$trait == i,]))}
-dat.tmp <- rbind(dat.tmp %>% mutate(tag = "Combined"),dat.tmp %>% mutate(tag = trait))
-dat.tmp$tag <- factor(dat.tmp$tag, levels = c("As","Cd","Cr","Cu","Ni","Pb","Zn","Combined" ))
-
-ggplot()+ 
-  geom_hline(yintercept = 1,col = "red", linetype = 2) + 
-  geom_vline(xintercept = 3250,col = "red", linetype = 2) + 
-  geom_point(aes(x = orgC, y = value, shape = outlier, alpha = tag), 
-             col = "black", show.legend = F, data = dat.tmp)+
-  geom_smooth(aes(x = orgC, y = value, col = trait, alpha = tag), 
-              method = "lm", se = T, fill = "grey70", show.legend = F,
-              data = dat.tmp%>% filter(outlier == F))+ 
-  scale_x_continuous("orgC (mg/kg)") +
-  scale_y_continuous("Enrichment Factor",labels = c("0.5","1.0","1.5","2.0","3.0","4.0"),
-                     breaks = c(0.667,1,1.5,2,3,4)) +
-  scale_shape_manual(values = c(2,3))+
-  scale_alpha_manual(values = c(rep(1,7),0)) +
-  coord_cartesian(xlim = c(500,5500)) +
-  facet_wrap(~tag, nrow = 2)+
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 30),
-        panel.grid = element_blank()) -> plot.ef.orgc
+        panel.grid = element_blank()) -> plot.ef.box
 
 dat <- dat %>%
   group_by(siteID, trait) %>%
@@ -251,13 +214,13 @@ grid.value.tot <- grid.value.tot %>%
   mutate(trait = factor(trait, levels = c("Pb","Cr","Ni","Cu","Zn","As","Cd")))
 
 
-plot.cu <- spView.ef("Cu");ggsave(filename = "riskAssment/krig/EF/Cu_EF.png")
-plot.zn <- spView.ef("Zn");ggsave(filename = "riskAssment/krig/EF/Zn_EF.png")
-plot.pb <- spView.ef("Pb");ggsave(filename = "riskAssment/krig/EF/Pb_EF.png")
-plot.cr <- spView.ef("Cr");ggsave(filename = "riskAssment/krig/EF/Cr_EF.png")
-plot.ni <- spView.ef("Ni");ggsave(filename = "riskAssment/krig/EF/Ni_EF.png")
-plot.as <- spView.ef("As");ggsave(filename = "riskAssment/krig/EF/As_EF.png")
-plot.cd <- spView.ef("Cd");ggsave(filename = "riskAssment/krig/EF/Cd_EF.png")
+plot.cu <- spView.ef("Cu");ggsave(filename = "riskAssment/krig/Cu_EF.png")
+plot.zn <- spView.ef("Zn");ggsave(filename = "riskAssment/krig/Zn_EF.png")
+plot.pb <- spView.ef("Pb");ggsave(filename = "riskAssment/krig/Pb_EF.png")
+plot.cr <- spView.ef("Cr");ggsave(filename = "riskAssment/krig/Cr_EF.png")
+plot.ni <- spView.ef("Ni");ggsave(filename = "riskAssment/krig/Ni_EF.png")
+plot.as <- spView.ef("As");ggsave(filename = "riskAssment/krig/As_EF.png")
+plot.cd <- spView.ef("Cd");ggsave(filename = "riskAssment/krig/Cd_EF.png")
 
 spView.grid.interval(dat = grid.value.tot, leg.name = "EF",
                      grad.value = c(0.66,1,1.5,2,3), 
@@ -273,7 +236,7 @@ spView.grid.interval(dat = grid.value.tot, leg.name = "EF",
   geom_polygon(aes(x = long, y = lat, group = group), 
                colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
   theme(axis.text = element_blank(),
-        axis.ticks = element_blank()) -> plot.ef.sp.all.raw
+        axis.ticks = element_blank()) -> plot.ef.sp.all
 
 spView.grid.interval(dat = grid.value.tot%>% 
                        filter(trait %in% c("Zn", "As", "Cd", "Cu")), 
@@ -293,19 +256,128 @@ spView.grid.interval(dat = grid.value.tot%>%
   geom_polygon(aes(x = long, y = lat, group = group), 
                colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
   theme(axis.text = element_blank(),
-        axis.ticks = element_blank()) -> plot.ef.sp.sel.raw
+        axis.ticks = element_blank()) -> plot.ef.sp.sel
 
-grid.arrange(plot.ef.box.raw, plot.ef.sp.sel.raw, ncol = 2, widths = c(5,7), heights = 5) -> plot.ef.gather.raw
+grid.arrange(plot.ef.box, plot.ef.sp.sel, ncol = 2, widths = c(5,7), heights = 5) -> plot.ef.gather
+
+### organic-carbon-adjusted Enrichment factor
+dat <- datareadln() %>% 
+  data.frame(n=1:108) %>%
+  gather(trait, value, As,Cd,Cr,Cu,Ni,Pb,Zn) %>% 
+  select(trait,value,orgC,siteID,n) %>%
+  inner_join(datareadln() %>%
+               data.frame(n=1:108) %>%
+               select(n, Fe),  by = c("n" = "n")) %>%
+  mutate(value = value / Fe) %>%
+  inner_join(background, by = c("trait" = "trait")) %>%
+  mutate(value = value / bk2) %>%
+  select(siteID, trait, value, orgC) %>%
+  mutate(outlier = F)
+
+dat.tmp <- NULL
+for(i in unique(dat$trait)) {dat.tmp <- rbind(dat.tmp,outlierTest(dat[dat$trait == i,]))}
+
+plot.ef.orgc.lm <- 
+  ggplot() + 
+  geom_hline(yintercept = 1,col = "red", linetype = 2) + 
+  geom_vline(xintercept = 3.250,col = "red", linetype = 2) + 
+  geom_point(aes(x = orgC/1000, y = value, shape = outlier), 
+             col = "grey50", show.legend = F, data = dat.tmp)+
+  geom_smooth(aes(x = orgC/1000, y = value), 
+              col = "black",
+              method = "lm", se = T, 
+              data = dat.tmp%>% filter(outlier == F))+ 
+  scale_x_continuous("orgC (g/kg)") +
+  scale_y_continuous("Enrichment Factor",
+                     labels = c(".67","1.0","1.5","2.0","3.0","4.0"),
+                     breaks = c(0.667,1,1.5,2,3,4)) +
+  scale_shape_manual(values = c(2,3))+
+  coord_cartesian(xlim = c(0.5,5.5)) +
+  facet_wrap(~trait, nrow = 2) +
+  theme_bw() +
+  theme(aspect.ratio = 0.672, 
+        panel.grid = element_blank())
+
+dat.tmp <- dat.tmp %>% 
+  dplyr::filter(outlier == F) 
+
+regFactor <- NULL
+for(i in unique(dat.tmp$trait)) {
+  mod <- lm(value ~ orgC, data = dat.tmp[dat.tmp$trait == i,c("value","orgC")])
+  regFactor <- rbind(regFactor, 
+                     data.frame(trait = i, 
+                                intercept = mod$coefficients[1], 
+                                coefficients = mod$coefficients[2]))
+}
+
+dat <- dat %>%
+  dplyr::inner_join(read.csv("data/meta_sites.csv"), by = c("siteID" = "siteID")) %>% 
+  dplyr::inner_join(regFactor, by = c("trait" = "trait")) %>%
+  dplyr::mutate(value_adjusted = value - intercept - coefficients * orgC,
+                value_orgC = value - value_adjusted) %>%
+  dplyr::select(siteID, trait, value, value_adjusted, value_orgC) 
+
+plot.ef.orgc.resid <-
+  ggplot() +
+  geom_abline(slope =1, intercept = 0, linetype = 2, col = "black") +
+  geom_point(aes(x =  value, y = value_adjusted), 
+             col = "grey20", shape = 3, data = dat) + 
+  scale_x_continuous("Enrichment Factor",limits = c(-1,4)) + 
+  scale_y_continuous("Residual",limits = c(-1,4)) + 
+  facet_wrap(~trait, nrow = 2) +
+  theme_bw() +
+  theme(aspect.ratio = 0.672,
+        panel.grid = element_blank())
+
+plot.ef.orgc.eff <-
+  ggplot() +
+  geom_abline(slope =1, intercept = 0, linetype = 2, col = "black") +
+  geom_point(aes(x =  value, y = value_orgC), 
+             col = "grey20", shape = 4, data = dat) + 
+  scale_x_continuous("Enrichment Factor",limits = c(-1,4)) + 
+  scale_y_continuous("Effect",limits = c(-1,4)) + 
+  facet_wrap(~trait, nrow = 2) +
+  theme_bw() +
+  theme(aspect.ratio = 0.672,
+        panel.grid = element_blank()) 
+
+plot.ef.orgc.mod <-
+  ggplot() +
+  geom_point(aes(x =  value, y = value_adjusted/value_orgC), 
+             col = "grey20", shape = 1, data = dat) + 
+  scale_x_continuous("Enrichment Factor",limits = c(-1,4)) + 
+  scale_y_continuous("Residual/Effect",limits = c(-1,3.3),
+                     labels = paste(-1:3, ".0", sep = ""),
+                     breaks = -1:3) + 
+  facet_wrap(~trait, nrow = 2) +
+  theme_bw() +
+  theme(aspect.ratio = 0.672,
+        panel.grid = element_blank()) 
+
+plot.ef.orgc <-
+  grid.arrange(plot.ef.orgc.lm, plot.ef.orgc.mod, 
+               ncol = 1, heights = c(10,10)) 
+
+plot.ef.orgc.effresid <-
+  grid.arrange(plot.ef.orgc.eff, plot.ef.orgc.resid, 
+               ncol = 1, heights = c(10,10))
 
 # saving plot 
 ggsave(plot = plot.igeo.box, filename = "riskAssment/box_igeo.png", dpi = 600)
 ggsave(plot = plot.igeo.sp.all, filename = "riskAssment/map_igeo_all.png", dpi = 600)
 ggsave(plot = plot.igeo.sp.sel, filename = "riskAssment/map_igeo_sel.png", dpi = 600)
 
-ggsave(plot = plot.ef.box.raw, filename = "riskAssment/box_Ef_raw.png", dpi = 600)
-ggsave(plot = plot.ef.sp.all.raw, filename = "riskAssment/map_Ef_all_raw.png", dpi = 600)
-ggsave(plot = plot.ef.sp.sel.raw, filename = "riskAssment/map_Ef_sel_raw.png", dpi = 600)
-ggsave(plot = plot.ef.orgc, filename = "riskAssment/scatter_Ef_orgC.png", dpi = 600)
+ggsave(plot = plot.ef.box, filename = "riskAssment/box_Ef.png", dpi = 600)
+ggsave(plot = plot.ef.sp.all, filename = "riskAssment/map_Ef_all.png", dpi = 600)
+ggsave(plot = plot.ef.sp.sel, filename = "riskAssment/map_Ef_sel.png", dpi = 600)
+
+ggsave(plot = plot.ef.orgc, 
+       filename = "riskAssment/scatter_Ef_orgC.png", 
+       height = 8, width = 9, dpi = 600)
+ggsave(plot = plot.ef.orgc.effresid, 
+       filename = "riskAssment/scatter_Ef_EffResid.png", 
+       height = 8, width = 9, dpi = 600)
+
 
 grid.arrange(plot.igeo.box, plot.igeo.sp.sel,plot.ef.box, plot.ef.sp.sel, 
              ncol = 2, widths = c(5,7), heights = c(5,5)) -> plot.risk.gather
