@@ -11,7 +11,7 @@ sigNotation <- function(x) {
 }
 
 ## Example
-taglist <- c("Cr","As","Ni","Cu","Pb","Zn","Cd")
+taglist <- c("Cr","Ni","Cu","Pb","Zn","Cd")
 
 for(i in 1:length(taglist)) {
   dat <- read.csv(paste("relation/driver/multiRegExplo_",taglist[i],".csv",sep = ""))

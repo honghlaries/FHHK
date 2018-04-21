@@ -188,17 +188,16 @@ grid.value.tot1 <- grid.value.tot1 %>%
   dplyr::filter(value != 0) 
   
 plot.ca.indicator1 <- 
-  
   ggplot() + 
   geom_raster(aes(x = lon, y = lat, fill = class),
               interpolate = T, show.legend = F, data = grid.value.tot1) +
   geom_polygon(aes(x = long, y = lat, group = group), 
                colour = "black", fill = "grey80", data = fortify(bkmap)) +
-  geom_text(aes(x = c(120.48,120.48,121.58,120.38,120.58,121.38),
-                y = c(34.36,34.80,34.75,34.57,34.20,34.00),
-                label = c("Class 4","Class 1","Class 1","Class 3","Class 3","Class 2"),
-                angle = c(0,-5,-45,25,-5,65),
-                size = c(20,20,20,20,20,20))) + 
+  geom_text(aes(x = c(120.48,121.0,120.38,120.58,121.38),
+                y = c(34.36,34.6,34.57,34.20,34.00),
+                label = c("Class 4","Class 1","Class 3","Class 3","Class 2"),
+                angle = c(0,-25,25,-5,65),
+                size = c(20,20,20,20,20))) + 
   scale_fill_manual(values = blues9[1:4*2]) +
   xlab("") + ylab("") +
   coord_quickmap(xlim = lonRange, ylim = latRange) +
@@ -215,7 +214,10 @@ dat1 <-data.frame(dat,class = cutree(cluster.samp,4)) %>%
   group_by(trait,class) %>%
   summarise(mean = mean(value,na.rm = T),
             se = sd(value,na.rm= T)/sqrt(n()-sum(is.na(value)))) %>%
-  group_by()%>%
+  group_by()%>% 
+  dplyr::filter(trait %in% c("silt","depth","Fe",
+                             "Mn","orgC","AVS","Pb","Cr","Ni","Cu",
+                             "Zn","Cd")) %>%
   mutate(trait = factor(trait,levels = c("sand","silt","clay","depth","Fe",
                                          "Mn","orgC","AVS","Pb","Cr","Ni","Cu",
                                          "Zn","Cd")),
@@ -253,7 +255,8 @@ plot.ca.bar <-
 
 plot.gather <- 
   grid.arrange(plot.ca.indicator1,plot.ca.bar,
-               ncol = 1, heights = c(7.5,12))
+               ncol = 1, heights = c(9.75,12))
 
-ggsave(filename = "hca/gather_hcaPlot.png", plot = plot.gather, 
-       dpi = 600, width = 4.5, height = 7.5)
+ggsave(filename = "hca/gather_hcaPlot.png", 
+       plot = plot.gather, 
+       dpi = 600, width = 5.75, height = 9)

@@ -351,7 +351,9 @@ ggsave(plot = plot.ef.orgc.effresid,
        filename = "riskAssment/scatter_Ef_EffResid.png", 
        height = 8, width = 9, dpi = 600)
 
-
-grid.arrange(plot.igeo.box, plot.igeo.sp.sel,plot.ef.box, plot.ef.sp.sel, 
-             ncol = 2, widths = c(5,7), heights = c(5,5)) -> plot.risk.gather
-ggsave(plot = plot.risk.gather, filename = "riskAssment/gather_risk.png", dpi = 600)
+plot.risk.gather <- 
+  grid.arrange(plot.igeo.box, plot.igeo.sp,plot.ef.box, plot.ef.sp, 
+               ncol = 2, widths = c(5,10), heights = c(5,5)) 
+ggsave(plot = plot.risk.gather, 
+       filename = "riskAssment/gather_risk.png",
+       height = 6.72, width = 10, dpi = 600)

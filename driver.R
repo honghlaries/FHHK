@@ -127,10 +127,10 @@ p.gather <- grid.arrange(plot.clay.Pb, plot.dep.Pb, plot.h.Pb, plot.fe.Pb, plot.
                          plot.clay.Cu, plot.dep.Cu, plot.h.Cu, plot.fe.Cu, plot.dist.Cu, plot.orgC.Cu, 
                          plot.clay.Zn, plot.dep.Zn, plot.h.Zn, plot.fe.Zn, plot.dist.Zn, plot.orgC.Zn, 
                          plot.clay.Cd, plot.dep.Cd, plot.h.Cd, plot.fe.Cd, plot.dist.Cd, plot.orgC.Cd,
-                         nrow=7, ncol=6)
+                         nrow=6, ncol=6)
 ggsave(plot = p.gather,
        filename = paste(dirPreset("relation/driver"),"/gather_relation.png",sep = ""),
-       dpi = 300, width = 12, height = 14)
+       dpi = 300, width = 12, height = 12)
 
 # factor reg
 taglist <- c("Cr","Ni","Cu","Pb","Zn","Cd")
