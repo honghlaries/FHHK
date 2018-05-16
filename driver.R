@@ -2,7 +2,7 @@
 rm(list = ls())
 source("constant.R");
 pkgInitialization(c("dplyr","tidyr","ggplot2","gridExtra","MASS"))
-dirInitialization(c("relation","relation/driver"))
+dirInitialization(c("driver"))
 
 ## Functions 
 relationPlot <- function(dat, fact, resp, col, family) {
@@ -74,7 +74,7 @@ taglist <- c("Cr","Ni","Cu","Pb","Zn","Cd")
 for(i in 1:length(taglist)) {
   relationPlot.gather(dat,taglist[i]) -> p
   ggsave(plot = p,
-         filename = paste(dirPreset("relation/driver"),"/",taglist[i],".png",sep = ""),dpi = 600)
+         filename = paste(dirPreset("driver"),"/",taglist[i],".png",sep = ""),dpi = 600)
   p
 }
 
@@ -139,7 +139,7 @@ for(i in 1:length(taglist)) {
   mod <- stepFitting(dat, taglist[i])
   mod.sum <- modExamine(mod)
   write.csv(mod.sum, 
-            paste(dirPreset("relation/driver"),"/multiRegExplo_",taglist[i],".csv",sep = ""),
+            paste(dirPreset("driver"),"/multiRegExplo_",taglist[i],".csv",sep = ""),
             row.names = F)
   mod.sum.refined <- mod.sum 
   for(k in 1:10) {
@@ -195,7 +195,7 @@ model <- '
 
 fit <- lavaan::sem(model, data = scale(dat))
 
-png("relation/driver/SEM.png",width = 1400, height = 800)
+png("driver/SEM.png",width = 1400, height = 800)
 semPaths(fit,"std",  style = "lisrel",
          edge.label.cex = 0.5, exoVar = FALSE, exoCov = FALSE)
 dev.off()
