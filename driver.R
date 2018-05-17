@@ -179,15 +179,16 @@ dat <- datareadln()%>%
 model <- ' 
             # latent variable definitions
               accessibility =~ acc_depth + acc_dist
-              adsorbability =~ orgC + AVS + Fe + clay + ad_pH
+              mineral =~ Fe + clay + ad_pH
+              org =~ orgC + AVS
 
             # regressions
-              Pb ~ accessibility +  adsorbability
-              Zn ~ accessibility +  adsorbability
-              Cd ~ accessibility +  adsorbability
-              Cu ~ accessibility +  adsorbability
-              Ni ~ accessibility +  adsorbability
-              Cr ~ accessibility +  adsorbability         
+              Pb ~ mineral 
+              Zn ~ mineral 
+              Cd ~ mineral  
+              Cu ~ mineral 
+              Ni ~ accessibility + mineral + org
+              Cr ~ accessibility           
 
            # residual correlations
 
