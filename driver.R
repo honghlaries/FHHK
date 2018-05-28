@@ -1,8 +1,8 @@
 ## Initialization
 rm(list = ls())
 source("constant.R");
-pkgInitialization(c("dplyr","tidyr","ggplot2","gridExtra","MASS"))
-dirInitialization(c("driver"))
+pkgInitialization(c("dplyr","tidyr","ggplot2","MASS","sem","semPlot","lavaan"))
+dirInitialization(c("driver/SEM"))
 
 ## Functions 
 relationPlot <- function(dat, fact, resp, col, family) {
@@ -168,35 +168,85 @@ for(i in 1:length(taglist)) {
 }
 
 # sem
-pkgLoad("sem");pkgLoad("semPlot");pkgLoad("lavaan");
+dat1 <- datareadln()%>% 
+  dplyr::select(depth,distance,orgC,AVS,Fe,clay,pH,Pb,Zn,Cd,Cu,Ni,Cr) %>%
+  dplyr::mutate(pH = (16.6 - pH)* pH,
+                depth = 1/depth^2,
+                distance = 1/distance^2)
 
-dat <- datareadln()%>% 
-  dplyr::select(depth:sand) %>% 
-  dplyr::mutate(acc_depth = 1/depth,
-                acc_dist = 1/distance,
-                ad_pH = (pH-8.2)^2)
+list.nopassed <- NULL
+for (i in colnames(dat1)) {
+  tmp <- ks.test(jitter(scale(dat1[,i])),"pnorm")
+  if (tmp$p.value < 0.05) list.nopassed <- rbind(list.nopassed,
+                                                 data.frame(trait = i, 
+                                                            W = tmp$statistic, 
+                                                            p = tmp$p.value))
+}
+if (is.null(list.nopassed)) print("=== NORMALITY : All PASSED ! ===") else {
+  print(list.nopassed)
+  p <- ggplot(data = dat1 %>% gather(trait,value) %>% dplyr::filter(trait %in% list.nopassed$trait)) +
+    geom_density(aes(x = value)) +
+    facet_wrap(~trait, scales = "free")+
+    theme_bw()
+  ggsave("driver/SEM/normtest_raw_nopass.png",p)
+  p
+}
 
+dat2 <- dat1 %>%
+  dplyr::mutate(AVS = log(AVS/250),
+                Cd = log(Cd*10),
+                clay = log(clay/2.5),
+                distance = log(distance*400),
+                #pH = -sqrt(68.7 - pH),
+                Zn = log(log(Zn/48)+1))
+
+list.nopassed <- NULL
+for (i in colnames(dat2)) {
+  tmp <- ks.test(jitter(scale(dat2[,i])),"pnorm")
+  if (tmp$p.value < 0.05) list.nopassed <- rbind(list.nopassed,
+                                                 data.frame(trait = i, 
+                                                            p = tmp$p.value))
+}
+if (is.null(list.nopassed)) {
+  print("=== NORMALITY : All PASSED ! ===")
+  p <- ggplot(data = dat2 %>% gather(trait,value)) +
+    geom_density(aes(x = value)) +
+    facet_wrap(~trait, scales = "free")+
+    theme_bw()
+  ggsave("driver/SEM/normtest_adjusted.png",p)
+  p
+} else {
+  print(list.nopassed)
+  p <- ggplot(data = dat2 %>% gather(trait,value) %>% dplyr::filter(trait %in% list.nopassed$trait)) +
+    geom_density(aes(x = value)) +
+    facet_wrap(~trait, scales = "free")+
+    theme_bw()
+  p
+}
+
+dat <- dat2
 model <- ' 
             # latent variable definitions
-              accessibility =~ acc_depth + acc_dist
-              mineral =~ Fe + clay + ad_pH
-              org =~ orgC + AVS
+              accessibility =~ distance + depth
+              adsorbability =~ clay + Fe + orgC + AVS + pH
 
             # regressions
-              Pb ~ mineral 
-              Zn ~ mineral 
-              Cd ~ mineral  
-              Cu ~ mineral 
-              Ni ~ accessibility + mineral + org
-              Cr ~ accessibility           
+              Pb ~ accessibility + adsorbability 
+              Zn ~ accessibility + adsorbability 
+              Cd ~ accessibility + adsorbability  
+              Cu ~ accessibility + adsorbability 
+              Ni ~ accessibility + adsorbability
+              Cr ~ accessibility + adsorbability            
 
            # residual correlations
-
+           
         '
 
 fit <- lavaan::sem(model, data = scale(dat))
+summary(fit)
+lavaan::anova(fit)
 
 png("driver/SEM.png",width = 1400, height = 800)
-semPaths(fit,"std",  style = "lisrel",
+semPaths(fit, "std",  style = "lisrel",
          edge.label.cex = 0.5, exoVar = FALSE, exoCov = FALSE)
 dev.off()
