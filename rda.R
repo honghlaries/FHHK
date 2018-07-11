@@ -9,7 +9,7 @@ dirInitialization(c("rda","rda/krig"))
 
 # Example 
 env <- datareadln() %>% 
-  dplyr::select(depth,distance,salinity,pH,Fe,Mn,orgC,AVS,clay,silt,sand) 
+  dplyr::select(depth,distance,pH,Fe,Mn,orgC,AVS,clay,silt,sand) 
 trait <- datareadln() %>% dplyr::select(Pb:Cd)
 samptag <- datareadln() %>% dplyr::select(siteID)
 rda <- rdaLoadingCal(env, trait, samptag, 2, dir = "rda", log = F)
