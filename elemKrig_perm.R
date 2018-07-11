@@ -256,7 +256,7 @@ plot.cd <- spView.elem("Cd") + guides.elem +
              data = as.data.frame(dat.site[dat.site$Cd >= quantile(read.csv("data/result_element.csv")$Cd,
                                                          probs = 0.75),]))
 
-p <- grid.arrange(plot.pb,plot.ni,plot.cu,plot.zn,plot.cr,plot.as,plot.cd,
+p <- grid.arrange(plot.pb,plot.ni,plot.cu,plot.zn,plot.cr,plot.cd,
                   ncol = 2, widths = c(11,11))
 
 ggsave(filename = "element/krig/gather_krig_perm_element.png", plot = p, 
