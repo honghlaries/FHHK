@@ -13,6 +13,9 @@ env <- datareadln() %>%
 trait <- datareadln() %>% dplyr::select(Pb:Cd)
 samptag <- datareadln() %>% dplyr::select(siteID)
 rda <- rdaLoadingCal(env, trait, samptag, 2, dir = "rda", log = F)
+rda$traitload$RDA2 <- -rda$traitload$RDA2
+rda$envload$RDA2 <- -rda$envload$RDA2
+rda$sampload$RDA2 <- -rda$sampload$RDA2
 
 rdaLoadingPlot(rda,2)+
   theme(panel.grid = element_blank(),
@@ -21,9 +24,9 @@ rdaLoadingPlot(rda,2)+
 
 dat <- rda$sampload %>%
   group_by(siteID) %>%
-  summarise(RDA1 = mean(RDA1), RDA2 = mean(RDA2), RDA3 = mean(RDA3)) %>%
+  summarise(RDA1 = mean(RDA1), RDA2 = mean(RDA2)) %>%
   dplyr::inner_join(read.csv("data/meta_sites.csv"), by = c("siteID" = "siteID")) %>%
-  dplyr::select(lat,lon,RDA1,RDA2,RDA3)
+  dplyr::select(lat,lon,RDA1,RDA2)
 dat <- as.data.frame(dat)
 coordinates(dat) <- ~lon+lat
 
