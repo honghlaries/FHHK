@@ -6,11 +6,12 @@ source("grid.R");source("grid_resamp.R")
 dirInitialization(c("element","element/krig"))
 
 ## Functions 
-spView.elem <- function(elem,...) {
-  spView(dat = grid.value.tot %>% 
+spView.elem <- function(elem, grad.value) {
+  spView.interval(dat = grid.value.tot %>% 
            filter(trait == elem) %>% 
            mutate(value = exp(mean)),
-         leg.name = elem,
+         leg.name = elem, 
+         grad.col = blues9[3:8], grad.value = grad.value,
          lonRange = lonRange, latRange = latRange) +
     geom_polygon(aes(x = long, y = lat, group = group), 
                  colour = "black", fill = "grey80", 
@@ -226,40 +227,40 @@ dat.site <- datareadln() %>%
 
 guides.elem <- guides(fill = guide_colourbar(barwidth = 1, barheight = 6))
 
-plot.cu <- spView.elem("Cu") + guides.elem +
-  geom_point(aes(x = lon, y = lat), color = "white", size = 2,
+plot.cu <- spView.elem("Cu", c(5,10,15,20,30)) +
+  geom_point(aes(x = lon, y = lat), color = "black", size = 2,
              data = as.data.frame(dat.site[dat.site$Cu >= quantile(read.csv("data/result_element.csv")$Cu, 
                                                          probs = 0.75),]))
 
-plot.zn <- spView.elem("Zn") + guides.elem +
-  geom_point(aes(x = lon, y = lat), color = "white", size = 2,
+plot.zn <- spView.elem("Zn", c(20,30,40,60,100)) +
+  geom_point(aes(x = lon, y = lat), color = "black", size = 2,
              data = as.data.frame(dat.site[dat.site$Zn >= quantile(read.csv("data/result_element.csv")$Zn, 
                                                          probs = 0.75),]))
 
-plot.pb <- spView.elem("Pb") + guides.elem +
-  geom_point(aes(x = lon, y = lat), color = "white", size = 2,
+plot.pb <- spView.elem("Pb", c(25,30,35,40,50)) +
+  geom_point(aes(x = lon, y = lat), color = "black", size = 2,
              data = as.data.frame(dat.site[dat.site$Pb >= quantile(read.csv("data/result_element.csv")$Pb,
                                                          probs = 0.75),]))
 
-plot.cr <- spView.elem("Cr") + guides.elem +
-  geom_point(aes(x = lon, y = lat), color = "white", size = 2,
+plot.cr <- spView.elem("Cr", c(20,25,30,40,50)) +
+  geom_point(aes(x = lon, y = lat), color = "black", size = 2,
              data = as.data.frame(dat.site[dat.site$Cr >= quantile(read.csv("data/result_element.csv")$Cr, 
                                                          probs = 0.75),]))
 
-plot.ni <- spView.elem("Ni") + guides.elem +
-  geom_point(aes(x = lon, y = lat), color = "white", size = 2,
+plot.ni <- spView.elem("Ni", c(10,15,20,25,30)) +
+  geom_point(aes(x = lon, y = lat), color = "black", size = 2,
              data = as.data.frame(dat.site[dat.site$Ni >= quantile(read.csv("data/result_element.csv")$Ni, 
                                                          probs = 0.75),]))
 
-plot.cd <- spView.elem("Cd") + guides.elem +
-  geom_point(aes(x = lon, y = lat), color = "white", size = 2,
+plot.cd <- spView.elem("Cd", c(0.05,0.10,0.15,0.20,0.30)) +
+  geom_point(aes(x = lon, y = lat), color = "black", size = 2,
              data = as.data.frame(dat.site[dat.site$Cd >= quantile(read.csv("data/result_element.csv")$Cd,
                                                          probs = 0.75),]))
 
 p <- grid.arrange(plot.pb,plot.ni,plot.cu,plot.zn,plot.cr,plot.cd,
                   ncol = 2, widths = c(11,11))
 
-ggsave(filename = "element/krig/gather_krig_perm_element.png", plot = p, 
+ggsave(filename = "element/gather_krig_perm_element.png", plot = p, 
        dpi = 600, width = 8, height = 8)
 
 
