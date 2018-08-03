@@ -2,10 +2,20 @@
 rm(list = ls())
 source("constant.R");source("anaTls_spatialView.R");
 pkgInitialization(c("dplyr","tidyr","sp","gstat","ggplot2","directlabels","maptools"))
-source("grid.R")
 dirInitialization("map")
 
 # data
+dat.grid <- data.frame(lat = c(1), lon = c(1))
+for (i in 1:250) {
+  for (j in 1:250) {
+    dat.grid <- rbind(dat.grid, c(latiRange[i],longiRange[j]))
+    
+  }
+}
+
+dat.grid <- dat.grid[-1,]
+coordinates(dat.grid) <- ~lon+lat
+
 dat <- datareadln() %>%
   tidyr::gather(trait,value,depth) %>%
   dplyr::group_by(siteID,trait,lon,lat) %>%
@@ -23,7 +33,6 @@ grid.value <- as.data.frame(doKrig(dat, dat.grid, tag = "depth", cutoff = 1.2,
   select(lon, lat, value = var1.pred) 
 grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, 
                                                             trait = "depth")))
-
 # map
 break.lon <- findInt.coord(lonRange)
 label.lon <- conveySpCoord(break.lon,conveyFrom = "num.degree.nosuffix",
@@ -32,17 +41,37 @@ break.lat <- findInt.coord(latRange)
 label.lat <- conveySpCoord(break.lat,conveyFrom = "num.degree.nosuffix",
                            conveyTo = "char.minute.suffix",type = "lat")
 
-plot.map <- ggplot() + 
+plot.map <- 
+ggplot() + 
   geom_raster(aes(x = lon, y = lat, fill = value),
               show.legend = T,  data = grid.value.tot) +
-  geom_contour(aes(x = lon, y = lat, z = value,  col = ..level..), 
-               breaks = c(17+5*0:5,18,19), show.legend = F, size = 0.8, data = grid.value.tot) +
+  #geom_contour(aes(x = lon, y = lat, z = value,  col = ..level..), 
+  #             breaks = c(17+5*0:5,18,19), show.legend = F, size = 0.8, data = grid.value.tot) +
   geom_polygon(aes(x = long, y = lat, group = group), 
                colour = "black", fill = "grey80", 
                data = fortify(readShapePoly("data/bou2_4p.shp"))) +
-  #geom_path(aes(x = long, y = lat, group = group), 
-  #          colour = "blue", 
-  #          data = fortify(rivers)) +
+  geom_path(aes(x = lon, y = lat), colour = "blue", size = 1, data = fortify(coo.river1)) +
+  geom_path(aes(x = lon, y = lat), colour = "blue", size = 1, data = fortify(coo.river2_1)) +
+  geom_path(aes(x = lon, y = lat), colour = "blue", size = 1, data = fortify(coo.river2_2)) +
+  geom_path(aes(x = lon, y = lat), colour = "blue", size = 1, data = fortify(coo.river2_3)) +
+  geom_path(aes(x = lon, y = lat), colour = "blue", size = 1, data = fortify(coo.river2_4)) +
+  geom_path(aes(x = lon, y = lat), colour = "blue", size = 1, data = fortify(coo.river2_5)) +
+  geom_path(aes(x = lon, y = lat), colour = "blue", size = 1, data = fortify(coo.river2_6)) +
+  geom_path(aes(x = lon, y = lat), colour = "blue", size = 1, data = fortify(coo.river2_7)) +
+  geom_path(aes(x = lon, y = lat), colour = "blue", size = 1, data = fortify(coo.river2_8)) +
+  geom_path(aes(x = lon, y = lat), colour = "blue", size = 1, data = fortify(coo.river2_9)) +
+  geom_path(aes(x = lon, y = lat), colour = "blue", size = 1, data = fortify(coo.river3)) +
+  geom_path(aes(x = lon, y = lat), colour = "blue", size = 1, data = fortify(coo.river4_1)) +
+  geom_path(aes(x = lon, y = lat), colour = "blue", size = 1, data = fortify(coo.river4_2)) +
+  geom_path(aes(x = lon, y = lat), colour = "blue", size = 1, data = fortify(coo.river4_3)) +
+  geom_path(aes(x = lon, y = lat), colour = "blue", size = 1, data = fortify(coo.river5)) +
+  geom_path(aes(x = lon, y = lat), colour = "blue", size = 1, data = fortify(coo.river6)) +
+  geom_path(aes(x = lon, y = lat), colour = "blue", size = 1, data = fortify(coo.river7)) +
+  geom_path(aes(x = lon, y = lat), colour = "blue", size = 1, data = fortify(coo.river8)) +
+  geom_path(aes(x = lon, y = lat), colour = "blue", size = 1, data = fortify(coo.river9)) +
+  geom_path(aes(x = lon, y = lat), colour = "blue", size = 1, data = fortify(coo.river10)) +
+  geom_path(aes(x = lon, y = lat), colour = "red", size = 1, linetype = 2,
+            data = coo.1855) +
   geom_point(aes(x = lon, y = lat), color = "black", data = sites) +
   geom_label(aes(x = lon, y = lat, label = siteID), vjust = -0.3, hjust = 0.7, 
             color = "black", data = sites) +
@@ -61,10 +90,10 @@ plot.map <- ggplot() +
         axis.text.y = element_text(angle = 30),
         axis.ticks = element_blank())
 
-p <- direct.label(plot.map,list("bottom.pieces",vjust = -0.2))
+#p <- direct.label(plot.map,list("bottom.pieces",vjust = -0.2))
 
 ggsave("map/samplemap.png",plot.map,dpi = 600)
-ggsave("map/samplemap_label.png",p,dpi = 600)
+#ggsave("map/samplemap_label.png",p,dpi = 600)
 
 
 
