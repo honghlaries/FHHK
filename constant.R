@@ -81,5 +81,5 @@ colnames(coo.river9) <- cname
 coo.river10 <- as.data.frame(getKMLcoordinates("data/river chan 10.kml", ignoreAltitude = T)[[1]])
 colnames(coo.river10) <- cname
 
-coo.1885 <- read.csv("data/meta_shoreline_1855.csv")
+coo.1855 <- read.csv("data/meta_shoreline_1855.csv")
 
