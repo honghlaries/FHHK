@@ -65,7 +65,7 @@ spView.elem <- function(elem, grad.value, dat.sample) {
     coord_flip(ylim = c(-0.5,5)) + 
     theme_bw() + 
     theme(axis.title = element_blank(),
-          #axis.text = element_blank(),
+          axis.text = element_blank(),
           axis.ticks = element_blank(),
           axis.line = element_blank(),
           panel.border = element_blank(),
