@@ -13,10 +13,16 @@ spView.elem <- function(elem, grad.value, dat.sample) {
                                                  probs = 0.80),])
   colnames(dat.top)[colnames(dat.top) == elem] <- "tag"
   
+  
   dat.bot <- as.data.frame(dat.sample[dat.sample[,elem] <
                                         quantile(dat.sample[,elem], 
                                                  probs = 0.80),])
   colnames(dat.bot)[colnames(dat.bot) == elem] <- "tag"
+  
+  fac <- max(dat.top$tag)-min(dat.bot$tag)
+  
+  dat.top$tag = dat.top$tag/fac
+  dat.bot$tag = dat.bot$tag/fac
   
   plot.map <- 
   spView.interval(dat = grid.value.tot %>% 
@@ -45,21 +51,21 @@ spView.elem <- function(elem, grad.value, dat.sample) {
                  data = dat.top) +
     geom_density(aes(x = tag), fill = "black", alpha = 0.5, 
                  data = dat.bot) +
-    geom_point(aes(x = mean,y = I(-0.02)), col = "red", alpha = 0.5, size = 5,
+    geom_point(aes(x = mean,y = I(-0.25)), col = "red", alpha = 0.5, size = 5,
                data = dat.top %>% summarise(mean = mean(tag))) +
-    geom_errorbarh(aes(xmin = mean - sd, xmax = mean + sd, x = mean, y = I(-0.02)), 
+    geom_errorbarh(aes(xmin = mean - sd, xmax = mean + sd, x = mean, y = I(-0.25)), 
                    col = "red", alpha = 0.5, height = 0, size = 1.5,
                    data = dat.top %>% summarise(mean = mean(tag), sd = sd(tag))) +
-    geom_point(aes(x = mean,y = I(-0.02)), col = "black", alpha = 0.5, size = 5,
+    geom_point(aes(x = mean,y = I(-0.25)), col = "black", alpha = 0.5, size = 5,
                data = dat.bot %>% summarise(mean = mean(tag))) +
-    geom_errorbarh(aes(xmin = mean - sd, xmax = mean + sd, x = mean, y = I(-0.02)), 
+    geom_errorbarh(aes(xmin = mean - sd, xmax = mean + sd, x = mean, y = I(-0.25)), 
                    col = "black", alpha = 0.5, height = 0, size = 1.5,
                    data = dat.bot %>% summarise(mean = mean(tag), sd = sd(tag))) +
     #geom_hline(yintercept = -0.02) +
-    coord_flip(ylim = c(-0.04,0.2)) + 
+    coord_flip(ylim = c(-0.5,5)) + 
     theme_bw() + 
     theme(axis.title = element_blank(),
-          axis.text = element_blank(),
+          #axis.text = element_blank(),
           axis.ticks = element_blank(),
           axis.line = element_blank(),
           panel.border = element_blank(),
