@@ -232,11 +232,11 @@ guides.elem <- guides(fill = guide_colourbar(barwidth = 1, barheight = 6))
 
 plot.cu <- 
 spView.elem("Cu", c(5,10,15,20,30)) +
-  geom_jitter(aes(x = lon, y = lat), color = "black", size = 1, shape = 3,
+  geom_point(aes(x = lon, y = lat), color = "black", size = 1, shape = 3,
              data = as.data.frame(dat.sample[dat.sample$Cu < 
                                                quantile(dat.sample$Cu,
                                                         probs = 0.75),])) +
-  geom_jitter(aes(x = lon, y = lat), color = "red", size = 2, shape = 4,
+  geom_point(aes(x = lon, y = lat), color = "red", size = 2, shape = 4,
              data = as.data.frame(dat.sample[dat.sample$Cu >= 
                                                quantile(dat.sample$Cu, 
                                                         probs = 0.75),])) 
@@ -244,20 +244,48 @@ ggsave(filename = "element/map_Cu.png", plot = plot.cu, dpi = 600, width = 4, he
 
 plot.cu.den <-
 ggplot() + 
-  geom_density(aes(x = Cu), fill = "red", alpha = 0.5, bins = 20, 
+  geom_density(aes(x = Cu), fill = "red", alpha = 0.5, 
                data = as.data.frame(dat.sample[dat.sample$Cu >= 
                                                quantile(dat.sample$Cu, 
                                                         probs = 0.75),])) +
-  geom_density(aes(x = Cu), fill = "black", alpha = 0.5, bins = 20, 
+  geom_density(aes(x = Cu), fill = "black", alpha = 0.5, 
                data = as.data.frame(dat.sample[dat.sample$Cu < 
                                                quantile(dat.sample$Cu, 
                                                         probs = 0.75),])) +
-  
+  geom_point(aes(x = mean,y = I(-0.02)), col = "red", alpha = 0.5, size = 5,
+             data = as.data.frame(dat.sample[dat.sample$Cu >= 
+                                               quantile(dat.sample$Cu, 
+                                                        probs = 0.75),]) %>%
+               summarise(mean = mean(Cu))) +
+  geom_errorbarh(aes(xmin = mean - sd, xmax = mean + sd, x = mean, y = I(-0.02)), 
+                 col = "red", alpha = 0.5, height = 0, size = 1.5,
+             data = as.data.frame(dat.sample[dat.sample$Cu >= 
+                                               quantile(dat.sample$Cu, 
+                                                        probs = 0.75),]) %>%
+               summarise(mean = mean(Cu), sd = sd(Cu))) +
+  geom_point(aes(x = mean,y = I(-0.02)), col = "black", alpha = 0.5, size = 5,
+             data = as.data.frame(dat.sample[dat.sample$Cu < 
+                                               quantile(dat.sample$Cu, 
+                                                        probs = 0.75),]) %>%
+               summarise(mean = mean(Cu))) +
+  geom_errorbarh(aes(xmin = mean - sd, xmax = mean + sd, x = mean, y = I(-0.02)), 
+                 col = "black", alpha = 0.5, height = 0, size = 1.5,
+                 data = as.data.frame(dat.sample[dat.sample$Cu < 
+                                                   quantile(dat.sample$Cu, 
+                                                            probs = 0.75),]) %>%
+                   summarise(mean = mean(Cu), sd = sd(Cu))) +
+  #geom_hline(yintercept = -0.02) +
+  coord_flip (ylim = c(-0.04,0.2), xlim = c(min(dat.sample$Cu),max(dat.sample$Cu))) + 
   theme_bw() + 
   theme(axis.title = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks.y = element_blank())
-ggsave(filename = "element/den_Cu.png", plot = plot.cu.den, dpi = 600, width = 4, height = 0.5)
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.line = element_blank(),
+        panel.border = element_blank(),
+        panel.grid = element_blank(),
+        panel.background = element_rect(fill = "transparent"),
+        plot.background = element_rect(fill = "grey80"))
+ggsave(filename = "element/den_Cu.png", plot = plot.cu.den, dpi = 600, width = 2, height = 3)
 
 
 plot.zn <- spView.elem("Zn", c(20,30,40,60,100)) +
