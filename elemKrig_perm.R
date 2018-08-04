@@ -6,20 +6,70 @@ source("grid.R");source("grid_resamp.R")
 dirInitialization(c("element","element/krig"))
 
 ## Functions 
-spView.elem <- function(elem, grad.value) {
+spView.elem <- function(elem, grad.value, dat.sample) {
+  
+  dat.top <- as.data.frame(dat.sample[dat.sample[,elem] >=  
+                                        quantile(dat.sample[,elem],
+                                                 probs = 0.80),])
+  colnames(dat.top)[colnames(dat.top) == elem] <- "tag"
+  
+  dat.bot <- as.data.frame(dat.sample[dat.sample[,elem] <
+                                        quantile(dat.sample[,elem], 
+                                                 probs = 0.80),])
+  colnames(dat.bot)[colnames(dat.bot) == elem] <- "tag"
+  
+  plot.map <- 
   spView.interval(dat = grid.value.tot %>% 
-           filter(trait == elem) %>% 
-           mutate(value = exp(mean)),
-         leg.name = elem, 
-         grad.col = blues9[3:8], grad.value = grad.value,
-         lonRange = lonRange, latRange = latRange) +
+                    filter(trait == elem) %>% 
+                    mutate(value = exp(mean)),
+                  leg.name = elem, 
+                  grad.col = blues9[3:8], grad.value = grad.value,
+                  lonRange = lonRange, latRange = latRange) +
     geom_polygon(aes(x = long, y = lat, group = group), 
                  colour = "black", fill = "grey80", 
                  data = fortify(readShapePoly("data/bou2_4p.shp"))) +
     geom_path(aes(x = lon, y = lat), col = "red", size = 0.8, linetype = 2,
               data = coo.1855) +
+    geom_point(aes(x = lon, y = lat), color = "black", size = 1, shape = 3,
+               data = dat.bot) +
+    geom_point(aes(x = lon, y = lat), color = "red", size = 2, shape = 4,
+               data = dat.top) +
     theme(axis.text = element_blank(),
-          axis.ticks = element_blank())
+          axis.ticks = element_blank()) 
+  ggsave(filename = paste("element/map_",elem,".png",sep = ""),
+         plot = plot.map, dpi = 600, width = 4, height = 2.1)
+  
+  plot.den <-
+    ggplot() + 
+    geom_density(aes(x = tag), fill = "red", alpha = 0.5, 
+                 data = dat.top) +
+    geom_density(aes(x = tag), fill = "black", alpha = 0.5, 
+                 data = dat.bot) +
+    geom_point(aes(x = mean,y = I(-0.02)), col = "red", alpha = 0.5, size = 5,
+               data = dat.top %>% summarise(mean = mean(tag))) +
+    geom_errorbarh(aes(xmin = mean - sd, xmax = mean + sd, x = mean, y = I(-0.02)), 
+                   col = "red", alpha = 0.5, height = 0, size = 1.5,
+                   data = dat.top %>% summarise(mean = mean(tag), sd = sd(tag))) +
+    geom_point(aes(x = mean,y = I(-0.02)), col = "black", alpha = 0.5, size = 5,
+               data = dat.bot %>% summarise(mean = mean(tag))) +
+    geom_errorbarh(aes(xmin = mean - sd, xmax = mean + sd, x = mean, y = I(-0.02)), 
+                   col = "black", alpha = 0.5, height = 0, size = 1.5,
+                   data = dat.bot %>% summarise(mean = mean(tag), sd = sd(tag))) +
+    #geom_hline(yintercept = -0.02) +
+    coord_flip(ylim = c(-0.04,0.2)) + 
+    theme_bw() + 
+    theme(axis.title = element_blank(),
+          axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          axis.line = element_blank(),
+          panel.border = element_blank(),
+          panel.grid = element_blank(),
+          panel.background = element_rect(fill = "transparent"),
+          plot.background = element_rect(fill = "grey80"))
+  ggsave(filename = paste("element/den_",elem,".png",sep = ""), 
+         plot = plot.den, dpi = 600, width = 2, height = 3)
+  
+  plot.map
 }
 
 spView.delta <- function(elem,...) {
@@ -230,104 +280,17 @@ dat.site <- datareadln() %>%
 
 guides.elem <- guides(fill = guide_colourbar(barwidth = 1, barheight = 6))
 
-plot.cu <- 
-spView.elem("Cu", c(5,10,15,20,30)) +
-  geom_point(aes(x = lon, y = lat), color = "black", size = 1, shape = 3,
-             data = as.data.frame(dat.sample[dat.sample$Cu < 
-                                               quantile(dat.sample$Cu,
-                                                        probs = 0.75),])) +
-  geom_point(aes(x = lon, y = lat), color = "red", size = 2, shape = 4,
-             data = as.data.frame(dat.sample[dat.sample$Cu >= 
-                                               quantile(dat.sample$Cu, 
-                                                        probs = 0.75),])) 
-ggsave(filename = "element/map_Cu.png", plot = plot.cu, dpi = 600, width = 4, height = 2.1)
+plot.cu <- spView.elem("Cu", c(5,10,15,20,30),dat.sample) 
 
-plot.cu.den <-
-ggplot() + 
-  geom_density(aes(x = Cu), fill = "red", alpha = 0.5, 
-               data = as.data.frame(dat.sample[dat.sample$Cu >= 
-                                               quantile(dat.sample$Cu, 
-                                                        probs = 0.75),])) +
-  geom_density(aes(x = Cu), fill = "black", alpha = 0.5, 
-               data = as.data.frame(dat.sample[dat.sample$Cu < 
-                                               quantile(dat.sample$Cu, 
-                                                        probs = 0.75),])) +
-  geom_point(aes(x = mean,y = I(-0.02)), col = "red", alpha = 0.5, size = 5,
-             data = as.data.frame(dat.sample[dat.sample$Cu >= 
-                                               quantile(dat.sample$Cu, 
-                                                        probs = 0.75),]) %>%
-               summarise(mean = mean(Cu))) +
-  geom_errorbarh(aes(xmin = mean - sd, xmax = mean + sd, x = mean, y = I(-0.02)), 
-                 col = "red", alpha = 0.5, height = 0, size = 1.5,
-             data = as.data.frame(dat.sample[dat.sample$Cu >= 
-                                               quantile(dat.sample$Cu, 
-                                                        probs = 0.75),]) %>%
-               summarise(mean = mean(Cu), sd = sd(Cu))) +
-  geom_point(aes(x = mean,y = I(-0.02)), col = "black", alpha = 0.5, size = 5,
-             data = as.data.frame(dat.sample[dat.sample$Cu < 
-                                               quantile(dat.sample$Cu, 
-                                                        probs = 0.75),]) %>%
-               summarise(mean = mean(Cu))) +
-  geom_errorbarh(aes(xmin = mean - sd, xmax = mean + sd, x = mean, y = I(-0.02)), 
-                 col = "black", alpha = 0.5, height = 0, size = 1.5,
-                 data = as.data.frame(dat.sample[dat.sample$Cu < 
-                                                   quantile(dat.sample$Cu, 
-                                                            probs = 0.75),]) %>%
-                   summarise(mean = mean(Cu), sd = sd(Cu))) +
-  #geom_hline(yintercept = -0.02) +
-  coord_flip (ylim = c(-0.04,0.2), xlim = c(min(dat.sample$Cu),max(dat.sample$Cu))) + 
-  theme_bw() + 
-  theme(axis.title = element_blank(),
-        axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        axis.line = element_blank(),
-        panel.border = element_blank(),
-        panel.grid = element_blank(),
-        panel.background = element_rect(fill = "transparent"),
-        plot.background = element_rect(fill = "grey80"))
-ggsave(filename = "element/den_Cu.png", plot = plot.cu.den, dpi = 600, width = 2, height = 3)
+plot.zn <- spView.elem("Zn", c(20,30,40,60,100),dat.sample) 
 
+plot.pb <- spView.elem("Pb", c(25,30,35,40,50),dat.sample) 
 
-plot.zn <- spView.elem("Zn", c(20,30,40,60,100)) +
-  geom_point(aes(x = lon, y = lat), color = "red", size = 2, shape = 3,
-             data = as.data.frame(dat.site[dat.site$Zn >= quantile(read.csv("data/result_element.csv")$Zn, 
-                                                                   probs = 0.75),])) + 
-  geom_point(aes(x = lon, y = lat), color = "black", size = 1, shape = 3,
-             data = as.data.frame(dat.site[dat.site$Zn < quantile(read.csv("data/result_element.csv")$Zn, 
-                                                                  probs = 0.75),])) 
+plot.cr <- spView.elem("Cr", c(20,25,30,40,50),dat.sample) 
 
-plot.pb <- spView.elem("Pb", c(25,30,35,40,50)) +
-  geom_point(aes(x = lon, y = lat), color = "red", size = 2, shape = 3,
-             data = as.data.frame(dat.site[dat.site$Pb >= quantile(read.csv("data/result_element.csv")$Pb,
-                                                                  probs = 0.75),])) +
-  geom_point(aes(x = lon, y = lat), color = "black", size = 1, shape = 3,
-             data = as.data.frame(dat.site[dat.site$Pb < quantile(read.csv("data/result_element.csv")$Pb,
-                                                                  probs = 0.75),]))
-
-plot.cr <- spView.elem("Cr", c(20,25,30,40,50)) +
-  geom_point(aes(x = lon, y = lat), color = "red", size = 2, shape = 3,
-             data = as.data.frame(dat.site[dat.site$Cr >= quantile(read.csv("data/result_element.csv")$Cr, 
-                                                                   probs = 0.75),])) +
-  geom_point(aes(x = lon, y = lat), color = "black", size = 1, shape = 3,
-             data = as.data.frame(dat.site[dat.site$Cr < quantile(read.csv("data/result_element.csv")$Cr, 
-                                                                   probs = 0.75),]))
-
-plot.ni <- spView.elem("Ni", c(10,15,20,25,30)) +
-  geom_point(aes(x = lon, y = lat), color = "red", size = 2, shape = 3,
-             data = as.data.frame(dat.site[dat.site$Ni >= quantile(read.csv("data/result_element.csv")$Ni, 
-                                                                   probs = 0.75),])) +
-  geom_point(aes(x = lon, y = lat), color = "black", size = 1, shape = 3,
-             data = as.data.frame(dat.site[dat.site$Ni < quantile(read.csv("data/result_element.csv")$Ni, 
-                                                                   probs = 0.75),]))
+plot.ni <- spView.elem("Ni", c(10,15,20,25,30),dat.sample) 
   
-
-plot.cd <- spView.elem("Cd", c(0.05,0.10,0.15,0.20,0.30)) +
-  geom_point(aes(x = lon, y = lat), color = "red", size = 2, shape = 3,
-             data = as.data.frame(dat.site[dat.site$Cd >= quantile(read.csv("data/result_element.csv")$Cd,
-                                                                   probs = 0.75),])) +
-  geom_point(aes(x = lon, y = lat), color = "black", size = 1, shape = 3,
-             data = as.data.frame(dat.site[dat.site$Cd < quantile(read.csv("data/result_element.csv")$Cd,
-                                                                   probs = 0.75),]))
+plot.cd <- spView.elem("Cd", c(0.05,0.10,0.15,0.20,0.30),dat.sample) 
 
 p <- grid.arrange(plot.pb,plot.ni,plot.cu,plot.zn,plot.cr,plot.cd,
                   ncol = 2, widths = c(11,11))
