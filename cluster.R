@@ -72,6 +72,8 @@ plot.ca.indicator <-
               interpolate = T, show.legend = F, data = grid.value.tot1) +
   geom_polygon(aes(x = long, y = lat, group = group), 
                colour = "black", fill = "grey80", data = fortify(bkmap)) +
+  geom_path(aes(x = lon, y = lat), col = "red", size = 0.8, linetype = 2,
+            data = coo.1855) +
   geom_text(aes(x = c(120.48,121.0,120.38,120.58,121.38),
                 y = c(34.36,34.6,34.57,34.20,34.00),
                 label = c("Class 4","Class 1","Class 3","Class 3","Class 2"),
@@ -79,9 +81,9 @@ plot.ca.indicator <-
                 size = c(20,20,20,20,20))) + 
   scale_fill_manual(values = blues9[1:4*2]) +
   xlab("") + ylab("") +
-  coord_quickmap(xlim = lonRange + c(0.085,-0.085), ylim = latRange+ c(0.085,-0.085)) +
+  coord_quickmap(xlim = lonRange + c(0.08,-0.08), ylim = latRange+ c(0.05,-0.05)) +
   theme_bw() + 
-  theme(aspect.ratio = (latRange[2]-latRange[1]+0.17)/(lonRange[2]-lonRange[1]+0.17),
+  theme(aspect.ratio = (latRange[2]-latRange[1]+0.16)/(lonRange[2]-lonRange[1]+0.10),
         panel.grid = element_blank(),
         strip.background = element_blank(),
         axis.text = element_blank(),
@@ -89,7 +91,9 @@ plot.ca.indicator <-
         legend.position = "none")
 
 ggsave(filename = "hca/map_hcaPlot.png", plot = plot.ca.indicator, 
-       dpi = 600, width = 6.85, height = 10.35)
+       dpi = 600, height = 5, width = 7.3)
+
+
 
 dat1 <-data.frame(dat,class = cutree(cluster.samp,4)) %>%  
   gather(trait, value, Fe:depth) %>%
