@@ -170,8 +170,40 @@ ggplot(data = dat1) +
 ggsave(filename = "hca/bar_hcaCont.png", plot = plot.ca.elem, 
        dpi = 600, height = 4, width = 3)
 
+dat1 <-data.frame(dat,class = cutree(cluster.samp,4)) %>%  
+  gather(trait, value, Fe:depth) %>%
+  group_by(trait,class) %>%
+  summarise(mean = mean(value,na.rm = T),
+            se = sd(value,na.rm= T)/sqrt(n()-sum(is.na(value)))) %>%
+  group_by()%>% 
+  dplyr::filter(trait %in% c("silt","depth","Fe","Mn","orgC","AVS")) %>%
+  mutate(class = factor(class))%>%
+  arrange(trait)
+
+plot.ca.env <- 
+  ggplot(data = dat1) + 
+  geom_bar(aes(x = trait, y = mean, group = class, fill = class), stat = "identity",
+           position = position_dodge(width = 0.9)) +
+  geom_errorbar(aes(x = trait, ymin = mean - se, ymax = mean + se, group = class),
+                width = 0.5 ,size = 0.7, col = "black",
+                position = position_dodge(width = 0.9)) + 
+  facet_wrap(~trait, scale = "free") + 
+  scale_fill_manual(values = blues9[1:4*2]) +
+  xlab("") + ylab("") +
+  theme_bw() + 
+  theme(aspect.ratio = 2,
+        panel.grid = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        strip.background = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        legend.position = "none") 
+ggsave(filename = "hca/bar_hcaEnv.png", plot = plot.ca.env, 
+       dpi = 600, height = 4, width = 3)
+
 cache <- rep(NA,length(row.names(dat1)))
-tmp <- c("sand","silt","clay","depth","Fe","Mn","orgC","AVS")
+tmp <- c("silt","depth","Fe","Mn","orgC","AVS")
 for(i in 1:length(tmp)) {
   cache[dat1$trait == tmp[i]] <- "Environment Factor" 
 }
