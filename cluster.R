@@ -202,35 +202,6 @@ plot.ca.env <-
 ggsave(filename = "hca/bar_hcaEnv.png", plot = plot.ca.env, 
        dpi = 600, height = 4, width = 3)
 
-cache <- rep(NA,length(row.names(dat1)))
-tmp <- c("silt","depth","Fe","Mn","orgC","AVS")
-for(i in 1:length(tmp)) {
-  cache[dat1$trait == tmp[i]] <- "Environment Factor" 
-}
-tmp <- c("Pb","Cr","Ni","Cu","Zn","Cd")
-for(i in 1:length(tmp)) {
-  cache[dat1$trait == tmp[i]] <- "Trageted Heavy Metal" 
-}
-dat1 <- data.frame(dat1, taggroup = cache)
-
-plot.ca.bar <- 
-  ggplot(data = dat1) + 
-  geom_bar(aes(x = trait, y = mean, group = class, fill = class), stat = "identity",
-           position = position_dodge(width = 0.9)) +
-  geom_errorbar(aes(x = trait, ymin = mean - se, ymax = mean + se, group = class),
-                width = 0.5 ,size = 0.7, col = "black",
-                position = position_dodge(width = 0.9)) + 
-  facet_wrap(~trait, scale = "free") + 
-  scale_fill_manual(values = blues9[1:4*2]) +
-  xlab("") + ylab("") +
-  theme_bw() + 
-  theme(aspect.ratio = 1,
-        panel.grid = element_blank(),
-        strip.background = element_blank(),
-        axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        legend.position = "right") 
-
 plot.gather <- 
   grid.arrange(plot.ca.indicator1,plot.ca.bar,
                ncol = 1, heights = c(9.75,12))
