@@ -67,7 +67,7 @@ grid.value.tot1 <- grid.value.tot1 %>%
   dplyr::filter(value != 0) 
   
 plot.ca.indicator <- 
-  ggplot() + 
+ggplot() + 
   geom_raster(aes(x = lon, y = lat, fill = class),
               interpolate = T, show.legend = F, data = grid.value.tot1) +
   geom_polygon(aes(x = long, y = lat, group = group), 
@@ -93,6 +93,49 @@ plot.ca.indicator <-
 ggsave(filename = "hca/map_hcaPlot.png", plot = plot.ca.indicator, 
        dpi = 600, height = 5, width = 7.3)
 
+area.tile <- 110.95 * (latiRange[2] - latiRange[1]) * 111.314 * cos(34.3/180*pi) * (longiRange[2] - longiRange[1])
+area <- data.frame(class = paste("c",1:4,sep = ""),area = NA)
+for (i in 1:4) area[i,"area"] <- sum(grid.value.tot1$class == area[i,"class"]) * area.tile 
+area$area <- round(area$area/100,1)*100
+area <- rbind(area,data.frame(class = c("LON",
+                                        "NY",
+                                        "SIN",
+                                        "HK",
+                                        "SHH"),
+                              area = c(1737.9,
+                                       1213.37,
+                                       721.5,
+                                       2755,
+                                       4000)))
+area$class <- as.character(area$class)
+area$class[1:4] <- paste("C",1:4, sep = "")
+area$class <- factor(area$class, levels = c("SHH",
+                                            "HK",
+                                            "SIN",
+                                            "NY",
+                                            "LON",
+                                            paste("C",4:1, sep = "")))
+area$area <- area$area / 1000
+
+plot.ca.area <- 
+ggplot(data = area) +
+  geom_bar(aes(x = class, y = area, fill = class), 
+           stat = "identity", position = position_dodge(width = 0.9))+
+  scale_fill_manual(values = c(terrain.colors(12)[11:7],blues9[4:1*2])) +
+  ylab(expression(Area~(10^3~km^2))) +
+  coord_flip() +
+  theme_bw() +
+  theme(plot.background = element_rect(fill = "grey80"),
+        panel.grid = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "none")
+
+ggsave(filename = "hca/bar_hcaArea.png", plot = plot.ca.area, 
+       dpi = 600, height = 3, width = 2)
 
 
 dat1 <-data.frame(dat,class = cutree(cluster.samp,4)) %>%  
