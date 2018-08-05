@@ -202,10 +202,10 @@ plot.ca.env <-
 ggsave(filename = "hca/bar_hcaEnv.png", plot = plot.ca.env, 
        dpi = 600, height = 4, width = 3)
 
-plot.gather <- 
-  grid.arrange(plot.ca.indicator1,plot.ca.bar,
-               ncol = 1, heights = c(9.75,12))
+plot.elem_env <- 
+grid.arrange(plot.ca.elem,plot.ca.env,
+             ncol = 2, heights = 4)
 
-ggsave(filename = "hca/gather_hcaPlot.png", 
-       plot = plot.gather, 
-       dpi = 600, width = 5.75, height = 9)
+ggsave(filename = "hca/gather_hcaElemEnv.png", 
+       plot = plot.elem_env, 
+       dpi = 600, width = 6, height = 4)
