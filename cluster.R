@@ -144,14 +144,31 @@ dat1 <-data.frame(dat,class = cutree(cluster.samp,4)) %>%
   summarise(mean = mean(value,na.rm = T),
             se = sd(value,na.rm= T)/sqrt(n()-sum(is.na(value)))) %>%
   group_by()%>% 
-  dplyr::filter(trait %in% c("silt","depth","Fe",
-                             "Mn","orgC","AVS","Pb","Cr","Ni","Cu",
-                             "Zn","Cd")) %>%
-  mutate(trait = factor(trait,levels = c("sand","silt","clay","depth","Fe",
-                                         "Mn","orgC","AVS","Pb","Cr","Ni","Cu",
-                                         "Zn","Cd")),
-         class = factor(class))%>%
+  dplyr::filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","Cd")) %>%
+  mutate(class = factor(class))%>%
   arrange(trait)
+
+plot.ca.elem <- 
+ggplot(data = dat1) + 
+  geom_bar(aes(x = trait, y = mean, group = class, fill = class), stat = "identity",
+           position = position_dodge(width = 0.9)) +
+  geom_errorbar(aes(x = trait, ymin = mean - se, ymax = mean + se, group = class),
+                width = 0.5 ,size = 0.7, col = "black",
+                position = position_dodge(width = 0.9)) + 
+  facet_wrap(~trait, scale = "free") + 
+  scale_fill_manual(values = blues9[1:4*2]) +
+  xlab("") + ylab("") +
+  theme_bw() + 
+  theme(aspect.ratio = 2,
+        panel.grid = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        strip.background = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        legend.position = "none") 
+ggsave(filename = "hca/bar_hcaCont.png", plot = plot.ca.elem, 
+       dpi = 600, height = 4, width = 3)
 
 cache <- rep(NA,length(row.names(dat1)))
 tmp <- c("sand","silt","clay","depth","Fe","Mn","orgC","AVS")
