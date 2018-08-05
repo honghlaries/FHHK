@@ -344,12 +344,6 @@ plot.ef.orgc <-
 #               ncol = 1, heights = c(10,10))
 
 # saving plot 
-ggsave(plot = plot.igeo.box, filename = "riskAssment/box_igeo.png", dpi = 600)
-
-
-ggsave(plot = plot.ef.box, filename = "riskAssment/box_Ef.png", dpi = 600)
-ggsave(plot = plot.ef.sp, filename = "riskAssment/map_Ef_all.png", dpi = 600)
-
 ggsave(plot = plot.ef.orgc, 
        filename = "riskAssment/scatter_Ef_orgC.png", 
        height = 8, width = 9, dpi = 600)
