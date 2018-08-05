@@ -129,9 +129,9 @@ plot.igeo.sp <-
   theme(axis.text = element_blank(),
         axis.ticks = element_blank()) 
 
-plot.igeo.gather <- 
-  grid.arrange(plot.igeo.box, plot.igeo.sp, 
-               ncol = 2, widths = c(5,10), heights = 5) 
+#plot.igeo.gather <- 
+#  grid.arrange(plot.igeo.box, plot.igeo.sp, 
+#               ncol = 2, widths = c(5,10), heights = 5) 
 
 ## for enrichment factor
 ### original
@@ -333,9 +333,9 @@ plot.ef.orgc <-
   grid.arrange(plot.ef.orgc.lm, plot.ef.orgc.mod, 
                ncol = 1, heights = c(10,10)) 
 
-plot.ef.orgc.effresid <-
-  grid.arrange(plot.ef.orgc.eff, plot.ef.orgc.resid, 
-               ncol = 1, heights = c(10,10))
+#plot.ef.orgc.effresid <-
+#  grid.arrange(plot.ef.orgc.eff, plot.ef.orgc.resid, 
+#               ncol = 1, heights = c(10,10))
 
 # saving plot 
 ggsave(plot = plot.igeo.box, filename = "riskAssment/box_igeo.png", dpi = 600)
@@ -351,9 +351,9 @@ ggsave(plot = plot.ef.orgc.effresid,
        filename = "riskAssment/scatter_Ef_EffResid.png", 
        height = 8, width = 9, dpi = 600)
 
-plot.risk.gather <- 
-  grid.arrange(plot.igeo.box, plot.igeo.sp,plot.ef.box, plot.ef.sp, 
-               ncol = 2, widths = c(5,10), heights = c(5,5)) 
-ggsave(plot = plot.risk.gather, 
-       filename = "riskAssment/gather_risk.png",
-       height = 6.72, width = 10, dpi = 600)
+#plot.risk.gather <- 
+#  grid.arrange(plot.igeo.box, plot.igeo.sp,plot.ef.box, plot.ef.sp, 
+#               ncol = 2, widths = c(5,10), heights = c(5,5)) 
+#ggsave(plot = plot.risk.gather, 
+#       filename = "riskAssment/gather_risk.png",
+#       height = 6.72, width = 10, dpi = 600)
