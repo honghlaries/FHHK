@@ -74,7 +74,7 @@ plot.ca.indicator <-
                colour = "black", fill = "grey80", data = fortify(bkmap)) +
   geom_path(aes(x = lon, y = lat), col = "red", size = 0.8, linetype = 2,
             data = coo.1855) +
-  geom_text(aes(x = c(120.48,121.0,120.38,120.58,121.38),
+  geom_text(aes(x = c(120.6,121.0,120.38,120.58,121.38),
                 y = c(34.36,34.6,34.57,34.20,34.00),
                 label = c("Class 4","Class 1","Class 3","Class 3","Class 2"),
                 angle = c(0,-25,25,-5,65),
