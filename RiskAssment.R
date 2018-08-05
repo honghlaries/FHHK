@@ -233,12 +233,13 @@ plot.ef.sp <-
                data = grid.value.tot) +
   geom_polygon(aes(x = long, y = lat, group = group), 
                colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
+  geom_path(aes(x = lon, y = lat), col = "red", size = 0.8, linetype = 2,
+            data = coo.1855) +
   theme(axis.text = element_blank(),
         axis.ticks = element_blank())
 
-plot.ef.gather <- 
-  grid.arrange(plot.ef.box, plot.ef.sp, 
-               ncol = 2, widths = c(5,10), heights = 5)
+ggsave(plot = plot.ef.sp, filename = "riskAssment/map_Ef_all.png", 
+       dpi = 600, height = 4, width = 8.5)
 
 ### organic-carbon-adjusted Enrichment factor
 dat <- datareadln() %>% 
