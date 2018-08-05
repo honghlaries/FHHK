@@ -51,18 +51,18 @@ spView.elem <- function(elem, grad.value, dat.sample) {
                  data = dat.top) +
     geom_density(aes(x = tag), fill = "black", alpha = 0.5, 
                  data = dat.bot) +
-    geom_point(aes(x = mean,y = I(-0.25)), col = "red", alpha = 0.5, size = 5,
+    geom_point(aes(x = mean,y = I(-0.5)), col = "red", alpha = 0.5, size = 5,
                data = dat.top %>% summarise(mean = mean(tag))) +
-    geom_errorbarh(aes(xmin = mean - sd, xmax = mean + sd, x = mean, y = I(-0.25)), 
+    geom_errorbarh(aes(xmin = mean - sd, xmax = mean + sd, x = mean, y = I(-0.5)), 
                    col = "red", alpha = 0.5, height = 0, size = 1.5,
                    data = dat.top %>% summarise(mean = mean(tag), sd = sd(tag))) +
-    geom_point(aes(x = mean,y = I(-0.25)), col = "black", alpha = 0.5, size = 5,
+    geom_point(aes(x = mean,y = I(-0.5)), col = "black", alpha = 0.5, size = 5,
                data = dat.bot %>% summarise(mean = mean(tag))) +
-    geom_errorbarh(aes(xmin = mean - sd, xmax = mean + sd, x = mean, y = I(-0.25)), 
+    geom_errorbarh(aes(xmin = mean - sd, xmax = mean + sd, x = mean, y = I(-0.5)), 
                    col = "black", alpha = 0.5, height = 0, size = 1.5,
                    data = dat.bot %>% summarise(mean = mean(tag), sd = sd(tag))) +
     #geom_hline(yintercept = -0.02) +
-    coord_flip(ylim = c(-0.5,5)) + 
+    coord_flip(ylim = c(-1,5)) + 
     theme_bw() + 
     theme(axis.title = element_blank(),
           axis.text = element_blank(),
@@ -302,7 +302,7 @@ p <- grid.arrange(plot.pb,plot.ni,plot.cu,plot.zn,plot.cr,plot.cd,
                   ncol = 2, widths = c(11,11))
 
 ggsave(filename = "element/gather_krig_perm_element.png", plot = p, 
-       dpi = 600, width = 8, height = 8)
+       dpi = 600, width = 10, height = 8)
 
 
 nym <- function(elem,range) {

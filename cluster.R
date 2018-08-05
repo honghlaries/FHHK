@@ -10,30 +10,6 @@ source("grid.R")
 
 # Examples
 dat <- datareadln() %>%
-  group_by(siteID) %>%
-  summarise(depth = mean(depth),
-            Fe = mean(Fe),
-            Mn = mean(Mn),
-            Pb = mean(Pb),
-            Cr = mean(Cr),
-            Ni = mean(Ni),
-            Cu = mean(Cu),
-            Zn = mean(Zn),
-            Cd = mean(Cd),
-            orgC = mean(orgC),
-            AVS = mean(AVS),
-            clay = mean(clay),
-            silt = mean(silt),
-            sand = mean(sand)) %>%
-  dplyr::select(Fe:Cd,orgC:sand,depth,siteID)
-
-cluster.site <- hcluster(dat %>% select(Pb:Cd),
-                         rname = dat$siteID)
-
-plot.ca.tree <- plot(cluster.site) 
-
-
-dat <- datareadln() %>%
   dplyr::select(Fe:Cd,orgC:sand,depth,siteID)
 
 cluster.samp <- hcluster(dat %>% select(Pb:Cd),
