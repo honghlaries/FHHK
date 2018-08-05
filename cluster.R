@@ -66,7 +66,7 @@ grid.value.tot1 <- grid.value.tot1 %>%
   tidyr::gather(class,value,c1:c4) %>%
   dplyr::filter(value != 0) 
   
-plot.ca.indicator1 <- 
+plot.ca.indicator <- 
   ggplot() + 
   geom_raster(aes(x = lon, y = lat, fill = class),
               interpolate = T, show.legend = F, data = grid.value.tot1) +
@@ -79,14 +79,17 @@ plot.ca.indicator1 <-
                 size = c(20,20,20,20,20))) + 
   scale_fill_manual(values = blues9[1:4*2]) +
   xlab("") + ylab("") +
-  coord_quickmap(xlim = lonRange, ylim = latRange) +
+  coord_quickmap(xlim = lonRange + c(0.085,-0.085), ylim = latRange+ c(0.085,-0.085)) +
   theme_bw() + 
-  theme(aspect.ratio = (latiRange[2]-latiRange[1])/(longiRange[2]-longiRange[1]),
+  theme(aspect.ratio = (latRange[2]-latRange[1]+0.17)/(lonRange[2]-lonRange[1]+0.17),
         panel.grid = element_blank(),
         strip.background = element_blank(),
         axis.text = element_blank(),
         axis.ticks = element_blank(),
         legend.position = "none")
+
+ggsave(filename = "hca/map_hcaPlot.png", plot = plot.ca.indicator, 
+       dpi = 600, width = 6.85, height = 10.35)
 
 dat1 <-data.frame(dat,class = cutree(cluster.samp,4)) %>%  
   gather(trait, value, Fe:depth) %>%
