@@ -116,18 +116,23 @@ plot.ni <- spView.igeo("Ni");ggsave(filename = "riskAssment/krig/Ni_Igeo.png")
 plot.cd <- spView.igeo("Cd");ggsave(filename = "riskAssment/krig/Cd_Igeo.png")
 
 plot.igeo.sp <- 
-  spView.grid.interval(dat = grid.value.tot, leg.name = "Igeo",
+spView.grid.interval(dat = grid.value.tot, leg.name = "Igeo",
                        grad.value = c(-2,-1,0,1), 
                        grad.col = blues9[3:7],
                        lonRange = lonRange,
                        latRange = latRange, pncol = 3) + 
+  geom_polygon(aes(x = long, y = lat, group = group), 
+               colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
   geom_contour(aes(x = lon, y = lat,  z = value),col= "black",
                show.legend = F, size = 0.8, breaks = 0, linetype = 1,
                data = grid.value.tot) +
-  geom_polygon(aes(x = long, y = lat, group = group), 
-               colour = "black", fill = "grey80", data = fortify(readShapePoly("data/bou2_4p.shp"))) +
+  geom_path(aes(x = lon, y = lat), col = "red", size = 0.8, linetype = 2,
+            data = coo.1855) +
   theme(axis.text = element_blank(),
         axis.ticks = element_blank()) 
+
+ggsave(plot = plot.igeo.sp, filename = "riskAssment/map_igeo_all.png", 
+       dpi = 600, height = 4, width =8.5)
 
 #plot.igeo.gather <- 
 #  grid.arrange(plot.igeo.box, plot.igeo.sp, 
@@ -339,7 +344,7 @@ plot.ef.orgc <-
 
 # saving plot 
 ggsave(plot = plot.igeo.box, filename = "riskAssment/box_igeo.png", dpi = 600)
-ggsave(plot = plot.igeo.sp, filename = "riskAssment/map_igeo_all.png", dpi = 600)
+
 
 ggsave(plot = plot.ef.box, filename = "riskAssment/box_Ef.png", dpi = 600)
 ggsave(plot = plot.ef.sp, filename = "riskAssment/map_Ef_all.png", dpi = 600)
