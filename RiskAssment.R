@@ -261,7 +261,7 @@ ggplot(data = dat %>% filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","Cd")) %>%
         axis.title.y = element_blank(),
         legend.position = "none") 
 
-ggsave(filename = paste("riskAssment/box_Igeo_gather.png", sep = ""),
+ggsave(filename = paste("riskAssment/box_Ef_gather.png", sep = ""),
        plot = plot.igeo.box.gather, width = 8.5, height = 4.5, dpi = 600)
   
   ggplot(data = dat %>% filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","Cd")) %>% 
