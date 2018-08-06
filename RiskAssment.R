@@ -31,6 +31,29 @@ spView.ef <- function(elem,...) {
           plot.margin = margin(0,0,0,0))
 }
 
+boxView.igeo <- function(elem,...) {
+  plot.igeo.box <-
+  ggplot(data = dat %>% filter(trait == elem)) + 
+    geom_hline(yintercept = c(0:2), col = "red", linetype = 2) +
+    geom_boxplot(aes(x = class, y = value, fill = as.factor(class))) +
+    labs(title = "Igeo")+
+    scale_x_discrete("") +
+    scale_y_continuous("",breaks = c(0:2)) +
+    scale_fill_manual(values = blues9[1:4*2]) +
+    theme_bw() + 
+    theme(plot.background = element_rect(fill = "grey80"),
+          panel.grid = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank(),
+          #axis.line = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title.y = element_blank(),
+          legend.position = "none") 
+  ggsave(filename = paste("riskAssment/box_Igeo_",elem,".png", sep = ""),
+         plot = plot.igeo.box, width = 2, height = 3, dpi = 600)
+  plot.igeo.box
+}
+
 outlierTest <- function(dat) {
   dat.sel <- dat[dat$outlier == F,]
   mod <- lm(value~orgC, data = dat.sel)
@@ -43,24 +66,42 @@ outlierTest <- function(dat) {
 # Example
 
 ## for Igeo
-dat <- datareadln() %>% 
+dat <- datareadln() %>%
+  dplyr::select(Fe:Cd,orgC:sand,depth,siteID)
+
+cluster.samp <- hcluster(dat %>% select(Pb:Cd),
+                         rname = dat$siteID)
+
+dat <- data.frame(dat,class = cutree(cluster.samp,4)) %>% 
   gather(trait, value, Fe:Cd) %>% 
   inner_join(background, by = c("trait" = "trait")) %>% 
   mutate(value = log2(value / bk /1.5)) %>%
-  select(siteID, trait, value) 
+  select(siteID, trait, value, class) %>%
+  mutate(class = paste("C", class))
 
-plot.igeo.box <- 
+plot.cu.box <- boxView.igeo("Cu")
+plot.zn.box <- boxView.igeo("Zn")
+plot.ni.box <- boxView.igeo("Ni")
+plot.pb.box <- boxView.igeo("Pb")
+plot.cr.box <- boxView.igeo("Cr")
+plot.cd.box <- boxView.igeo("Cd")
+
+
+plot.igeo.box.gather <- 
   ggplot(data = dat %>% filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","Cd")) %>%
            mutate(trait = factor(trait, levels = c("Pb","Cr","Ni","Cu","Zn","Cd")))) + 
   geom_hline(yintercept = c(0:2), col = "red", linetype = 2) +
-  geom_boxplot(aes(x = trait, y = value), fill = "grey80") +
+  geom_boxplot(aes(x = trait, y = value, fill = as.factor(class))) +
   labs(title = "Geo-accumulation Index")+
-  scale_x_discrete("") +
+  #scale_x_discrete("") +
   scale_y_continuous("",breaks = c(0:2)) +
+  scale_fill_manual(values = blues9[1:4*2]) +
   coord_flip() +
   theme_bw() + 
   theme(aspect.ratio = 1,
         panel.grid = element_blank()) 
+
+
 
 
 dat <- dat %>%
