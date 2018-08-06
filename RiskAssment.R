@@ -239,6 +239,31 @@ plot.cr <- boxView.ef("Cr")
 plot.cd <- boxView.ef("Cd")
 
 plot.ef.box <-
+ggplot(data = dat %>% filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","Cd")) %>%
+           mutate(trait = factor(trait, levels = c("Pb","Cr","Ni","Cu","Zn","Cd")))) + 
+  geom_bar(aes(x = x, y = y), fill = "grey80", stat = "identity",
+           data = data.frame(x = c("Zn", "Cr", "Ni"), y = rep(3.6,3)))+
+  geom_hline(yintercept = c(0.667,1,1.5,2,3,4), col = "red", linetype = 2) +
+  geom_boxplot(aes(x = trait, y = value, fill = class)) +
+  labs(title = "Enrichment Factor") +
+  scale_x_discrete("") +
+  scale_y_continuous("",labels = c("0.667","1.0","1.5","2.0","3.0","4.0"),
+                     breaks = c(0.667,1,1.5,2,3,4)) +
+  scale_fill_manual(values = blues9[1:4*2]) +
+  coord_flip(ylim = c(0,3.6)) +
+  theme_bw() + 
+  theme(plot.background = element_blank(),
+        panel.grid = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        #axis.line = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "none") 
+
+ggsave(filename = paste("riskAssment/box_Igeo_gather.png", sep = ""),
+       plot = plot.igeo.box.gather, width = 8.5, height = 4.5, dpi = 600)
+  
   ggplot(data = dat %>% filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","Cd")) %>% 
          mutate(trait = factor(trait, levels = c("Pb","Cr","Ni","Cu","Zn","Cd")))) + 
   geom_hline(yintercept = c(0.5,1,1.5,2,3,4), col = "red", linetype = 2) +
