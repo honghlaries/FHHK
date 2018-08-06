@@ -1,9 +1,9 @@
 # clean 
 rm(list = ls())
-source("constant.R");source("anaTls_spatialView.R");
-pkgInitialization(c("dplyr","tidyr","sp","gstat","ggplot2","directlabels"))
+source("constant.R");source("anaTls_multivariate.R");source("anaTls_spatialView.R");
+pkgInitialization(c("dplyr","tidyr","sp","gstat","ggplot2"))
 source("grid.R")
-dirInitialization(c("riskAssment","riskAssment/krig","riskAssment/krig/ef","riskAssment/krig/igeo"))
+dirInitialization(c("riskAssment"))
 
 # Functions 
 spView.igeo <- function(elem,...) {
@@ -36,7 +36,6 @@ boxView.igeo <- function(elem,...) {
   ggplot(data = dat %>% filter(trait == elem)) + 
     geom_hline(yintercept = c(0:2), col = "red", linetype = 2) +
     geom_boxplot(aes(x = class, y = value, fill = as.factor(class))) +
-    labs(title = "Igeo")+
     scale_x_discrete("") +
     scale_y_continuous("",breaks = c(0:2)) +
     scale_fill_manual(values = blues9[1:4*2]) +
@@ -50,7 +49,7 @@ boxView.igeo <- function(elem,...) {
           axis.title.y = element_blank(),
           legend.position = "none") 
   ggsave(filename = paste("riskAssment/box_Igeo_",elem,".png", sep = ""),
-         plot = plot.igeo.box, width = 2, height = 3, dpi = 600)
+         plot = plot.igeo.box, width = 4, height = 6, dpi = 600)
   plot.igeo.box
 }
 
@@ -77,7 +76,7 @@ dat <- data.frame(dat,class = cutree(cluster.samp,4)) %>%
   inner_join(background, by = c("trait" = "trait")) %>% 
   mutate(value = log2(value / bk /1.5)) %>%
   select(siteID, trait, value, class) %>%
-  mutate(class = paste("C", class))
+  mutate(class = paste("C", class, sep = ""))
 
 plot.cu.box <- boxView.igeo("Cu")
 plot.zn.box <- boxView.igeo("Zn")
@@ -86,23 +85,32 @@ plot.pb.box <- boxView.igeo("Pb")
 plot.cr.box <- boxView.igeo("Cr")
 plot.cd.box <- boxView.igeo("Cd")
 
-
 plot.igeo.box.gather <- 
-  ggplot(data = dat %>% filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","Cd")) %>%
-           mutate(trait = factor(trait, levels = c("Pb","Cr","Ni","Cu","Zn","Cd")))) + 
+ggplot(data = dat %>% filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","Cd")) %>%
+         mutate(trait = factor(trait, levels = c("Pb","Cr","Ni","Cu","Zn","Cd")))) + 
+  geom_bar(aes(x = x, y = y), fill = "grey80", stat = "identity",
+              data = data.frame(x = c("Zn", "Cr", "Ni"), y = rep(-2.2,3)))+
+  geom_bar(aes(x = x, y = y), fill = "grey80", stat = "identity",
+           data = data.frame(x = c("Zn", "Cr", "Ni"), y = rep(2.2,3)))+
   geom_hline(yintercept = c(0:2), col = "red", linetype = 2) +
   geom_boxplot(aes(x = trait, y = value, fill = as.factor(class))) +
   labs(title = "Geo-accumulation Index")+
   #scale_x_discrete("") +
   scale_y_continuous("",breaks = c(0:2)) +
   scale_fill_manual(values = blues9[1:4*2]) +
-  coord_flip() +
+  coord_flip(ylim = c(-2.2,2.2)) +
   theme_bw() + 
-  theme(aspect.ratio = 1,
-        panel.grid = element_blank()) 
+  theme(plot.background = element_blank(),
+        panel.grid = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        #axis.line = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "none") 
 
-
-
+ggsave(filename = paste("riskAssment/box_Igeo_gather.png", sep = ""),
+       plot = plot.igeo.box.gather, width = 8.5, height = 3.5, dpi = 600)
 
 dat <- dat %>%
   group_by(siteID, trait) %>%
@@ -149,12 +157,12 @@ grid.value.tot <- rbind(grid.value.tot, as.data.frame(cbind(grid.value, trait = 
 grid.value.tot <- grid.value.tot %>%
   mutate(trait = factor(trait, levels = c("Pb","Cr","Ni","Cu","Zn","Cd")))
 
-plot.cu <- spView.igeo("Cu");ggsave(filename = "riskAssment/krig/Cu_Igeo.png")
-plot.zn <- spView.igeo("Zn");ggsave(filename = "riskAssment/krig/Zn_Igeo.png")
-plot.pb <- spView.igeo("Pb");ggsave(filename = "riskAssment/krig/Pb_Igeo.png")
-plot.cr <- spView.igeo("Cr");ggsave(filename = "riskAssment/krig/Cr_Igeo.png")
-plot.ni <- spView.igeo("Ni");ggsave(filename = "riskAssment/krig/Ni_Igeo.png")
-plot.cd <- spView.igeo("Cd");ggsave(filename = "riskAssment/krig/Cd_Igeo.png")
+plot.cu <- spView.igeo("Cu");ggsave(filename = "riskAssment/map_Igeo_Cu.png")
+plot.zn <- spView.igeo("Zn");ggsave(filename = "riskAssment/map_Igeo_Zn.png")
+plot.pb <- spView.igeo("Pb");ggsave(filename = "riskAssment/map_Igeo_Pb.png")
+plot.cr <- spView.igeo("Cr");ggsave(filename = "riskAssment/map_Igeo_Cr.png")
+plot.ni <- spView.igeo("Ni");ggsave(filename = "riskAssment/map_Igeo_Ni.png")
+plot.cd <- spView.igeo("Cd");ggsave(filename = "riskAssment/map_Igeo_Cd.png")
 
 plot.igeo.sp <- 
 spView.grid.interval(dat = grid.value.tot, leg.name = "Igeo",
