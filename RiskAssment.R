@@ -56,10 +56,11 @@ boxView.igeo <- function(elem,...) {
 boxView.ef <- function(elem,...) {
   plot.ef.box <-
     ggplot(data = dat %>% filter(trait == elem)) + 
-    geom_hline(yintercept = c(0:2), col = "red", linetype = 2) +
-    geom_boxplot(aes(x = class, y = value, fill = as.factor(class))) +
+    geom_hline(yintercept = c(0.5,1,1.5,2,3,4), col = "red", linetype = 2) +
+    geom_boxplot(aes(x = trait, y = value),fill = "grey80") +
     scale_x_discrete("") +
-    scale_y_continuous("",breaks = c(0:2)) +
+    scale_y_continuous("",labels = c("0.5","1.0","1.5","2.0","3.0","4.0"),
+                       breaks = c(0.667,1,1.5,2,3,4)) +
     scale_fill_manual(values = blues9[1:4*2]) +
     theme_bw() + 
     theme(plot.background = element_rect(fill = "grey80"),
