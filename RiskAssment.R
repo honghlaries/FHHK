@@ -110,7 +110,7 @@ ggplot(data = dat %>% filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","Cd")) %>%
         legend.position = "none") 
 
 ggsave(filename = paste("riskAssment/box_Igeo_gather.png", sep = ""),
-       plot = plot.igeo.box.gather, width = 8.5, height = 3.5, dpi = 600)
+       plot = plot.igeo.box.gather, width = 8.5, height = 4.5, dpi = 600)
 
 dat <- dat %>%
   group_by(siteID, trait) %>%
