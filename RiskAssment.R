@@ -53,6 +53,28 @@ boxView.igeo <- function(elem,...) {
   plot.igeo.box
 }
 
+boxView.ef <- function(elem,...) {
+  plot.ef.box <-
+    ggplot(data = dat %>% filter(trait == elem)) + 
+    geom_hline(yintercept = c(0:2), col = "red", linetype = 2) +
+    geom_boxplot(aes(x = class, y = value, fill = as.factor(class))) +
+    scale_x_discrete("") +
+    scale_y_continuous("",breaks = c(0:2)) +
+    scale_fill_manual(values = blues9[1:4*2]) +
+    theme_bw() + 
+    theme(plot.background = element_rect(fill = "grey80"),
+          panel.grid = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank(),
+          #axis.line = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title.y = element_blank(),
+          legend.position = "none") 
+  ggsave(filename = paste("riskAssment/box_Ef_",elem,".png", sep = ""),
+         plot = plot.ef.box, width = 4, height = 6, dpi = 600)
+  plot.ef.box
+}
+
 outlierTest <- function(dat) {
   dat.sel <- dat[dat$outlier == F,]
   mod <- lm(value~orgC, data = dat.sel)
@@ -78,12 +100,12 @@ dat <- data.frame(dat,class = cutree(cluster.samp,4)) %>%
   select(siteID, trait, value, class) %>%
   mutate(class = paste("C", class, sep = ""))
 
-plot.cu.box <- boxView.igeo("Cu")
-plot.zn.box <- boxView.igeo("Zn")
-plot.ni.box <- boxView.igeo("Ni")
-plot.pb.box <- boxView.igeo("Pb")
-plot.cr.box <- boxView.igeo("Cr")
-plot.cd.box <- boxView.igeo("Cd")
+plot.cu <- boxView.igeo("Cu")
+plot.zn <- boxView.igeo("Zn")
+plot.ni <- boxView.igeo("Ni")
+plot.pb <- boxView.igeo("Pb")
+plot.cr <- boxView.igeo("Cr")
+plot.cd <- boxView.igeo("Cd")
 
 plot.igeo.box.gather <- 
 ggplot(data = dat %>% filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","Cd")) %>%
@@ -189,17 +211,31 @@ ggsave(plot = plot.igeo.sp, filename = "riskAssment/map_igeo_all.png",
 
 ## for enrichment factor
 ### original
-dat <- datareadln() %>% 
+dat <- datareadln() %>%
+  dplyr::select(Fe:Cd,orgC:sand,depth,siteID)
+
+cluster.samp <- hcluster(dat %>% select(Pb:Cd),
+                         rname = dat$siteID)
+
+dat <- data.frame(dat,class = cutree(cluster.samp,4)) %>% 
   data.frame(n=1:108) %>%
   gather(trait, value,Cd,Cr,Cu,Ni,Pb,Zn) %>% 
-  select(trait,value,orgC,siteID,n) %>%
+  select(trait,value,orgC,siteID,n, class) %>%
   inner_join(datareadln() %>%
                data.frame(n=1:108) %>%
                select(n, Fe),  by = c("n" = "n")) %>%
   mutate(value = value / Fe) %>%
   inner_join(background, by = c("trait" = "trait")) %>%
   mutate(value = value / bk2) %>%
-  select(siteID, trait, value, orgC) 
+  select(siteID, trait, value, orgC, class) %>%
+  mutate(class = paste("C", class, sep = ""))
+
+plot.cu <- boxView.ef("Cu")
+plot.zn <- boxView.ef("Zn")
+plot.ni <- boxView.ef("Ni")
+plot.pb <- boxView.ef("Pb")
+plot.cr <- boxView.ef("Cr")
+plot.cd <- boxView.ef("Cd")
 
 plot.ef.box <-
   ggplot(data = dat %>% filter(trait %in% c("Pb","Cr","Ni","Cu","Zn","Cd")) %>% 
