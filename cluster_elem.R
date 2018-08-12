@@ -170,23 +170,29 @@ bk <- grid.tot %>% dplyr::filter(class == "c1") %>%
 cont <- grid.tot %>% dplyr::inner_join(bk) %>% 
   dplyr::mutate(con = value - bk)
 
-bkint <- cont %>%
-  dplyr::group_by(trait) %>%
-  dplyr::summarise(intlow = nymlow(con),
-                   inthigh = nymhigh(con))
+bkint <- NULL
+for (i in unique(cont$class)) {
+  for (j in unique(cont$trait)) {
+    tmp <- cont %>% dplyr::filter(class == i, trait == j)
+    bkint <- rbind(bkint, data.frame(class = i, trait = j,
+                                     intl = nymlow(tmp$con),
+                                     inth = nymhigh(tmp$con)))
+  }
+}
 
 
 stock <- cont %>% 
   dplyr::inner_join(bkint) %>%
   dplyr::mutate(stock = con * weightunit.tile / 1E6,
-                stocklow = intlow * weightunit.tile / 1E6,
-                stockhigh = inthigh * weightunit.tile / 1E6) %>%
+                stockl = intl * weightunit.tile / 1E6,
+                stockh = inth * weightunit.tile / 1E6) %>%
   dplyr::group_by(trait,class) %>%
   dplyr::summarise(stock = sum(stock), 
-                   #stocklow = sum(stocklow),
-                   #stockhigh = sum(stockhigh),
+                   stockl = sum(stockl),
+                   stockh = sum(stockh),
                    conmean = mean(con)) %>%
   tidyr::gather(type,value,stock:conmean) %>%
   tidyr::spread(trait,value)
 
+write.csv(stock, "hca/stocks.csv")
 
