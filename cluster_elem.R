@@ -17,6 +17,7 @@ weightunit.tile <- bulkDensity*10*bulkDensity*100000*100000
 grid.perm.tot <- read.csv("data/result_element_perm.csv") 
 
 grid.content.tot <- NULL
+
 seldat <- grid.perm.tot %>%
   dplyr::filter(trait == "Pb") %>%
   dplyr::mutate(delta = var.samp-var.site)
@@ -42,6 +43,7 @@ grid.content.tot <- rbind(grid.content.tot,
                                             trait = "Cr")))
 
 seldat <- grid.perm.tot %>% filter(trait == "Ni") 
+coordinates(seldat) <- ~lon+lat
 grid.content.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean", 
                                         cutoff = 1.5, 
                                         modsel = vgm(0.05, "Mat", 1, kappa = 2), 
