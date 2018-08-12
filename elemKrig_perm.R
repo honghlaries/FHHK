@@ -129,9 +129,7 @@ grid.perm.tot <- read.csv("data/result_element_perm.csv")
 grid.value.tot <- NULL
 
 seldat <- grid.perm.tot %>%
-  dplyr::filter(trait == "Pb") %>%
-  dplyr::mutate(delta = var.samp-var.site)
-subdat <- as.data.frame(seldat)
+  dplyr::filter(trait == "Pb") %>%  dplyr::mutate(delta = var.samp-var.site)
 coordinates(seldat) <- ~lon+lat
 grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean",
                                         cutoff = 1,
@@ -155,7 +153,6 @@ grid.value.tot <- rbind(grid.value.tot,
                                             trait = "Pb")))
 
 seldat <- grid.perm.tot %>% filter(trait == "Cr") %>% mutate(delta = var.samp-var.site)
-subdat <- as.data.frame(seldat)
 coordinates(seldat) <- ~lon+lat
 grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean", 
                                         cutoff = 1.5, 
@@ -179,7 +176,6 @@ grid.value.tot <- rbind(grid.value.tot,
                                             trait = "Cr")))
 
 seldat <- grid.perm.tot %>% filter(trait == "Ni") %>% mutate(delta = var.samp-var.site)
-subdat <- as.data.frame(seldat)
 coordinates(seldat) <- ~lon+lat
 grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean", 
                                         cutoff = 1.5, 
@@ -203,7 +199,6 @@ grid.value.tot <- rbind(grid.value.tot,
                                             trait = "Ni")))
 
 seldat <- grid.perm.tot %>% filter(trait == "Cu") %>% mutate(delta = var.samp-var.site)
-subdat <- as.data.frame(seldat)
 coordinates(seldat) <- ~lon+lat
 grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean", 
                                         cutoff = 1, 
@@ -227,7 +222,6 @@ grid.value.tot <- rbind(grid.value.tot,
                                             trait = "Cu")))
 
 seldat <- grid.perm.tot %>% filter(trait == "Zn") %>% mutate(delta = var.samp-var.site)
-subdat <- as.data.frame(seldat)
 coordinates(seldat) <- ~lon+lat
 grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean", 
                                         cutoff = 0.7, 
@@ -252,7 +246,6 @@ grid.value.tot <- rbind(grid.value.tot,
 
 
 seldat <- grid.perm.tot %>% filter(trait == "Cd") %>% mutate(delta = var.samp-var.site)
-subdat <- as.data.frame(seldat)
 coordinates(seldat) <- ~lon+lat
 grid.value.mean <- as.data.frame(doKrig(seldat, dat.grid, tag = "mean",
                                         cutoff = 0.8,
