@@ -83,3 +83,4 @@ colnames(coo.river10) <- cname
 
 coo.1855 <- read.csv("data/meta_shoreline_1855.csv")
 
+coo.oldmouth <- data.frame(lon = 120.45, lat = 34.36)
