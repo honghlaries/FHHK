@@ -13,7 +13,20 @@ distCalc <- function(lata, lona, latb, lonb, r = 6371){
 }
 
 azimuthCalc <- function(lata, lona, latb, lonb, latc =90, lonc = lonb){
-  
+  p <- (acos(cos(lata/180*pi)*cos(lona/180*pi)*cos(latb/180*pi)*cos(lonb/180*pi)+
+               cos(lata/180*pi)*sin(lona/180*pi)*cos(latb/180*pi)*sin(lonb/180*pi)+
+               sin(lata/180*pi)*sin(latb/180*pi))+
+          (90-lata)/180*pi +
+          (90-latb)/180*pi )/2.0
+  cos.azi <- sqrt(sin(p)*sin(p-(90-latb)/180*pi)/sin((90-lata)/180*pi)/
+                    sin(acos(cos(lata/180*pi)*cos(lona/180*pi)*cos(latb/180*pi)*cos(lonb/180*pi)+
+                               cos(lata/180*pi)*sin(lona/180*pi)*cos(latb/180*pi)*sin(lonb/180*pi)+
+                               sin(lata/180*pi)*sin(latb/180*pi))))
+  if(lonb >= lona) {
+    if(latb >= lata) {0.5*pi - 2*acos(cos.azi)} else {2.5*pi - 2*acos(cos.azi)}
+  } else {
+    if(latb >= lata) {0.5*pi - 2*acos(cos.azi)} else {2.5*pi - 2*acos(cos.azi)}
+  }
 }
 
 
@@ -94,5 +107,10 @@ grid.content.tot$value <- exp(grid.content.tot$mean)
 grid.content.tot <- grid.content.tot %>% dplyr::select(-mean)
 remove(grid.content.mean, grid.perm.tot, seldat)
 
-grid.content.tot$dist <- distCalc(grid.content.tot$lat, grid.content.tot$lon,
-                                  coo.oldmouth$lat, coo.oldmouth$lon)
+grid.content.tot$dist <- distCalc(coo.oldmouth$lat, coo.oldmouth$lon, 
+                                  grid.content.tot$lat, grid.content.tot$lon)
+
+for(i in 1:length(grid.content.tot$lon)) {
+  grid.content.tot$azi <- azimuthCalc(coo.oldmouth$lat, coo.oldmouth$lon, 
+                                      grid.content.tot$lat[i], grid.content.tot$lon[i])
+}
