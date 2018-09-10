@@ -22,13 +22,22 @@ azimuthCalc <- function(lata, lona, latb, lonb, latc =90, lonc = lonb){
                     sin(acos(cos(lata/180*pi)*cos(lona/180*pi)*cos(latb/180*pi)*cos(lonb/180*pi)+
                                cos(lata/180*pi)*sin(lona/180*pi)*cos(latb/180*pi)*sin(lonb/180*pi)+
                                sin(lata/180*pi)*sin(latb/180*pi))))
-  
+   
   if(lonb >= lona) {
     if(latb >= lata) {0.5*pi - 2*acos(cos.azi)} else {2.5*pi - 2*acos(cos.azi)}
   } else {
     if(latb >= lata) {0.5*pi - 2*acos(cos.azi)} else {2.5*pi - 2*acos(cos.azi)}
   }
- 
+}
+
+azimuthCalc.rough <- azimuthCalc <- function(lata, lona, latb, lonb){
+  tan.azi <- (latb-lata)/(lonb-lona)
+  
+  if(lonb >= lona) {
+    if(latb >= lata) {atan(tan.azi)} else {2*pi + atan(tan.azi)}
+  } else {
+    pi + atan(tan.azi)
+  }
 }
 
 
@@ -114,6 +123,18 @@ grid.content.tot$dist <- distCalc(coo.oldmouth$lat, coo.oldmouth$lon,
 
 for(i in 1:length(grid.content.tot$lon)) {
   if (!i%%1000) print(paste("calculating:",i,"/",length(grid.content.tot$lon)))
-  grid.content.tot$azi[i] <- azimuthCalc(coo.oldmouth$lat, coo.oldmouth$lon, 
+  grid.content.tot$azi[i] <- azimuthCalc.rough(coo.oldmouth$lat, coo.oldmouth$lon, 
                                       grid.content.tot$lat[i], grid.content.tot$lon[i])
 }
+
+grid.content.tot$azideg <- ceiling(grid.content.tot$azi/3/pi*180) *3
+
+ggplot() +
+  geom_point(aes(x = 1, y = azideg), 
+             data = grid.content.tot)
+
+ggplot() +
+  geom_point(aes(x = (azideg+5)/36*pi, y = value, col = (azideg+5)/36*pi), 
+               data = grid.content.tot)+
+  coord_polar(direction = -1)+
+  facet_wrap(~trait)
