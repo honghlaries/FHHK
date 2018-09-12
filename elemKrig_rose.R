@@ -129,12 +129,30 @@ for(i in 1:length(grid.content.tot$lon)) {
 
 grid.content.tot$azideg <- ceiling(grid.content.tot$azi/3/pi*180) *3
 
-ggplot() +
-  geom_point(aes(x = 1, y = azideg), 
-             data = grid.content.tot)
+grid.content.tot$azideggroup <- ceiling((grid.content.tot$azideg)/30) 
+#grid.content.tot$azideggroup[grid.content.tot$azideg > 337.5] <- 9
 
-ggplot() +
-  geom_point(aes(x = (azideg+5)/36*pi, y = value, col = (azideg+5)/36*pi), 
-               data = grid.content.tot)+
-  coord_polar(direction = -1)+
-  facet_wrap(~trait)
+p <- 
+  ggplot() +
+  geom_point(aes(x = azideg, y = value, col = dist), alpha = 0.05, 
+               data = grid.content.tot) +
+  scale_color_gradient(low = "yellow", high = "blue") +
+  #coord_polar(start = -pi/2, direction = -1) +
+  facet_wrap(~trait, scale = "free") +
+  theme_bw() +
+  theme(axis.title = element_blank(),
+        legend.position = "none")
+ggsave(plot = p, filename = "element/gather_pointrose_element.png", width = 8, height = 6, dpi = 300)
+rm(p)
+
+p <- 
+  ggplot() +
+  geom_point(aes(x = dist, y = value), alpha = 0.01, data = grid.content.tot) +
+  #geom_smooth(aes(x = dist, y = value), method = "loess", data = grid.content.tot) +
+  #coord_polar(start = -pi/2, direction = -1) +
+  facet_grid(trait~azideggroup, scale = "free_y") +
+  theme_bw() +
+  theme(axis.title = element_blank(),
+        legend.position = "none")
+ggsave(plot = p, filename = "element/gather_point_element_dist.png", width = 12, height = 6, dpi = 300)
+rm(p)
