@@ -47,7 +47,7 @@ doPerm.array <- function(fitlist, processor, seed = 31415926) {
     
     print(paste("Complete Perm:",fitlist$tag[i]))
     
-    write.csv(dat.perm, paste("data/perm_",tag[i],".csv", sep = ""), row.names = F)
+    write.csv(dat.perm, paste("data/perm_",fitlist$tag[i],".csv", sep = ""), row.names = F)
     rm(dat.perm)
     
     print(paste("Time in Perm:",timeLog(start_time)))
