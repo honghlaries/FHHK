@@ -1,9 +1,11 @@
+source("uniTls_pkgInstall.R")
+
 doKrig.resamp <- function(dat, dat.grid.resample, tag, cutoff, 
                           krigFormula = as.formula(paste(tag,"~1",sep="")), 
                           modsel, nsamp, nsite, group) {
   pkgLoad("dplyr");pkgLoad("sp");pkgLoad("gstat");pkgLoad("foreach");pkgLoad("doParallel")
   
-  cl<-makeCluster(3)
+  cl<-makeCluster(4)
   registerDoParallel(cl)
   
   dat <- dat %>% select_("lon","lat",tag,group)
@@ -105,6 +107,31 @@ timeLog <- function(start_time) {
   # Since you only want the H:M:S, we can ignore the date...
   # but you have to be careful about time-zone issues
   format(.POSIXct(dt,tz="GMT"), "%H:%M:%S")
+}
+
+meanExtract <- function(path) {
+  
+  pkgLoad("dplyr");pkgLoad("foreach");pkgLoad("doParallel")
+
+  files <- Sys.glob(paste(path,"perm_*.csv",sep = '')) 
+  
+  cl<-makeCluster(4)
+  registerDoParallel(cl)
+  
+  mean <- 
+    foreach(i = files, .combine="rbind", .packages = c("dplyr")) %dopar% {
+      read.csv(i) %>%
+        dplyr::mutate(lon = as.character(lon),
+                      lat = as.character(lat)) %>%
+        dplyr::group_by(lon,lat,trait) %>%
+        dplyr::summarise(value = mean(value, na.rm = T))
+    }
+  
+  stopImplicitCluster()
+  stopCluster(cl)
+  
+  mean
+  
 }
 
 

@@ -64,9 +64,23 @@ datareadln <- function() {
     dplyr::mutate(orgC = C.ac, AVS = S - S.ac) %>%
     dplyr::select(siteID,lon,lat,C,N,S,orgC,AVS,
                   salinity,pH,
-                  Pb,Cr,Ni,Cu,Zn,Cd,
+                  Pb,Cr,Ni,Cu,Zn,Cd,As,
                   clay,silt,sand)
 }
 
-
+postCalc <- function(path ="data/") {
+  
+  print("Start to Calculate Means:")
+  
+  start_time <- Sys.time()
+  
+  mean <- meanExtract(path)%>%
+    dplyr::group_by()%>%
+    tidyr::spread(trait,value)
+  
+  write.csv(mean, "data/Result_PermMean.csv")
+  
+  print(paste("Time in Mean Calculation:",timeLog(start_time)))
+  
+}
 
