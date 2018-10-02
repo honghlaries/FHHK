@@ -1,5 +1,8 @@
 ## Initialization
+
 rm(list = ls())
+gc()
+
 source("uniTls_pkgInstall.R");source("uniTls_presetPaths.R");source("anaTls_spatialPerm.R");
 pkgInitialization(c("dplyr","tidyr","sp","gstat"))
 source("grid_resamp.R")
@@ -68,17 +71,24 @@ datareadln <- function() {
                   clay,silt,sand)
 }
 
-postCalc <- function(path ="data/") {
+meanCalc <- function(path ="data/") {
   
   print("Start to Calculate Means:")
   
   start_time <- Sys.time()
   
-  mean <- meanExtract(path)%>%
-    dplyr::group_by()%>%
-    tidyr::spread(trait,value)
+  files <- Sys.glob(paste(path,"perm_*.csv",sep = '')) 
   
-  write.csv(mean, "data/Result_PermMean.csv")
+  for(i in files) {
+    
+    mean <- meanExtract(i)
+    
+    write.csv(mean, gsub("perm_","meanPerm_",i), row.names = F)
+    
+    rm(mean)
+    
+    gc()
+  }
   
   print(paste("Time in Mean Calculation:",timeLog(start_time)))
   

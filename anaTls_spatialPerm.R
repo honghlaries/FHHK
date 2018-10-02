@@ -109,32 +109,20 @@ timeLog <- function(start_time) {
   format(.POSIXct(dt,tz="GMT"), "%H:%M:%S")
 }
 
-meanExtract <- function(path) {
+meanExtract <- function(file) {
   
   pkgLoad("dplyr");pkgLoad("foreach");pkgLoad("doParallel")
 
-  files <- Sys.glob(paste(path,"perm_*.csv",sep = '')) 
-  
-  cl<-makeCluster(4)
-  registerDoParallel(cl)
-  
-  mean <- 
-    foreach(i = files, .combine="rbind", .packages = c("dplyr")) %dopar% {
-      
-      dat <- read.csv(i)
-      out <- dat %>%
-        dplyr::mutate(lon = as.character(round(lon,digits = 5)),
-                      lat = as.character(round(lat,digits = 5))) %>%
-        dplyr::group_by(lon,lat,trait) %>%
-        dplyr::summarise(value = mean(value, na.rm = T))
-      rm(dat)
-      out
-    }
-  
-  stopImplicitCluster()
-  stopCluster(cl)
-  
-  mean
+  read.csv(file) %>%
+    dplyr::mutate(lon = as.character(lon,digits = 5),
+                  lat = as.character(lat,digits = 5)) %>%
+    dplyr::group_by(lon,lat,trait) %>%
+    dplyr::summarise(value = mean(value, na.rm = T),
+                     value1 = mean(value1, na.rm = T),
+                     value2 = mean(value2, na.rm = T),
+                     value3 = mean(value3, na.rm = T),
+                     value4 = mean(value4, na.rm = T),
+                     value5 = mean(value5, na.rm = T) )
   
 }
 
