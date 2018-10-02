@@ -120,11 +120,15 @@ meanExtract <- function(path) {
   
   mean <- 
     foreach(i = files, .combine="rbind", .packages = c("dplyr")) %dopar% {
-      read.csv(i) %>%
+      
+      dat <- read.csv(i)
+      out <- dat %>%
         dplyr::mutate(lon = as.character(lon),
                       lat = as.character(lat)) %>%
         dplyr::group_by(lon,lat,trait) %>%
         dplyr::summarise(value = mean(value, na.rm = T))
+      rm(dat)
+      out
     }
   
   stopImplicitCluster()
