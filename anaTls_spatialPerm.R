@@ -123,8 +123,8 @@ meanExtract <- function(path) {
       
       dat <- read.csv(i)
       out <- dat %>%
-        dplyr::mutate(lon = as.character(lon),
-                      lat = as.character(lat)) %>%
+        dplyr::mutate(lon = as.character(round(lon,digits = 5)),
+                      lat = as.character(round(lat,digits = 5))) %>%
         dplyr::group_by(lon,lat,trait) %>%
         dplyr::summarise(value = mean(value, na.rm = T))
       rm(dat)
